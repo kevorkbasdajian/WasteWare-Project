@@ -83,7 +83,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '..', '.env'))
 DATABASES = {
     'default': env.db(
         'DATABASE_URL',
-        default='postgres://postgres:Kevork55.@localhost:5432/waste_db'
+        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db'
     )
 }
 
