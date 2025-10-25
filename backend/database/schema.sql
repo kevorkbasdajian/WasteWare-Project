@@ -21,6 +21,7 @@ CREATE TABLE Users (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    role_id INT REFERENCES Roles(role_id),
     password_hash TEXT NOT NULL,
     phone_number VARCHAR(20),
     address_id INT UNIQUE REFERENCES Addresses(address_id) ON DELETE CASCADE,
@@ -49,15 +50,15 @@ CREATE TABLE Roles (
     role_name VARCHAR(50) NOT NULL -- (Client, Company, Admin)
 );
 
-CREATE TABLE Admins (
-    admin_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    role_id INT REFERENCES Roles(role_id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- CREATE TABLE Admins (
+--     admin_id SERIAL PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     email VARCHAR(100) UNIQUE NOT NULL,
+--     password_hash TEXT NOT NULL,
+--     -- role_id INT REFERENCES Roles(role_id),
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
 
 CREATE TABLE Notifications (
     notification_id SERIAL PRIMARY KEY,
@@ -87,12 +88,13 @@ CREATE TABLE Reports (
     type_of_report VARCHAR(50) CHECK (type_of_report IN ('illegal dumping','public littering','hazardous materials','construction debris','organic waste','E-waste')),
     severity_level INT,
     response_priority VARCHAR(20) CHECK (response_priority IN ('routine','moderate','high','emergency')),
-    location_latitude DECIMAL(9,6),
-    location_longitude DECIMAL(9,6),
+    -- location_latitude DECIMAL(9,6),
+    -- location_longitude DECIMAL(9,6),
+    address_id INT REFERENCES Addresses(address_id),
     description TEXT,
     image_url TEXT,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending','reviewed','resolved')),
-    handled_by INT REFERENCES Admins(admin_id),
+    handled_by INT REFERENCES Users(user_id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     resolved_at TIMESTAMP WITH TIME ZONE
 );
@@ -100,21 +102,44 @@ CREATE TABLE Reports (
 CREATE TABLE Schedules (
     schedule_id SERIAL PRIMARY KEY,
     company_id INT REFERENCES Companies(company_id) ON DELETE CASCADE,
-    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
-    waste_type_id INT REFERENCES Waste_Types(waste_type_id),
+    -- user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    -- waste_type_id INT REFERENCES Waste_Types(waste_type_id),
     pickup_date DATE,
+    start_time TIME,
+    end_time TIME,
     status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled','completed','canceled')),
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE Routes (
+    route_id SERIAL PRIMARY KEY,
+    waste_type_id INT REFERENCES Waste_Types(waste_type_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+);
+CREATE TABLE Dumpings(
+    dumping_id SERIAL PRIMARY KEY,
+    Title TEXT NOT NULL,
+    waste_type_id INT REFERENCES Waste_Types(waste_type_id) ON DELETE CASCADE,
+    address_id INT UNIQUE REFERENCES Addresses(address_id) ON DELETE CASCADE,
+    maximum_capacity INT,
+    collected_waste INT,
+)
+CREATE TABLE Route_Stops(
+    Route_id INT REFERENCES Routes(route_id) ON DELETE CASCADE,
+    Dumpings_id INT REFERENCES Dumpings(dumping_id) ON DELETE CASCADE,
+    has_passed BOOLEAN DEFAULT FALSE,
+)
 
 CREATE TABLE Pickups (
     pickup_id SERIAL PRIMARY KEY,
     schedule_id INT REFERENCES Schedules(schedule_id) ON DELETE CASCADE,
-    pickup_time TIMESTAMP WITH TIME ZONE,
+    route_id INT REFERENCES Routes(route_id) ON DELETE CASCADE,
+    -- pickup_time TIMESTAMP WITH TIME ZONE,
     weight_collected DECIMAL(10,2),
-    confirmation_photo TEXT,
-    status VARCHAR(20) DEFAULT 'completed' CHECK (status IN ('completed','missed','failed'))
+    -- store latest live location as JSON: {"latitude": <num>, "longitude": <num>}
+    live_location JSONB,
+    -- confirmation_photo TEXT,
+    status VARCHAR(20) DEFAULT 'Not Started' CHECK (status IN ('Not Started','completed','In Progress','Postponed'))
 );
 
 -- ===============================
@@ -144,7 +169,7 @@ CREATE TABLE Redemptions (
     redemption_id SERIAL PRIMARY KEY,
     reward_id INT REFERENCES Rewards(reward_id),
     user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
-    points_spent INT,
+    -- points_spent INT,
     redeemed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending','approved','delivered'))
 );
