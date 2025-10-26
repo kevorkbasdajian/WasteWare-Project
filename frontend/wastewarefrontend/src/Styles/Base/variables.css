@@ -1,0 +1,12 @@
+/* ===============================================
+   File: variables.css
+   Purpose: Store design system constants (spacing, radius, transitions)
+   Used by: All stylesheets
+   =============================================== */
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --transition-speed: 0.3s;
+  --border-radius: 20px;
+}

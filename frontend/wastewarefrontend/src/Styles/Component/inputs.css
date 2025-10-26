@@ -1,0 +1,22 @@
+/* ===============================================
+   File: inputs.css
+   Purpose: Define global input and form element styles
+   Used by: Forms across the app
+   =============================================== */
+
+.form-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  font-size: 1rem;
+  background: var(--glass-bg);
+  color: var(--text-dark);
+  transition: all var(--transition-speed) ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--eco-green);
+  box-shadow: 0 0 10px rgba(46, 125, 50, 0.3);
+}

@@ -1,0 +1,17 @@
+/* ===============================================
+   File: reset.css
+   Purpose: Reset browser default styles and set up basic layout rules
+   Used by: All pages
+   =============================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  scroll-behavior: smooth;
+}

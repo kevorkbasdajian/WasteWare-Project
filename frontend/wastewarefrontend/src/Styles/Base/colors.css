@@ -1,0 +1,39 @@
+/* ===============================================
+   File: colors.css
+   Purpose: Define global color variables for light and dark themes.
+            Includes primary brand colors, accents, and neutrals.
+   Used by: All components and pages
+   =============================================== */
+
+:root {
+  /* --- Brand Colors --- */
+  --eco-green: #2E7D32;
+  --light-green: #A5D6A7;
+  --clean-blue: #0288D1;
+  --energy-orange: #FF9800;
+  --purple: #5C6BC0;
+  --red: #E53935;
+
+  /* --- Gradients --- */
+  --gradient-green-blue: linear-gradient(135deg, #2E7D32, #0288D1);
+  --gradient-clean-blue: linear-gradient(135deg, #0288D1, #26C6DA);
+  --gradient-orange: linear-gradient(135deg, #FF9800, #FF6F00);
+  --gradient-purple: linear-gradient(135deg, #3949AB, #5C6BC0);
+  --gradient-red: linear-gradient(135deg, #E53935, #FF7043);
+
+  /* --- Neutrals --- */
+  --white: #FFFFFF;
+  --light-gray: #F5F5F5;
+  --text-dark: #333333;
+
+  /* --- Effects --- */
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* --- Dark Theme Overrides --- */
+[data-theme="dark"] {
+  --white: #121212;
+  --light-gray: #1E1E1E;
+  --text-dark: #E0E0E0;
+  --shadow: rgba(255, 255, 255, 0.1);
+}

@@ -1,0 +1,11 @@
+/* ===============================================
+   File: fonts.css
+   Purpose: Import and apply global typography styles
+   Used by: All text and UI components
+   =============================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
