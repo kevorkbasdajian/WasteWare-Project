@@ -22,7 +22,6 @@ import '../Styles/Base/glass.css';
  */
 
 const Navbar = ({
-  logo = '/assets/logo.png',
   brand = 'WasteWare',
   links = [],
   profileImage = '/assets/profile-placeholder.jpg',
@@ -33,7 +32,7 @@ const Navbar = ({
       <div className="navbar-container">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <img src={logo} alt="Logo" className="navbar-logo-img" />
+          <i className="fa-solid fa-recycle fa-3x navbar-logo-img" style={{color: "#2e7d32"}}></i>
           <span className="navbar-title">{brand}</span>
         </Link>
 
@@ -49,7 +48,7 @@ const Navbar = ({
                   '--glow-color': link.glowColor || '#2E7D32',
                 }}
               >
-                {link.name}
+                {[link.icon, link.name]}
               </Link>
             </li>
           ))}
