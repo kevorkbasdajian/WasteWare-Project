@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState} from 'react';
 
 
 import '../Styles/Base/fonts.css';
@@ -11,9 +11,12 @@ import {FaRecycle} from "react-icons/fa"
 
 import {Formik,Form,Field,ErrorMessage} from "formik";
 import * as Yup from "yup";
+import { Link } from 'react-router-dom';
 
 
 export const SignUpPage = () => {
+  const [backendError, setBackendError] = useState("");
+
 
   {/*Validation Using Yup*/}
   const validationSchema = Yup.object().shape({
@@ -57,7 +60,8 @@ export const SignUpPage = () => {
     const data = await response.json();
 
     if (!response.ok) {
-      alert("Signup failed: " + (data.message || "Unknown error"));
+      setBackendError(data.email[0]);
+      alert(backendError);
     } else {
       alert("Signup successful!");
       alert(JSON.stringify(data, null, 2));
@@ -177,9 +181,14 @@ export const SignUpPage = () => {
                 <ErrorMessage name="terms" component="div" className="error" />
 
                 <button type="submit">Sign Up</button>
+                {backendError && (
+                  <div className="error" style={{ color: "red", marginTop: "10px" }}>
+                    {backendError}
+                  </div>
+                )}
 
                 <p className="signin">
-                  Already have an account? <span>Sign in</span>
+                  Already have an account? <Link to="/Login" className = "link">Sign In</Link>
                 </p>
               </Form>
             )}

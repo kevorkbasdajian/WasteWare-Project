@@ -141,22 +141,33 @@ form button:hover {
 .error{
     color:red;
     font-size: 0.9rem;
-    padding-right:170px;
-    left:0;
+    display:flex;
+    justify-content: center;
+    /* padding-right:170px;
+    left:0; */
     /* margin-top:4px; */
 }
 .error_pn{
     color:red;
     font-size: 0.9rem;
-    padding-right:150px;
-    left:0;
+    display:flex;
+    justify-content: center;
+    /* padding-right:150px;
+    left:0; */
     /* margin-top:4px; */
 }
 .error_e{
     color:red;
     font-size: 0.9rem;
-    padding-right:200px;
-    left:0;
+    display:flex;
+    justify-content: center;
+    /* padding-right:200px;
+    left:0; */
     /* margin-top:4px; */
 
+}
+
+.link{
+  color: #3b82f6;
+  cursor: pointer;
 }
