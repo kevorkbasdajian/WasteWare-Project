@@ -8,10 +8,10 @@ import SignupPage from "./Pages/SignUpPage";
 function App() {
   return (
     <div className="App">
-      {/* <Routes>
+      <Routes>
         <Route path="/" element={<Dashboard />} />
-      </Routes> */}
-      <SignupPage/>
+      </Routes>
+      {/* <SignupPage/> */}
     </div>
   );
 }

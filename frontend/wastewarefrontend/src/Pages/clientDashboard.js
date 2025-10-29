@@ -8,31 +8,36 @@ const links = [
     name: 'Home', 
     path: '/', 
     color: 'var(--gradient-red)',
-    glowColor: '#EF4444' // Solid color for LED glow
+    glowColor: '#EF4444', // Solid color for LED glow
+    icon: <i className="fa-solid fa-house fa-lg" />
   },
   { 
     name: 'Map', 
     path: '/map', 
     color: 'var(--gradient-clean-blue)',
-    glowColor: '#3B82F6'
+    glowColor: '#3B82F6',
+    icon: <i className="fa-solid fa-map-location-dot fa-lg" />
   },
   { 
     name: 'Report', 
     path: '/report', 
     color: 'var(--gradient-purple)',
-    glowColor: '#A855F7'
+    glowColor: '#A855F7',
+    icon: <i className="fa-solid fa-camera fa-lg" />
   },
   { 
     name: 'Rewards', 
     path: '/rewards', 
     color: 'var(--gradient-orange)',
-    glowColor: '#F97316'
+    glowColor: '#F97316',
+    icon: <i className="fa-solid fa-gift fa-lg" />
   },
   { 
     name: 'Profile', 
     path: '/profile', 
     color: 'var(--gradient-green-blue)',
-    glowColor: '#10B981'
+    glowColor: '#10B981',
+    icon: <i className="fa-solid fa-user fa-lg" />
   },
 ];
 
