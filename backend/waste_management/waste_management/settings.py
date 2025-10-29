@@ -41,9 +41,24 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
+    'authentication',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'user_id',
+}
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -83,7 +98,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '..', '.env'))
 DATABASES = {
     'default': env.db(
         'DATABASE_URL',
-        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db'
+        default='postgres://postgres:Kevork55.@localhost:5432/waste_db'
     )
 }
 

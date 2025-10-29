@@ -119,7 +119,6 @@ CREATE TABLE Route_Stops(
     PRIMARY KEY (route_id, dumping_id)
 );
 
-
 CREATE TABLE Pickups (
     pickup_id SERIAL PRIMARY KEY,
     schedule_id INT REFERENCES Schedules(schedule_id) ON DELETE CASCADE,
