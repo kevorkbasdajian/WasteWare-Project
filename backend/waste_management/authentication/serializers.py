@@ -8,9 +8,21 @@ from .utils import hash_password, verify_password
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
 
+    def validate_email(self, value):
+        if Users.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered.")
+        return value
+    
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "unique": "This email is already registesred. Please log in instead."
+        }
+    )
+    
     class Meta:
         model = Users
-        fields = ['first_name', 'last_name', 'email', 'password', 'phone_number', 'address_id']
+        fields = ['first_name', 'last_name', 'email', 'password', 'phone_number']
 
     def create(self, validated_data):
         role = Roles.objects.get(role_name='Client')
