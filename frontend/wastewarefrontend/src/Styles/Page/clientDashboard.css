@@ -1,5 +1,5 @@
 /* ===============================================
-   File: dashboard.css
+   File: clientDashboard.css
    Purpose: Styles for the user dashboard page — includes
             layout, hero section, cards, and responsive design.
    Used by: Dashboard and home pages
@@ -9,6 +9,7 @@
 @import '../Base/variables.css';
 @import '../Component/buttons.css';
 @import '../Component/navbar.css';
+@import '../Base/darkMode.css';
 
 /* ---------------------------
    Dashboard Layout

@@ -1,0 +1,21 @@
+/* ===============================================
+   File: auth.css
+   Purpose: Style the authentication pages (login, signup)
+   Used by: Auth page components
+   =============================================== */
+
+@import '../Base/colors.css';
+@import '../Component/buttons.css';
+@import '../Component/inputs.css';
+
+.auth-container {
+  display: flex;
+  height: 100vh;
+}
+
+.form-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

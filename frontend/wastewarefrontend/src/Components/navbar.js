@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../Styles/Component/navbar.css';                // Navbar CSS in same folder
+import '../Styles/Component/navbar.css';
 import '../Styles/Base/colors.css';
 import '../Styles/Base/variables.css';
 import '../Styles/Base/glass.css';
-
-
+import '../Styles/Base/darkMode.css';
 /**
  * ===============================================
  * File: Navbar.js
@@ -15,7 +14,6 @@ import '../Styles/Base/glass.css';
  *
  * Props:
  *  - links: Array of { name, path, color? }
- *  - logo: Path to logo image
  *  - brand: App name (string)
  *  - profileImage: Optional profile image URL
  *  - onLogout: Function to handle logout
@@ -27,12 +25,35 @@ const Navbar = ({
   profileImage = '/assets/profile-placeholder.jpg',
   onLogout = () => {},
 }) => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Load theme preference from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setDarkMode(true);
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    if (!darkMode) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
   return (
     <nav className="navbar glass">
       <div className="navbar-container">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <i className="fa-solid fa-recycle fa-3x navbar-logo-img" style={{color: "#2e7d32"}}></i>
+          <i className="fa-solid fa-recycle fa-2x navbar-logo-img" style={{color: "#2e7d32"}}></i>
           <span className="navbar-title">{brand}</span>
         </Link>
 
@@ -54,10 +75,22 @@ const Navbar = ({
           ))}
         </ul>
 
-
-
-        {/* Profile & Logout */}
+        {/* Profile & Logout & Theme Toggle */}
         <div className="navbar-actions">
+          {/* Dark Mode Toggle Button */}
+          <button 
+            className="theme-toggle-btn" 
+            onClick={toggleDarkMode}
+            aria-label="Toggle Dark Mode"
+            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {darkMode ? (
+              <i className="fa-solid fa-sun"></i>
+            ) : (
+              <i className="fa-solid fa-moon"></i>
+            )}
+          </button>
+
           <Link to="/profile">
             <img
               src={profileImage}
@@ -65,6 +98,7 @@ const Navbar = ({
               className="navbar-profile"
             />
           </Link>
+          
           <button className="logout-btn" onClick={onLogout}>
             Logout
           </button>

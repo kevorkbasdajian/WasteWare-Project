@@ -1,0 +1,543 @@
+/* ===============================================
+   File: clientReports.css
+   Purpose: Styles for the client reports page
+   =============================================== */
+
+@import '../Base/colors.css';
+@import '../Base/variables.css';
+@import '../Base/darkMode.css';
+
+/* Ensure widths include padding so inputs don't overflow parent */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ---------------------------
+   Report Container
+---------------------------- */
+.report-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.report-main-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--purple);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------
+   Form Layout
+---------------------------- */
+.report-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.report-left,
+.report-right {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem; /* keep generous padding so inputs don't touch edges */
+  box-shadow: 0 4px 12px var(--purple);
+  overflow: hidden; /* prevent visual overflow on small screens */
+}
+
+/* ---------------------------
+   Photo Section
+---------------------------- */
+.photo-section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-icon {
+  color: var(--purple);
+  font-size: 1.25rem;
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.photo-upload-area {
+  width: 100%;
+  height: 250px;
+  border: 2px dashed var(--purple);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-upload-area:hover {
+  border-color: #5623be;
+  background: var(--gradient-purple);
+}
+
+.photo-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: var(--purple);
+}
+
+.photo-upload-label span {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--purple);
+}
+
+.photo-input {
+  display: none;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+/* ---------------------------
+   GPS Section
+---------------------------- */
+.gps-section {
+  margin-bottom: 2rem;
+}
+
+.gps-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.toggle-container {
+  position: relative;
+  width: 60px;
+  height: 30px;
+}
+
+.toggle-container input {
+  display: none;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 30px;
+  transition: 0.4s;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+.toggle-container input:checked + .toggle-slider {
+  background-color: var(--purple);
+}
+
+.toggle-container input:checked + .toggle-slider:before {
+  transform: translateX(30px);
+}
+
+.toggle-label {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.gps-input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.gps-icon {
+  color: var(--purple);
+  font-size: 1.25rem;
+}
+
+.gps-input,
+.address-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.gps-input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.gps-input:focus,
+.address-input:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+.address-input {
+  margin-bottom: 1rem;
+}
+
+.location-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.location-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.location-select:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+/* ---------------------------
+   Emergency & Submit Buttons
+---------------------------- */
+.emergency-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.emergency-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--submit-blue), var(--clean-blue));
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 94, 143, 0.4);
+}
+
+/* ---------------------------
+   Right Section - Title
+---------------------------- */
+.title-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+.title-input::placeholder {
+  color: #bbb;
+}
+
+/* ---------------------------
+   Section Headers
+---------------------------- */
+.section-header-green {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-number {
+  width: 40px;
+  height: 40px;
+  background: var(--purple);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.section-header-green h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+/* ---------------------------
+   Category Grid
+---------------------------- */
+.category-section {
+  margin-bottom: 2rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-btn:hover {
+  border-color: var(--purple);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-btn.active {
+  border-color: var(--purple);
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.category-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.category-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.category-subtext {
+  font-size: 0.875rem;
+  color: #666;
+  text-align: center;
+}
+
+/* ---------------------------
+   Severity Grid
+---------------------------- */
+.severity-section {
+  margin-bottom: 2rem;
+}
+
+.severity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.severity-btn {
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.75rem;
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.severity-btn:hover {
+  background: var(--severity-color);
+  border-color: var(--severity-color);
+  box-shadow: 0 4px 10px var(--severity-color);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.severity-btn.active {
+  border-color: var(--severity-color);
+  background: var(--severity-color);
+  color: white;
+}
+
+/* ---------------------------
+   Priority Grid
+---------------------------- */
+.priority-section {
+  margin-bottom: 2rem;
+}
+
+.priority-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.priority-btn {
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.75rem;
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.priority-btn:hover {
+    background: var(--priority-color);
+  border-color: var(--priority-color);
+  color: var(--white);
+  box-shadow: 0 4px 10px var(--priority-color);
+  transform: translateY(-2px);
+}
+
+.priority-btn.active {
+  border-color: var(--priority-color);
+  background: var(--priority-color);
+  color: var(--white);
+}
+
+/* ---------------------------
+   Details Textarea
+---------------------------- */
+.details-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.details-textarea:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+.details-textarea::placeholder {
+  color: #bbb;
+}
+
+/* ---------------------------
+   Responsive Design
+---------------------------- */
+@media (max-width: 1024px) {
+  .report-form {
+    grid-template-columns: 1fr;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .report-main-title {
+    font-size: 2rem;
+  }
+
+  .report-left,
+  .report-right {
+    padding: 1.5rem;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .severity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .priority-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-right {
+    padding: 1.25rem;
+  }
+
+  .title-input,
+  .address-input,
+  .gps-input,
+  .location-select,
+  .details-textarea {
+    padding: 0.85rem;
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .report-container {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,165 @@
+/* ===============================================
+   File: darkMode.css
+   Purpose: Centralized dark mode styles for entire application
+   =============================================== */
+
+/* ================ Global Dark Mode ================ */
+body.dark-mode {
+  background: linear-gradient(to bottom right, #1f2937, #111827);
+  color: #f9fafb;
+}
+
+body.dark-mode .page {
+  background: linear-gradient(to bottom right, #1f2937, #111827);
+}
+
+/* ================ Theme Toggle Button ================ */
+.theme-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.75rem;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  position: relative;
+}
+
+.theme-toggle-btn i {
+  background: linear-gradient(
+    120deg,
+    #FF9800 0%,
+    #FFB74D 50%,
+    #FFCC80 100%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn:hover i {
+  background-position: 0% 0;
+  filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.6))
+          drop-shadow(0 0 15px rgba(255, 183, 77, 0.4));
+  animation: shimmer 2s ease-in-out infinite;
+  background-size: 300% 100%;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.15) rotate(15deg);
+  background: rgba(255, 152, 0, 0.1);
+}
+
+/* Dark mode specific icon color */
+body.dark-mode .theme-toggle-btn i {
+  background: linear-gradient(
+    120deg,
+    #FDD835 0%,
+    #FFEB3B 50%,
+    #FFF59D 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ================ Navbar Dark Mode ================ */
+body.dark-mode .navbar {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .navbar-title {
+  background: linear-gradient(
+    120deg,
+    #4CAF50 0%,
+    #66BB6A 25%,
+    #81C784 50%,
+    #A5D6A7 75%,
+    #C8E6C9 100%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body.dark-mode .navbar-link {
+  color: #f9fafb;
+}
+
+body.dark-mode .navbar-profile {
+  border-color: #66BB6A;
+}
+
+/* ================ Dashboard Dark Mode ================ */
+
+
+/* ================ Reports Page Dark Mode ================ */
+body.dark-mode .report-left,
+body.dark-mode .report-right {
+  background: #1f2937;
+  
+}
+
+body.dark-mode .report-main-title {
+  color: var(--white);
+}
+
+body.dark-mode .section-header h3,
+body.dark-mode .section-header-green h3,
+body.dark-mode .toggle-label,
+body.dark-mode .category-name {
+  color: #f9fafb;
+}
+
+body.dark-mode .title-input,
+body.dark-mode .gps-input,
+body.dark-mode .address-input,
+body.dark-mode .location-select,
+body.dark-mode .details-textarea,
+body.dark-mode .category-btn,
+body.dark-mode .severity-btn,
+body.dark-mode .priority-btn {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+body.dark-mode .title-input:focus,
+body.dark-mode .address-input:focus,
+body.dark-mode .details-textarea:focus,
+body.dark-mode .location-select:focus {
+  border-color: var(--white);
+}
+
+body.dark-mode .category-btn:hover{
+    box-shadow: 0 4px 10px var(--white);
+}
+
+body.dark-mode .category-subtext {
+  color: #d1d5db;
+}
+
+body.dark-mode .photo-upload-area {
+  border-color: 2px var(--white) solid;
+  background: #374151;
+}
+
+body.dark-mode .photo-upload-area:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+body.dark-mode .category-btn.active,
+body.dark-mode .severity-btn.active,
+body.dark-mode .priority-btn.active {
+  border-color: 2px var(--white) solid;
+}
+
+

@@ -2,11 +2,12 @@
 @import '../Base/variables.css';
 @import '../Base/fonts.css';
 @import '../Base/glass.css';
+@import '../Base/darkMode.css';
 
 /* ===== Navbar ===== */
 .navbar {
   width: 100%;
-  height: 90px;
+  height: 70px; /* Reduced from 90px */
   background: var(--white);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   position: fixed;
@@ -36,11 +37,11 @@
 }
 
 .navbar-logo-img {
-  height: 50px;
+  height: 40px; /* Reduced from 50px */
 }
 
 .navbar-title {
-   font-size: 2rem;
+   font-size: 1.75rem; /* Reduced from 2rem */
   font-weight: 700;
   position: relative;
   background: linear-gradient(
@@ -106,7 +107,7 @@
 }
 
 .navbar-logo-img {
-  height: 50px;
+  height: 40px; /* Reduced from 50px */
   object-fit: contain;
   transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
@@ -119,24 +120,24 @@
 /* Navbar links container */
 .navbar-links {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem; /* Reduced from 1.5rem */
   list-style: none;
 }
 
 /* Individual links */
 .navbar-link {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem; /* Reduced from 1rem 2rem */
   border-radius: 20px;
   text-decoration: none;
   color: var(--text-dark);
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem; /* Reduced from 1.1rem */
   transition: all var(--transition-speed) ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  min-width: 120px;
+  min-width: 100px; /* Reduced from 120px */
   text-align: center;
 }
 
@@ -169,11 +170,11 @@
 /* Logout button - Gradient text style like the title */
 .navbar-actions .logout-btn {
   border: none;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem; /* Reduced from 1rem 2rem */
   cursor: pointer;
   font-weight: 600;
-  font-size: 1.1rem;
-  min-width: 120px;
+  font-size: 1rem; /* Reduced from 1.1rem */
+  min-width: 100px; /* Reduced from 120px */
   position: relative;
   overflow: hidden;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -235,8 +236,8 @@
 
 /* Profile image - Animated */
 .navbar-profile {
-  width: 50px;
-  height: 50px;
+  width: 40px; /* Reduced from 50px */
+  height: 40px; /* Reduced from 50px */
   border-radius: 50%; /* Makes it circular */
   object-fit: cover; /* Ensures image fills the circle properly */
   border: 3px solid var(--eco-green);
@@ -265,7 +266,7 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem; /* Reduced from 1rem */
 }
 
 /* Responsive */

@@ -41,10 +41,18 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
+    'clientReports',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Enable CORS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,10 +89,10 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '..', '.env'))
 
 DATABASES = {
-    'default': env.db(
-        'DATABASE_URL',
-        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db'
-    )
+    'default': env.db( 
+        'DATABASE_URL', 
+        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db' 
+        )
 }
 
 
@@ -128,3 +136,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True  # for development only
