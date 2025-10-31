@@ -42,7 +42,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'clientReports',
+    'authentication',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -50,7 +54,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'user_id',
+}
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware', # Enable CORS
     'django.contrib.sessions.middleware.SessionMiddleware',

@@ -5,3 +5,16 @@
   border-radius: 15px;
   border: 1px solid rgba(255,255,255,0.2);
 }
+.glass2{
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: var(--white);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  z-index: 1000;
+
+}
+
