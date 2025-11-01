@@ -40,12 +40,25 @@ INSTALLED_APPS = [
     # 'django.contrib.gis',  # <--- enables PostGIS
     # Third-party
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'authentication',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React app
+]
 
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://localhost:3000",
+# ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+
+
+from datetime import timedelta
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -55,7 +68,14 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
+    "USER_ID_CLAIM": "user_id",      # the claim inside the token
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,         # issue a new refresh on refresh
+    'BLACKLIST_AFTER_ROTATION': True,      # blacklists old refresh tokens
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

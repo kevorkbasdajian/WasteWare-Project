@@ -1,11 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import '../Styles/Component/navbar.css';                // Navbar CSS in same folder
-import '../Styles/Base/colors.css';
-import '../Styles/Base/variables.css';
-import '../Styles/Base/glass.css';
-
-
+import React from "react";
+import { Link } from "react-router-dom";
+import "../Styles/Component/navbar.css"; // Navbar CSS in same folder
+import "../Styles/Base/colors.css";
+import "../Styles/Base/variables.css";
+import "../Styles/Base/glass.css";
+import { useFetchWithAuth } from "./fetchWithAuth";
 /**
  * ===============================================
  * File: Navbar.js
@@ -22,9 +21,9 @@ import '../Styles/Base/glass.css';
  */
 
 const Navbar = ({
-  brand = 'WasteWare',
+  brand = "WasteWare",
   links = [],
-  profileImage = '/assets/profile-placeholder.jpg',
+  profileImage = "/assets/profile-placeholder.jpg",
   onLogout = () => {},
 }) => {
   return (
@@ -32,7 +31,10 @@ const Navbar = ({
       <div className="navbar-container">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <i className="fa-solid fa-recycle fa-3x navbar-logo-img" style={{color: "#2e7d32"}}></i>
+          <i
+            className="fa-solid fa-recycle fa-3x navbar-logo-img"
+            style={{ color: "#2e7d32" }}
+          ></i>
           <span className="navbar-title">{brand}</span>
         </Link>
 
@@ -44,8 +46,8 @@ const Navbar = ({
                 to={link.path}
                 className="navbar-link"
                 style={{
-                  '--hover-color': link.color || 'var(--eco-green)',
-                  '--glow-color': link.glowColor || '#2E7D32',
+                  "--hover-color": link.color || "var(--eco-green)",
+                  "--glow-color": link.glowColor || "#2E7D32",
                 }}
               >
                 {[link.icon, link.name]}
@@ -54,16 +56,10 @@ const Navbar = ({
           ))}
         </ul>
 
-
-
         {/* Profile & Logout */}
         <div className="navbar-actions">
           <Link to="/profile">
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="navbar-profile"
-            />
+            <img src={profileImage} alt="Profile" className="navbar-profile" />
           </Link>
           <button className="logout-btn" onClick={onLogout}>
             Logout

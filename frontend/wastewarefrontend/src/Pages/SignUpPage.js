@@ -1,24 +1,24 @@
-import React,{useState} from 'react';
+import React, { useState, useContext } from "react";
 
+import "../Styles/Base/fonts.css";
+import "../Styles/Page/SignUp.css";
+import "../Styles/Base/glass.css";
 
-import '../Styles/Base/fonts.css';
-import '../Styles/Page/SignUp.css';
-import '../Styles/Base/glass.css';
+import { FaRecycle } from "react-icons/fa";
 
-
-import {FaRecycle} from "react-icons/fa"
-
-
-import {Formik,Form,Field,ErrorMessage} from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { Link } from 'react-router-dom';
-
-
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../Components/AuthProvider";
 export const SignUpPage = () => {
   const [backendError, setBackendError] = useState("");
+  const [url, seturl] = useState("");
+  const { saveAccessToken } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-
-  {/*Validation Using Yup*/}
+  {
+    /*Validation Using Yup*/
+  }
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
@@ -26,16 +26,21 @@ export const SignUpPage = () => {
     phone_number: Yup.string()
       .matches(/^\d{11}$/, "Phone number must be 11 digits")
       .required("Phone number is required"),
+    role: Yup.string()
+      .oneOf(["User", "Admin"], "Please select a valid role")
+      .required("Please select a role"),
     password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
-      .required("Password is required"),
+      .required("Password is required")
+      .min(6, "Password must be at least 6 characters"),
     password2: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm password is required"),
     terms: Yup.bool().oneOf([true], "You must accept the terms"),
   });
 
-  {/*Initial Values for Formik*/}
+  {
+    /*Initial Values for Formik*/
+  }
   const initialValues = {
     first_name: "",
     last_name: "",
@@ -44,67 +49,66 @@ export const SignUpPage = () => {
     password: "",
     password2: "",
     terms: false,
+    role: "", // Empty string to show placeholder
   };
 
-  {/*When the Sign Up Button is pressed*/}
-  const handleSubmit = async (values, {setSubmitting,resetForm}) => {
-    
-    const { password2, terms, ...payload } = values;
-    try{
-      const response = await fetch("http://localhost:8000/api/auth/signup/user/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload), // Formik values
-    });
+  {
+    /*When the Sign Up Button is pressed*/
+  }
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const { password2, terms, role, ...payload } = values;
+    let url = "http://localhost:8000/api/auth/signup/user/";
+    if (values.role === "Admin")
+      url = "http://localhost:8000/api/auth/signup/admin/";
+    if (values.role === "Company")
+      url = "http://localhost:8000/api/auth/signup/company/";
 
-    const data = await response.json();
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload), // Formik values
+      });
 
-    if (!response.ok) {
-      setBackendError(data.email[0]);
-      alert(backendError);
-    } else {
-      alert("Signup successful!");
-      alert(JSON.stringify(data, null, 2));
-      resetForm(); 
-    }
+      const data = await response.json();
 
-    } catch(error){
-        alert("Request failed: " + error.message);
-    }finally{
+      if (!response.ok) {
+        setBackendError(data.email?.[0] || data.detail || "Signup failed.");
+      } else {
+        const accessToken = data.access || data.token?.access;
+        if (accessToken) saveAccessToken(accessToken);
+        alert("Signup successful!");
+        // client-side navigation (no full page reload)
+        if (role === "Admin") navigate("/admin/dashboard", { replace: true });
+        else if (role === "User")
+          navigate("/user/dashboard", { replace: true });
+        else navigate("/company/dashboard", { replace: true });
+      }
+    } catch (error) {
+      alert("Request failed: " + error.message);
+    } finally {
       setSubmitting(false);
+      resetForm();
     }
   };
-
-
-
-
-  // const handleSignup = async () => {
-  //   const response = await fetch("http://localhost:8000/api/auth/signup/user/", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(formData),
-  //   });
-  //   const data = await response.json();
-  //   console.log("Signup Response:", data);
-  //   alert(JSON.stringify(data, null, 2));
-  // };
 
   return (
-    <div className = "signup-container">
+    <div className="signup-container">
       {/*Left Side */}
-      <div className = "left-side">
-        <h1 className = "Main Title">Bienvenue</h1>
-        <p style={{color:'white'}}>Recyclez aujourd'hui, vivez demain</p>
+      <div className="left-side">
+        <h1 className="Main Title">Bienvenue</h1>
+        <p style={{ color: "white" }}>Recyclez aujourd'hui, vivez demain</p>
       </div>
       {/*Right Side*/}
       <div className="right-side">
-        <div className ="glass2 custom">
-          <div className = "logo">
-            <FaRecycle  size = {40} style={{color: 'green',marginRight:15}}/>
-            <h2 className = "logo-title">WasteWare</h2>
+        <div className="glass2 custom">
+          <div className="logo">
+            <FaRecycle size={40} style={{ color: "green", marginRight: 15 }} />
+            <h2 className="logo-title">WasteWare</h2>
           </div>
-          <h1 style={{margin: 0}}>Join Us</h1>
-          <p style={{marginBottom:40}}>Start making a difference today</p>
+          <h1 style={{ margin: 0 }}>Join Us</h1>
+          <p style={{ marginBottom: 40 }}>Start making a difference today</p>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -120,7 +124,12 @@ export const SignUpPage = () => {
                   onBlur={handleBlur}
                   value={values.first_name}
                 />
-                <ErrorMessage name="first_name" component="div" className="error" /><br/>
+                <ErrorMessage
+                  name="first_name"
+                  component="div"
+                  className="error"
+                />
+                <br />
 
                 <Field
                   type="text"
@@ -130,7 +139,12 @@ export const SignUpPage = () => {
                   onBlur={handleBlur}
                   value={values.last_name}
                 />
-                <ErrorMessage name="last_name" component="div" className="error" /><br/>
+                <ErrorMessage
+                  name="last_name"
+                  component="div"
+                  className="error"
+                />
+                <br />
 
                 <Field
                   type="email"
@@ -140,7 +154,12 @@ export const SignUpPage = () => {
                   onBlur={handleBlur}
                   value={values.email}
                 />
-                <ErrorMessage name="email" component="div" className="error_e"  /><br/>
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="error_e"
+                />
+                <br />
 
                 <Field
                   type="tel"
@@ -150,7 +169,26 @@ export const SignUpPage = () => {
                   onBlur={handleBlur}
                   value={values.phone_number}
                 />
-                <ErrorMessage name="phone_number" component="div" className="error_pn" /><br/>
+                <ErrorMessage
+                  name="phone_number"
+                  component="div"
+                  className="error_pn"
+                />
+                <br />
+                <Field
+                  as="select"
+                  name="role"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.role}
+                  className="role-select"
+                >
+                  <option value="">Select your role</option>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                </Field>
+                <ErrorMessage name="role" component="div" className="error" />
+                <br />
 
                 <div className="passwords">
                   <Field
@@ -170,25 +208,36 @@ export const SignUpPage = () => {
                     value={values.password2}
                   />
                 </div>
-                <ErrorMessage name="password2" component="div" className="error" />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="error"
+                />
 
                 <div className="checkbox">
                   <Field type="checkbox" name="terms" />
                   <label>
-                    I agree to the <span> Terms of Service</span> and <span> Privacy Policy</span>
+                    I agree to the <span> Terms of Service</span> and{" "}
+                    <span> Privacy Policy</span>
                   </label>
                 </div>
                 <ErrorMessage name="terms" component="div" className="error" />
 
                 <button type="submit">Sign Up</button>
                 {backendError && (
-                  <div className="error" style={{ color: "red", marginTop: "10px" }}>
+                  <div
+                    className="error"
+                    style={{ color: "red", marginTop: "10px" }}
+                  >
                     {backendError}
                   </div>
                 )}
 
                 <p className="signin">
-                  Already have an account? <Link to="/Login" className = "link">Sign In</Link>
+                  Already have an account?{" "}
+                  <Link to="/Login" className="link">
+                    Sign In
+                  </Link>
                 </p>
               </Form>
             )}
@@ -196,7 +245,6 @@ export const SignUpPage = () => {
         </div>
       </div>
     </div>
-    
-  )
-}
+  );
+};
 export default SignUpPage;

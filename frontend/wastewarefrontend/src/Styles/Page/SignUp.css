@@ -1,65 +1,65 @@
-@import '../Base/fonts.css';
-@import '../Base/colors.css';
-@import '../Base/glass.css';
+@import "../Base/fonts.css";
+@import "../Base/colors.css";
+@import "../Base/glass.css";
 .signup-container {
-    margin:0;
-    display: flex;
-    min-height:100vh;
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
 }
 .left-side {
-    flex:1.5;
-    background: var(--gradient-green-blue);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding:40px;
-
+  flex: 1.5;
+  background: var(--gradient-green-blue);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
 }
-.left-side h1{
-    font-size: 6rem;
-    margin-bottom: 16px;
+.left-side h1 {
+  font-size: 6rem;
+  margin-bottom: 16px;
 }
 .left-side p {
   font-size: 1.25rem;
   font-weight: bold;
 }
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%; /* optional, useful for full-height containers */
 }
 .right-side {
-    flex:2;
-    display: flex;
-    justify-content:center;
-    align-items:center;
-    background-color: #EFF3F0;
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #eff3f0;
 }
-.glass2.custom{
-    position:relative;
-    padding:10px;
-    margin-inline:140px;
-    display:flex;
-    justify-content:start;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
+.glass2.custom {
+  position: relative;
+  padding: 10px;
+  margin-inline: 140px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
 }
-.logo{
-    display:flex;
-    justify-content:center;
-    align-items: center;
-    margin-bottom: 16px;
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
 }
-.logo-title{
-    color:green;
-    font-weight: normal;
-    font-size: 34px;
+.logo-title {
+  color: green;
+  font-weight: normal;
+  font-size: 34px;
 }
-p{
-    color:#818181;
+p {
+  color: #818181;
 }
 form {
   display: flex;
@@ -68,38 +68,41 @@ form {
   justify-content: center; /* optional, centers them vertically if form has height */
   width: 100%;
 }
-form input, form select{
-    width:50%;
-    padding:10px;
-    /* margin-bottom:12px; */
-    border:1px solid #d1d5db;
-    border-radius: 8px;
-    outline:none;
-
+form input,
+form select,
+.role-select {
+  width: 50%;
+  padding: 10px;
+  /* margin-bottom:12px; */
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
 }
-form input:focus, form select:focus{
-    border-color: #22c55e;
-    box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+form input:focus,
+form select:focus,
+.role-select:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
 }
-.passwords{
-    display:flex;
-    gap: 8px;
-    width:54%;
+.passwords {
+  display: flex;
+  gap: 8px;
+  width: 54%;
 }
-.passwords input{
-    flex: 1;
-    width:100%;
+.passwords input {
+  flex: 1;
+  width: 100%;
 }
-.checkbox{
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-items: start;
-    margin-block: 12px;
+.checkbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
+  margin-block: 12px;
 }
-.checkbox input{
-    margin-top: 2px;
-    width:20px;
+.checkbox input {
+  margin-top: 2px;
+  width: 20px;
 }
 .checkbox label {
   margin-left: 8px;
@@ -138,36 +141,57 @@ form button:hover {
   color: #3b82f6;
   cursor: pointer;
 }
-.error{
-    color:red;
-    font-size: 0.9rem;
-    display:flex;
-    justify-content: center;
-    /* padding-right:170px;
+.error {
+  color: red;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: center;
+  /* padding-right:170px;
     left:0; */
-    /* margin-top:4px; */
+  /* margin-top:4px; */
 }
-.error_pn{
-    color:red;
-    font-size: 0.9rem;
-    display:flex;
-    justify-content: center;
-    /* padding-right:150px;
+.error_pn {
+  color: red;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: center;
+  /* padding-right:150px;
     left:0; */
-    /* margin-top:4px; */
+  /* margin-top:4px; */
 }
-.error_e{
-    color:red;
-    font-size: 0.9rem;
-    display:flex;
-    justify-content: center;
-    /* padding-right:200px;
+.error_e {
+  color: red;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: center;
+  /* padding-right:200px;
     left:0; */
-    /* margin-top:4px; */
+  /* margin-top:4px; */
+}
 
-}
-
-.link{
+.link {
   color: #3b82f6;
   cursor: pointer;
+}
+
+/* Select and Options Styling */
+.role-select option {
+  padding: 10px;
+  font-size: 1rem;
+  color: #4b5563;
+  background-color: white;
+}
+
+.role-select option:first-child {
+  color: #818181;
+}
+
+/* Remove default select arrow in modern browsers */
+.role-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem top 50%;
+  background-size: 0.65rem auto;
+  padding-right: 2rem;
 }
