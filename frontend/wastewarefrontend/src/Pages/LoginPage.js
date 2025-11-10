@@ -1,11 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import "../Styles/Base/fonts.css";
 import "../Styles/Page/SignUp.css";
 import "../Styles/Base/glass.css";
 
 import { FaRecycle } from "react-icons/fa";
-import { useState } from "react";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -16,8 +15,24 @@ import { AuthContext } from "../Components/AuthProvider";
 export const LoginPage = () => {
   // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState("");
-  const { saveAccessToken } = useContext(AuthContext);
+  const { saveAccessToken, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // If user is already authenticated, redirect away from login page
+  useEffect(() => {
+    const token =
+      accessToken ||
+      (() => {
+        try {
+          return sessionStorage.getItem("access_token");
+        } catch (e) {
+          return null;
+        }
+      })();
+    if (token) {
+      navigate("/", { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   {
     /*Validation Using Yup*/
@@ -44,7 +59,6 @@ export const LoginPage = () => {
     try {
       const response = await fetch("http://localhost:8000/api/auth/login/", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values), // Formik values
       });

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 
 import "../Styles/Base/fonts.css";
 import "../Styles/Page/SignUp.css";
@@ -12,9 +12,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Components/AuthProvider";
 export const SignUpPage = () => {
   const [backendError, setBackendError] = useState("");
-  const [url, seturl] = useState("");
-  const { saveAccessToken } = useContext(AuthContext);
+  const { saveAccessToken, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Redirect away from signup page if already authenticated
+  useEffect(() => {
+    const token =
+      accessToken ||
+      (() => {
+        try {
+          return sessionStorage.getItem("access_token");
+        } catch (e) {
+          return null;
+        }
+      })();
+    if (token) {
+      navigate("/", { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   {
     /*Validation Using Yup*/
@@ -67,7 +82,6 @@ export const SignUpPage = () => {
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(payload), // Formik values
       });
 

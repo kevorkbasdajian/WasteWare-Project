@@ -72,7 +72,6 @@ const Dashboard = () => {
       <Navbar links={links} onLogout={handleLogout} />
       <main className="dashboard-content">
         <h1>Dashboard Content</h1>
-        <h2>{accessToken}</h2>
       </main>
     </div>
   );

@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     # 'django.contrib.gis',  # <--- enables PostGIS
     # Third-party
     'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'authentication',
 ]
@@ -68,11 +67,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
-    "USER_ID_CLAIM": "user_id",      # the claim inside the token
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,         # issue a new refresh on refresh
-    'BLACKLIST_AFTER_ROTATION': True,      # blacklists old refresh tokens
+    "USER_ID_CLAIM": "user_id",
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # longer lifetime for simplicity
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
