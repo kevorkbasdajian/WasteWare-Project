@@ -5,7 +5,6 @@ import Dashboard from "./Pages/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignUpPage";
 import { AuthProvider } from "./Components/AuthProvider";
-import { TestFetch } from "./Components/TestFetch";
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <Routes>
           <Route path="/SignUp" element={<SignupPage />} />
           <Route path="/" element={<Dashboard />} />
-          <Route path="/dummy" element={<TestFetch />} />
 
           <Route path="/Login" element={<LoginPage />} />
         </Routes>
