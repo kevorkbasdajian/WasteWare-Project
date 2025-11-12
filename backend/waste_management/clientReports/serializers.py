@@ -1,110 +1,106 @@
 from rest_framework import serializers
 from .models import Report, Address
 
+
 class AddressSerializer(serializers.ModelSerializer):
-    #
     class Meta:
         model = Address
         fields = ['id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
+
+
+class ReportCreateSerializer(serializers.Serializer):
+    # Required fields
+    title = serializers.CharField(max_length=200)
+    type_of_report = serializers.CharField(max_length=50)
+    severity_level = serializers.IntegerField(min_value=1, max_value=4)
+    response_priority = serializers.CharField(max_length=20)
+    coordinates = serializers.CharField(max_length=100)
+    street_address = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    city_name = serializers.CharField(max_length=100)
+    governorate = serializers.CharField(max_length=100)
+    description = serializers.CharField(required=False, allow_blank=True)
+    photo = serializers.ImageField(required=False, allow_null=True)
+    
+    def validate_type_of_report(self, value):
+        valid_types = ['illegal dumping', 'public littering', 'hazardous materials', 
+                      'construction debris', 'organic waste', 'e-waste']
+        if value not in valid_types:
+            raise serializers.ValidationError(f"Invalid report type. Must be one of: {', '.join(valid_types)}")
+        return value
+    
+    def validate_response_priority(self, value):
+        valid_priorities = ['routine', 'moderate', 'high', 'emergency']
+        if value not in valid_priorities:
+            raise serializers.ValidationError(f"Invalid priority. Must be one of: {', '.join(valid_priorities)}")
+        return value
+    
+    def validate_coordinates(self, value):
+        """Validate coordinates format: 'latitude, longitude'"""
+        try:
+            parts = value.split(',')
+            if len(parts) != 2:
+                raise ValueError
+            lat = float(parts[0].strip())
+            lng = float(parts[1].strip())
+            if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+                raise ValueError
+            return value
+        except:
+            raise serializers.ValidationError("Coordinates must be in format: 'latitude, longitude'")
     
     def create(self, validated_data):
-        """Create and return a new Address instance, given the validated data."""
-        return Address.objects.create(**validated_data)
-    
-class ReportSerializer(serializers.ModelSerializer):
-    # Read-only fields
-    address_details = AddressSerializer(source='address', read_only=True)
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-
-    # Write-only fields
-    coordinates = serializers.CharField(write_only=True, required=False)
-    street_address = serializers.CharField(write_only=True, required=False)
-    city_name = serializers.CharField(write_only=True, required=False)
-    governorate = serializers.CharField(write_only=True, required=False)
-    photo = serializers.ImageField(required=False, allow_null=True)
-
-    class Meta:
-        model = Report
-        fields = [
-            'id', 'user', 'title', 'type_of_report', 'severity_level', 'response_priority',
-            'description', 'image_url', 'status', 'created_at', 'resolved_at',
-            
-            #Read-only fields
-            'address_details', 'user_email',
-            
-            #Write-only fields
-            'coordinates', 'street_address', 'city_name', 'governorate', 'photo'
-        ]
-        read_only_fields = ['id', 'user', 'status', 'created_at', 'resolved_at']
-
-def validate_severity_level(self, value):
-    """Ensure severity level is between 1 and 5."""
-    if value not in [1, 2, 3, 4, 5]:
-        raise serializers.ValidationError("Severity level must be between 1 and 5.")
-    return value
-
-def create(self, validated_data):
-    """Create report with address"""
-    # Extract address-related data
-    coordinates = validated_data.pop('coordinates', None)
-    street_address = validated_data.pop('street_address', None)
-    city_name = validated_data.pop('city_name', None)
-    governorate = validated_data.pop('governorate', None)
-    photo = validated_data.pop('photo', None)
-
-    #Parse coordinates if provided
-    latitude = longitude = None
-    if coordinates:
-        try:
-            lat_str, lon_str = coordinates.split(',')
-            latitude = float(lat_str.strip())
-            longitude = float(lon_str.strip())
-        except (ValueError, AttributeError):
-            pass
-    
-    #Create address if any address data provided
-    address = None
-    if street_address or city_name:
+        # Extract coordinates
+        coords = validated_data.pop('coordinates')
+        lat, lng = [float(x.strip()) for x in coords.split(',')]
+        
+        # Extract address fields
+        street = validated_data.pop('street_address', '')
+        city = validated_data.pop('city_name')
+        governorate = validated_data.pop('governorate')
+        
+        # Create address
         address = Address.objects.create(
-            street=street_address or '',
-            city=city_name or '',
-            region=governorate or '',
-            latitude=latitude,
-            longitude=longitude
+            street=street,
+            city=city,
+            region=governorate,
+            latitude=lat,
+            longitude=lng
         )
-        validated_data['address'] = address
-
-    #Handle photo upload if provided
-    if photo:
-        #We just store the filename
-        validated_data['image_url'] = photo.name
-    
-    #Create and return the report
-    report = Report.objects.create(**validated_data)
-    return report
+        
+        # Handle photo upload
+        photo = validated_data.pop('photo', None)
+        
+        # Create report
+        report = Report.objects.create(
+            user=self.context['request'].user,
+            address=address,
+            image_url=photo,
+            **validated_data
+        )
+        
+        return report
 
 
 class ReportListSerializer(serializers.ModelSerializer):
-    # Simplified serializer for listing reports
+    address_detail = AddressSerializer(source='address', read_only=True)
     user_name = serializers.SerializerMethodField()
-    address_summary = serializers.SerializerMethodField()
     
     class Meta:
         model = Report
-        fields = ['id',
-                  'title', 
-                  'type_of_report', 
-                  'severity_level', 
-                  'response_priority', 
-                  'status', 
-                  'created_at',
-                  'user_name',
-                  'address_summary',
-                  ]
-    def get_user_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name and obj.user.last_name else obj.user.username
+        fields = [
+            'id',
+            'title',
+            'type_of_report',
+            'severity_level',
+            'response_priority',
+            'description',
+            'image_url',
+            'address_detail',
+            'status',
+            'user_name',
+            'created_at',
+            'resolved_at',
+        ]
     
-    def get_address_summary(self, obj):
-        if obj.address:
-            return f"{obj.address.city}, {obj.address.region}"
-        return "N/A"
+    def get_user_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"

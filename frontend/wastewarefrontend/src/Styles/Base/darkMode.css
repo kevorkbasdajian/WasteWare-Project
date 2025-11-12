@@ -6,7 +6,7 @@
 /* ================ Global Dark Mode ================ */
 body.dark-mode {
   background: linear-gradient(to bottom right, #1f2937, #111827);
-  color: #f9fafb;
+  color: var(--white);
 }
 
 body.dark-mode .page {
@@ -91,7 +91,7 @@ body.dark-mode .navbar-title {
 }
 
 body.dark-mode .navbar-link {
-  color: #f9fafb;
+  color: var(--white);
 }
 
 body.dark-mode .navbar-profile {
@@ -116,7 +116,7 @@ body.dark-mode .section-header h3,
 body.dark-mode .section-header-green h3,
 body.dark-mode .toggle-label,
 body.dark-mode .category-name {
-  color: #f9fafb;
+  color: var(--white);
 }
 
 body.dark-mode .title-input,
@@ -129,7 +129,7 @@ body.dark-mode .severity-btn,
 body.dark-mode .priority-btn {
   background: #374151;
   border-color: #4b5563;
-  color: #f9fafb;
+  color: var(--white);
 }
 
 body.dark-mode .title-input:focus,
@@ -139,12 +139,18 @@ body.dark-mode .location-select:focus {
   border-color: var(--white);
 }
 
+body.dark-mode .title-input::placeholder,
+body.dark-mode .address-input::placeholder,
+body.dark-mode .details-textarea::placeholder{
+  color: var(--placeholder-gray);
+}
+
 body.dark-mode .category-btn:hover{
     box-shadow: 0 4px 10px var(--white);
 }
 
 body.dark-mode .category-subtext {
-  color: #d1d5db;
+  color: var(--light-gray);
 }
 
 body.dark-mode .photo-upload-area {

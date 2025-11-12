@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
-    'clientReports',
     'authentication',
+    'clientReports',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
