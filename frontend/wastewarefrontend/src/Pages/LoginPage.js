@@ -1,22 +1,42 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from "react";
 
+import "../Styles/Base/fonts.css";
+import "../Styles/Page/SignUp.css";
+import "../Styles/Base/glass.css";
 
-import '../Styles/Base/fonts.css';
-import '../Styles/Page/SignUp.css';
-import '../Styles/Base/glass.css';
+import { FaRecycle } from "react-icons/fa";
 
-
-import {FaRecycle} from "react-icons/fa"
-import { useState } from 'react';
-
-import {Formik,Form,Field,ErrorMessage} from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 
+import { AuthContext } from "../Components/AuthProvider";
 
 export const LoginPage = () => {
-    const [errorMessage,setErrorMessage] = useState("");
-  {/*Validation Using Yup*/}
+  // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
+  const [errorMessage, setErrorMessage] = useState("");
+  const { saveAccessToken, accessToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // If user is already authenticated, redirect away from login page
+  useEffect(() => {
+    const token =
+      accessToken ||
+      (() => {
+        try {
+          return sessionStorage.getItem("access_token");
+        } catch (e) {
+          return null;
+        }
+      })();
+    if (token) {
+      navigate("/", { replace: true });
+    }
+  }, [accessToken, navigate]);
+
+  {
+    /*Validation Using Yup*/
+  }
   const validationSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string()
@@ -24,58 +44,66 @@ export const LoginPage = () => {
       .required("Password is required"),
   });
 
-  {/*Initial Values for Formik*/}
+  {
+    /*Initial Values for Formik*/
+  }
   const initialValues = {
     email: "",
     password: "",
   };
 
-  {/*When the Sign Up Button is pressed*/}
-  const handleSubmit = async (values, {setSubmitting,resetForm}) => {
-    
-    try{
+  {
+    /*When the Sign Up Button is pressed*/
+  }
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    try {
       const response = await fetch("http://localhost:8000/api/auth/login/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values), // Formik values
-    });
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values), // Formik values
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      setErrorMessage(data.error);
-    } else {
-      alert("Login successful!");
-      alert(JSON.stringify(data, null, 2));
+      if (!response.ok) {
+        setErrorMessage(data.error);
+      } else {
+        const accessToken = data.access || data.token?.access;
+        if (accessToken) saveAccessToken(accessToken);
+        alert(JSON.stringify(data, null, 2));
+        const user_type = data.user_type;
+        setErrorMessage("");
+        // navigate client-side (no full page reload)
+        if (user_type === "user") navigate("/", { replace: true });
+        else if (user_type === "admin")
+          navigate("/admin/dashboard", { replace: true });
+        else navigate("/company/dashboard", { replace: true });
+      }
+      // ...existing code...
+    } catch (error) {
+      alert("Request failed: " + error.message);
+    } finally {
       resetForm();
-      setErrorMessage(""); 
-    }
-
-    } catch(error){
-        alert("Request failed: " + error.message);
-    }finally{
       setSubmitting(false);
     }
   };
 
-
-
   return (
-    <div className = "signup-container">
+    <div className="signup-container">
       {/*Left Side */}
-      <div className = "left-side">
-        <h1 className = "Main Title">Bienvenue</h1>
-        <p style={{color:'white'}}>Recyclez aujourd'hui, vivez demain</p>
+      <div className="left-side">
+        <h1 className="Main Title">Bienvenue</h1>
+        <p style={{ color: "white" }}>Recyclez aujourd'hui, vivez demain</p>
       </div>
       {/*Right Side*/}
       <div className="right-side">
-        <div className ="glass2 custom">
-          <div className = "logo">
-            <FaRecycle  size = {40} style={{color: 'green',marginRight:15}}/>
-            <h2 className = "logo-title">WasteWare</h2>
+        <div className="glass2 custom">
+          <div className="logo">
+            <FaRecycle size={40} style={{ color: "green", marginRight: 15 }} />
+            <h2 className="logo-title">WasteWare</h2>
           </div>
-          <h1 style={{margin: 0}}>Join Us</h1>
-          <p style={{marginBottom:40}}>Start making a difference today</p>
+          <h1 style={{ margin: 0 }}>Join Us</h1>
+          <p style={{ marginBottom: 40 }}>Start making a difference today</p>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -91,23 +119,46 @@ export const LoginPage = () => {
                   onBlur={handleBlur}
                   value={values.email}
                 />
-                <ErrorMessage name="email" component="div" className="error_e"  /><br/>
-                <Field
-                    type="password"
-                    name="password"
-                    placeholder="Create Password"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.password}
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="error_e"
                 />
-                <div >                
-                    <ErrorMessage name="password" component="div" style={{color:'red',fontSize: '0.9rem',display:'flex', justifyContent:'center'}}  />
+                <br />
+                <Field
+                  type="password"
+                  name="password"
+                  placeholder="Enter Password"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.password}
+                />
+                <div>
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    style={{
+                      color: "red",
+                      fontSize: "0.9rem",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  />
                 </div>
-                { errorMessage && <p style={{color:'red', fontSize:14}}>{errorMessage} or account does not exists</p>}
-                <button type="submit" style={{marginTop:20}}>Login</button>
+                {errorMessage && (
+                  <p style={{ color: "red", fontSize: 14 }}>
+                    {errorMessage} or account does not exists
+                  </p>
+                )}
+                <button type="submit" style={{ marginTop: 20 }}>
+                  Login
+                </button>
 
                 <p className="signin">
-                 Don't have an account? <Link to="/SignUp" className = "link">Sign Up</Link>
+                  Don't have an account?{" "}
+                  <Link to="/SignUp" className="link">
+                    Sign Up
+                  </Link>
                 </p>
               </Form>
             )}
@@ -115,7 +166,6 @@ export const LoginPage = () => {
         </div>
       </div>
     </div>
-    
-  )
-}
+  );
+};
 export default LoginPage;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import '../Styles/Component/navbar.css';
-import '../Styles/Base/colors.css';
-import '../Styles/Base/variables.css';
-import '../Styles/Base/glass.css';
-import '../Styles/Base/darkMode.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import "../Styles/Component/navbar.css"; // Navbar CSS in same folder
+import "../Styles/Base/colors.css";
+import "../Styles/Base/variables.css";
+import "../Styles/Base/glass.css";
+import { useFetchWithAuth } from "./fetchWithAuth";
 /**
  * ===============================================
  * File: Navbar.js
@@ -20,9 +20,9 @@ import '../Styles/Base/darkMode.css';
  */
 
 const Navbar = ({
-  brand = 'WasteWare',
+  brand = "WasteWare",
   links = [],
-  profileImage = '/assets/profile-placeholder.jpg',
+  profileImage = "/assets/profile-placeholder.jpg",
   onLogout = () => {},
 }) => {
   const [darkMode, setDarkMode] = useState(false);
@@ -65,8 +65,8 @@ const Navbar = ({
                 to={link.path}
                 className="navbar-link"
                 style={{
-                  '--hover-color': link.color || 'var(--eco-green)',
-                  '--glow-color': link.glowColor || '#2E7D32',
+                  "--hover-color": link.color || "var(--eco-green)",
+                  "--glow-color": link.glowColor || "#2E7D32",
                 }}
               >
                 {[link.icon, link.name]}
@@ -75,7 +75,7 @@ const Navbar = ({
           ))}
         </ul>
 
-        {/* Profile & Logout & Theme Toggle */}
+        {/* Profile & Logout */}
         <div className="navbar-actions">
           {/* Dark Mode Toggle Button */}
           <button 
@@ -92,11 +92,7 @@ const Navbar = ({
           </button>
 
           <Link to="/profile">
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="navbar-profile"
-            />
+            <img src={profileImage} alt="Profile" className="navbar-profile" />
           </Link>
           
           <button className="logout-btn" onClick={onLogout}>

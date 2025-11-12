@@ -1,19 +1,49 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer
+from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer
 from .models import Users, Companies, Roles
 from .utils import verify_password
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class LogoutView(APIView):
+    permission_classes = []  # Allow both authenticated and unauthenticated requests
+
+    def post(self, request):
+        try:
+            print("Entered the function")
+
+            
+            # Create response first
+            resp = Response({"detail": "Logged out"}, status=status.HTTP_200_OK)
+            
+            return resp
+            
+        except Exception as e:
+            # Still try to clear the cookie even if there's an error
+            resp = Response(
+                {"error": "Error during logout"}, 
+                status=status.HTTP_200_OK  # Changed to 200 since we're still logging out
+            )
+            
+            return resp
+
 
 # --------------------------
 # Helper function to generate JWT token
 # --------------------------
+
 def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
+    token = AccessToken()
+    token['user_id'] = user.user_id
+    token['email'] = user.email
+    token['role'] = str(user.role.role_name) if user.role else None
     return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        'access': str(token),
     }
 
 # --------------------------
@@ -25,7 +55,26 @@ class UserSignupView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token = get_tokens_for_user(user)
-            return Response({'user_id': user.user_id, 'token': token}, status=status.HTTP_201_CREATED)
+            access = token['access']
+            response = Response({'user_id': user.user_id, 'access': access},status = status.HTTP_201_CREATED)
+
+            return response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# --------------------------
+# Admin Signup
+# --------------------------
+class AdminSignupView(APIView):
+    def post(self, request):
+        serializer = AdminSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            admin = serializer.save()
+            token = get_tokens_for_user(admin)
+            access = token['access']
+            response = Response({'user_id': admin.user_id, 'access': access}, status=status.HTTP_201_CREATED)
+
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -38,7 +87,10 @@ class CompanySignupView(APIView):
         if serializer.is_valid():
             company = serializer.save()
             token = get_tokens_for_user(company)
-            return Response({'company_id': company.company_id, 'token': token}, status=status.HTTP_201_CREATED)
+            access = token['access']
+            response = Response({'company_id': company.company_id, 'access': access}, status=status.HTTP_201_CREATED)
+
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -47,6 +99,7 @@ class CompanySignupView(APIView):
 # --------------------------
 class LoginView(APIView):
     def post(self, request):
+        print("Starting login process...")  # Debug log
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
@@ -57,11 +110,15 @@ class LoginView(APIView):
             user = Users.objects.get(email=email)
             if verify_password(password, user.password_hash):
                 token = get_tokens_for_user(user)
+                access = token['access']
                 if user.role.role_name == 'Admin':
                     user_type = 'admin'
                 else:
                     user_type = 'user'
-                return Response({'user_type': user_type, 'user_id': user.user_id, 'token': token})
+                # return access in body and set httponly refresh cookie
+                print(f"Setting cookie for user login: {email}")  # Debug log
+                response = Response({'user_type': user_type, 'user_id': user.user_id, 'access': access}, status=status.HTTP_200_OK)
+                return response
         except Users.DoesNotExist:
             pass
 
@@ -69,8 +126,12 @@ class LoginView(APIView):
         try:
             company = Companies.objects.get(email=email)
             if verify_password(password, company.password_hash):
+                print(f"Setting cookie for company login: {email}")  # Debug log
                 token = get_tokens_for_user(company)
-                return Response({'user_type': 'company', 'company_id': company.company_id, 'token': token})
+                access = token['access']
+                response = Response({'user_type': 'company', 'company_id': company.company_id, 'access': access}, status=status.HTTP_200_OK)
+
+                return response
         except Companies.DoesNotExist:
             pass
 

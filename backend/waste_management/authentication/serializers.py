@@ -7,18 +7,15 @@ from .utils import hash_password, verify_password
 # --------------------------
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
+    email = serializers.EmailField(required=True)
+
 
     def validate_email(self, value):
         if Users.objects.filter(email=value).exists():
             raise serializers.ValidationError("This email is already registered.")
         return value
     
-    email = serializers.EmailField(
-        required=True,
-        error_messages={
-            "unique": "This email is already registesred. Please log in instead."
-        }
-    )
+    
     
     class Meta:
         model = Users
@@ -41,6 +38,15 @@ class CompanySignupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['password_hash'] = hash_password(validated_data.pop('password'))
         return Companies.objects.create(**validated_data)
+
+
+
+class AdminSignupSerializer(UserSignupSerializer):
+    def create(self, validated_data):
+        role = Roles.objects.get(role_name='Admin')
+        validated_data['role_id'] = role.role_id
+        validated_data['password_hash'] = hash_password(validated_data.pop('password'))
+        return Users.objects.create(**validated_data)
 
 
 # --------------------------
