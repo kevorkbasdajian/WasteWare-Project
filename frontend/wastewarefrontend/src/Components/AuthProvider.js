@@ -3,7 +3,6 @@ import React, { createContext, useState } from "react";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // initialize from sessionStorage so token persists across navigations/reloads
   const [accessToken, setAccessToken] = useState(() => {
     try {
       return sessionStorage.getItem("access_token") || null;
@@ -17,18 +16,14 @@ export function AuthProvider({ children }) {
     try {
       if (token) sessionStorage.setItem("access_token", token);
       else sessionStorage.removeItem("access_token");
-    } catch (e) {
-      // ignore storage errors
-    }
+    } catch (e) {}
   };
 
   const clearAuth = () => {
     setAccessToken(null);
     try {
       sessionStorage.removeItem("access_token");
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   };
 
   const value = {
