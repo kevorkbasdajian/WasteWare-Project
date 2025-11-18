@@ -44,12 +44,14 @@ const Dashboard = () => {
       icon: <i className="fa-solid fa-user fa-lg" />,
     },
   ];
+
   useEffect(() => {
     const token = accessToken;
     if (!token) {
       navigate("/Login", { replace: true });
     }
   }, [navigate, accessToken]);
+
   const handleLogout = async () => {
     try {
       await fetch("http://localhost:8000/api/auth/logout/", {
