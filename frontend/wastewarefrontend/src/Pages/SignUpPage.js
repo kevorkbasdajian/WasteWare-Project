@@ -36,7 +36,7 @@ export const SignUpPage = () => {
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone_number: Yup.string()
-      .matches(/^\d{8}$/, "Phone number must be 11 digits")
+      .matches(/^\d{11}$/, "Phone number must be 11 digits")
       .required("Phone number is required"),
     role: Yup.string()
       .oneOf(["User", "Admin"], "Please select a valid role")
@@ -70,9 +70,11 @@ export const SignUpPage = () => {
       url = "http://localhost:8000/api/auth/signup/company/";
 
     try {
+      console.log("enter submit");
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload), // Formik values
       });
 
@@ -91,6 +93,7 @@ export const SignUpPage = () => {
         else navigate("/company/dashboard", { replace: true });
       }
     } catch (error) {
+      console.log("request failed");
       alert("Request failed: " + error.message);
     } finally {
       setSubmitting(false);
