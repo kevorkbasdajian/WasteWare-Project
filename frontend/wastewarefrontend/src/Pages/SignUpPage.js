@@ -31,9 +31,6 @@ export const SignUpPage = () => {
     }
   }, [accessToken, navigate]);
 
-  {
-    /*Validation Using Yup*/
-  }
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
@@ -53,9 +50,6 @@ export const SignUpPage = () => {
     terms: Yup.bool().oneOf([true], "You must accept the terms"),
   });
 
-  {
-    /*Initial Values for Formik*/
-  }
   const initialValues = {
     first_name: "",
     last_name: "",
@@ -67,9 +61,6 @@ export const SignUpPage = () => {
     role: "", // Empty string to show placeholder
   };
 
-  {
-    /*When the Sign Up Button is pressed*/
-  }
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const { password2, terms, role, ...payload } = values;
     let url = "http://localhost:8000/api/auth/signup/user/";

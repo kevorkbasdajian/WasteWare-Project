@@ -26,7 +26,6 @@ export const useFetchWithAuth = () => {
       const resp = await fetch(url, { ...options, headers });
 
       if (resp.status === 401) {
-        // Clear token and redirect to login
         clearAuth();
         navigate("/login", { replace: true });
         throw new Error("Unauthorized: Access token invalid or expired");

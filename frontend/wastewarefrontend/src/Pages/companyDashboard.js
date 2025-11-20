@@ -1,56 +1,58 @@
-import React, { useContext, useEffect } from "react";
-import "../Styles/Page/clientDashboard.css"; // Dashboard CSS in same folder
-import Navbar from "../Components/navbar.js"; // Component import
+import { useContext } from "react";
+import "../Styles/Page/clientDashboard.css";
+import Navbar from "../Components/navbar.js";
+// import { useFetchWithAuth } from "../Components/fetchWithAuth";
 import { AuthContext } from "../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
-const Dashboard = () => {
-  const { clearAuth, accessToken } = useContext(AuthContext);
+const CompanyDashboard = () => {
+  //   const fetchWithAuth = useFetchWithAuth();
+  const { clearAuth } = useContext(AuthContext);
   const navigate = useNavigate();
   const links = [
     {
       name: "Home",
-      path: "/",
+      path: "/Company",
       color: "var(--gradient-red)",
-      glowColor: "#EF4444",
+      glowColor: "#EF4444", // Solid color for LED glow
       icon: <i className="fa-solid fa-house fa-lg" />,
     },
     {
-      name: "Map",
-      path: "/map",
+      name: "Routes",
+      path: "/Company/Routes",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
       icon: <i className="fa-solid fa-map-location-dot fa-lg" />,
     },
     {
-      name: "Report",
-      path: "/report",
+      name: "Schedule",
+      path: "/Company/Schedule",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: <i className="fa-solid fa-camera fa-lg" />,
     },
     {
-      name: "Rewards",
-      path: "/rewards",
+      name: "Notifications",
+      path: "/Company/Notifications",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
       icon: <i className="fa-solid fa-gift fa-lg" />,
     },
     {
-      name: "Profile",
-      path: "/profile",
+      name: "Reports",
+      path: "/Company/Reports",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
       icon: <i className="fa-solid fa-user fa-lg" />,
     },
+    {
+      name: "Profile",
+      path: "/Company/Profile",
+      color: "var(--gradient-green-blue)",
+      glowColor: "#9d10b9ff",
+      icon: <i className="fa-solid fa-user fa-lg" />,
+    },
   ];
-
-  useEffect(() => {
-    const token = accessToken;
-    if (!token) {
-      navigate("/Login", { replace: true });
-    }
-  }, [navigate, accessToken]);
 
   const handleLogout = async () => {
     try {
@@ -67,6 +69,7 @@ const Dashboard = () => {
       navigate("/Login");
     }
   };
+  const { accessToken } = useContext(AuthContext);
 
   return (
     <div className="page">
@@ -78,4 +81,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default CompanyDashboard;

@@ -11,23 +11,21 @@ from rest_framework.response import Response
 from rest_framework import status
 
 class LogoutView(APIView):
-    permission_classes = []  # Allow both authenticated and unauthenticated requests
+    permission_classes = [] 
 
     def post(self, request):
         try:
             print("Entered the function")
 
             
-            # Create response first
             resp = Response({"detail": "Logged out"}, status=status.HTTP_200_OK)
             
             return resp
             
         except Exception as e:
-            # Still try to clear the cookie even if there's an error
             resp = Response(
                 {"error": "Error during logout"}, 
-                status=status.HTTP_200_OK  # Changed to 200 since we're still logging out
+                status=status.HTTP_200_OK  
             )
             
             return resp
@@ -37,11 +35,16 @@ class LogoutView(APIView):
 # Helper function to generate JWT token
 # --------------------------
 
-def get_tokens_for_user(user):
+def get_tokens_for_user(obj):
     token = AccessToken()
-    token['user_id'] = user.user_id
-    token['email'] = user.email
-    token['role'] = str(user.role.role_name) if user.role else None
+    if(isinstance(obj,Users)):
+        token['user_id'] = obj.user_id
+        token['role'] = str(obj.role.role_name)
+    elif (isinstance(obj,Companies)):
+        token['company_id'] = obj.company_id
+    
+
+    token['email'] = obj.email
     return {
         'access': str(token),
     }
@@ -115,7 +118,6 @@ class LoginView(APIView):
                     user_type = 'admin'
                 else:
                     user_type = 'user'
-                # return access in body and set httponly refresh cookie
                 print(f"Setting cookie for user login: {email}")  # Debug log
                 response = Response({'user_type': user_type, 'user_id': user.user_id, 'access': access}, status=status.HTTP_200_OK)
                 return response
@@ -126,7 +128,6 @@ class LoginView(APIView):
         try:
             company = Companies.objects.get(email=email)
             if verify_password(password, company.password_hash):
-                print(f"Setting cookie for company login: {email}")  # Debug log
                 token = get_tokens_for_user(company)
                 access = token['access']
                 response = Response({'user_type': 'company', 'company_id': company.company_id, 'access': access}, status=status.HTTP_200_OK)

@@ -53,6 +53,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
 # ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
@@ -77,7 +78,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # Enable CORS
+    # 'corsheaders.middleware.CorsMiddleware', # Enable CORS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,9 +110,19 @@ WSGI_APPLICATION = 'waste_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 import environ, os
+from pathlib import Path
 
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '..', '.env'))
+# possible_env_path =[
+#     BASE_DIR / '.env',
+#     BASE_DIR.parent / '.env',
+# ]
+
+# for p in possible_env_path:
+#     if p.exists():
+#         environ.Env.read_env(str(p))
+#         break
 
 DATABASES = {
     'default': env.db( 
@@ -162,4 +173,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True  # for development only
+# CORS_ALLOW_ALL_ORIGINS = True  # for development only
