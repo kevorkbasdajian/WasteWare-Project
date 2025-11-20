@@ -39,7 +39,7 @@ export const SignUpPage = () => {
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone_number: Yup.string()
-      .matches(/^\d{11}$/, "Phone number must be 11 digits")
+      .matches(/^\d{8}$/, "Phone number must be 11 digits")
       .required("Phone number is required"),
     role: Yup.string()
       .oneOf(["User", "Admin"], "Please select a valid role")
