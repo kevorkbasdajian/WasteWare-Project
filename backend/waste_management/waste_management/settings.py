@@ -68,7 +68,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'USER_ID_FIELD': 'user_id',
+    "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # longer lifetime for simplicity
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
@@ -172,5 +172,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# AUTH_USER_MODEL = 'authentication.Users'
 
 # CORS_ALLOW_ALL_ORIGINS = True  # for development only
