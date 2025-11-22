@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import "../Styles/Page/clientReports.css";
-import fetchWithAuth, {
+import {
+  fetchWithAuth,
   useFetchWithAuth,
 } from "../Components/fetchWithAuth.js";
 import Navbar from "../Components/navbar.js";
@@ -140,35 +141,35 @@ const Reports = () => {
       path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
-      icon: <i className="fa-solid fa-house fa-lg" />,
+      icon: "fa-solid fa-house fa-lg",
     },
     {
       name: "Map",
       path: "/map",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
-      icon: <i className="fa-solid fa-map-location-dot fa-lg" />,
+      icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Report",
       path: "/report",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
-      icon: <i className="fa-solid fa-camera fa-lg" />,
+      icon: "fa-solid fa-camera fa-lg",
     },
     {
       name: "Rewards",
       path: "/rewards",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
-      icon: <i className="fa-solid fa-gift fa-lg" />,
+      icon: "fa-solid fa-gift fa-lg",
     },
     {
       name: "Profile",
       path: "/profile",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: <i className="fa-solid fa-user fa-lg" />,
+      icon: "fa-solid fa-user fa-lg",
     },
   ];
 
@@ -223,35 +224,35 @@ const Reports = () => {
         critical: 4,
       };
 
-      // Append required fields, ensuring strings
+      // Parse coordinates
+      const [lat, lng] = values.coordinates
+        .split(",")
+        .map((c) => parseFloat(c.trim()));
+
+      // Append required fields
       formData.append("title", String(values.title || ""));
-      formData.append("type_of_report", String(values.category || ""));
-      formData.append(
-        "severity_level",
-        String(severityMap[values.severity] || 1)
-      );
-      formData.append("response_priority", String(values.priority || ""));
-      formData.append("coordinates", String(values.coordinates || ""));
-      formData.append("street_address", String(values.address || ""));
-      formData.append("city_name", String(values.city || ""));
-      formData.append("governorate", String(values.governorate || ""));
-      formData.append("description", String(values.details || ""));
+      formData.append("category", String(values.category || ""));
+      formData.append("severity", String(severityMap[values.severity] || 1));
+      formData.append("priority", String(values.priority || ""));
+      formData.append("details", String(values.details || ""));
+      formData.append("street", String(values.address || ""));
+      formData.append("city", String(values.city || ""));
+      formData.append("region", String(values.governorate || ""));
+      formData.append("lattittude", lat || "");
+      formData.append("longitude", lng || "");
 
       // Append photo only if it exists
       if (values.photo) {
-        formData.append("photo", values.photo);
+        formData.append("image_url", values.photo);
       }
 
-      // Optional: authentication token
-      const token = localStorage.getItem("access_token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      // Send POST request
+      // Send POST request - fetchWithAuth handles the token automatically
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/report/reports/",
+        "http://localhost:8000/api/reports/create/",
         {
           method: "POST",
           body: formData,
+          // Don't set Content-Type header - browser sets it automatically with boundary for FormData
         }
       );
 
@@ -261,6 +262,7 @@ const Reports = () => {
         alert("Report submitted successfully! 🎉");
         setStatus({ success: true, message: "Report submitted successfully!" });
         resetForm();
+        setPhotoPreview(null); // Clear photo preview too
       } else {
         const errorData = await response.json();
         console.error("❌ Error:", errorData);
@@ -285,18 +287,11 @@ const Reports = () => {
     } finally {
       setSubmitting(false);
     }
-
-    console.log("Submitting values:", values);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    window.location.href = "/login";
   };
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar links={links} />
 
       <div className="report-container">
         <h1 className="report-main-title">Report Environmental Issue</h1>
@@ -442,6 +437,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="Tripoli">Tripoli</option>
                         <option value="Sidon">Sidon</option>
+                        <option value="Sidon">Metn</option>
                       </Field>
                       <ErrorMessage
                         name="city"
@@ -460,6 +456,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="North">North</option>
                         <option value="South">South</option>
+                        <option value="Sidon">Mount Lebanon</option>
                       </Field>
                       <ErrorMessage
                         name="governorate"

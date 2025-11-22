@@ -102,7 +102,7 @@ export const LoginPage = () => {
             <FaRecycle size={40} style={{ color: "green", marginRight: 15 }} />
             <h2 className="logo-title">WasteWare</h2>
           </div>
-          <h1 style={{ margin: 0 }}>Join Us</h1>
+          <h1 style={{ margin: 0, color: "#000000" }}>Join Us</h1>
           <p style={{ marginBottom: 40 }}>Start making a difference today</p>
           <Formik
             initialValues={initialValues}

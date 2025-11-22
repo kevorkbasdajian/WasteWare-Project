@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Pages/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignUpPage";
+import Reports from "./Pages/clientReports";
 import { AuthProvider } from "./Components/AuthProvider";
 import CompanyDashboard from "./Pages/companyDashboard";
 import TruckRoutes from "./Pages/companyRoutes";
@@ -12,12 +13,12 @@ function App() {
     <div className="App">
       <AuthProvider>
         <Routes>
-          <Route path="/SignUp" element={<SignupPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route path="/" element={<Dashboard />} />
-          <Route path="/Company" element={<CompanyDashboard />} />
-          <Route path="/Company/Routes" element={<TruckRoutes />} />
-
-          <Route path="/Login" element={<LoginPage />} />
+          <Route path="/company" element={<CompanyDashboard />} />
+          <Route path="/company/routes" element={<TruckRoutes />} />
+          <Route path="/report" element={<Reports />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </AuthProvider>
     </div>
