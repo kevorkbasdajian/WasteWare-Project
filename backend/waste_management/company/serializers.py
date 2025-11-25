@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.db import transaction
 from .models import Driver, Truck, Dumping, Route, RouteStop, WasteType,Schedule
-from authentication.models import Address
+from authentication.models import Addresses
 
 
 # -------------------------
@@ -9,7 +9,7 @@ from authentication.models import Address
 # -------------------------
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Address
+        model = Addresses
         fields = ['address_id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
         read_only_fields = ['address_id']
 
@@ -46,7 +46,7 @@ class TruckSerializer(serializers.ModelSerializer):
 class DumpingSerializer(serializers.ModelSerializer):
     dumping_id = serializers.IntegerField(write_only=True, required=False)
     address_detail = AddressSerializer(source='address', write_only=True, required=False)
-    address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all())
+    address = serializers.PrimaryKeyRelatedField(queryset=Addresses.objects.all())
 
     class Meta:
         model = Dumping
@@ -79,8 +79,8 @@ class DumpingSerializer(serializers.ModelSerializer):
             validated_data['address'] = address_obj
         elif isinstance(address_raw, int):
             try:
-                validated_data['address'] = Address.objects.get(address_id=address_raw)
-            except Address.DoesNotExist:
+                validated_data['address'] = Addresses.objects.get(address_id=address_raw)
+            except Addresses.DoesNotExist:
                 raise serializers.ValidationError({"address": "Invalid address ID"})
 
         else:

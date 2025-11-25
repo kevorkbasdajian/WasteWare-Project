@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from authentication.models import Users, Address
+from authentication.models import Users, Addresses
 
 class Reports(models.Model):
     TYPE_CHOICES = [
@@ -56,7 +56,7 @@ class Reports(models.Model):
         blank=True
     )
     address = models.ForeignKey(
-        Address, 
+        Addresses, 
         on_delete=models.SET_NULL, 
         db_column='address_id',
         null=True,

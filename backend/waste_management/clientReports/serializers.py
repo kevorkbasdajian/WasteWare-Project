@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from .models import Reports
-from authentication.models import Address, Users
+from authentication.models import Addresses, Users
 
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Address
+        model = Addresses
         fields = ['street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
 
 
@@ -112,7 +112,7 @@ class ReportCreateSerializer(serializers.ModelSerializer):
         # Create address if location data provided
         address = None
         if street or city or latitude:
-            address = Address.objects.create(
+            address = Addresses.objects.create(
                 street=street or '',
                 city=city or '',
                 region=region,

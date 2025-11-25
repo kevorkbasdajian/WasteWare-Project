@@ -18,8 +18,8 @@ class Roles(models.Model):
         return self.role_name
 
 
-# MOVE ADDRESS FIRST - before Users and Companies that reference it
-class Address(models.Model):
+# MOVE ADDRESSES FIRST - before Users and Companies that reference it
+class Addresses(models.Model):
     address_id = models.AutoField(primary_key=True)
     street = models.TextField()
     city = models.TextField()
@@ -43,7 +43,7 @@ class Users(models.Model):
     role = models.ForeignKey(Roles, models.DO_NOTHING, db_column='role_id', null=True)
     password_hash = models.TextField()
     phone_number = models.CharField(max_length=20, null=True, blank=True)
-    address = models.OneToOneField(Address, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
+    address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     profile_image = models.TextField(null=True, blank=True)
     points_balance = models.IntegerField(default=0)
     account_status = models.CharField(max_length=20, default='active')
@@ -84,7 +84,7 @@ class Companies(models.Model):
     email = models.CharField(max_length=100, unique=True)
     password_hash = models.TextField()
     phone_number = models.CharField(max_length=20, null=True, blank=True)
-    address = models.OneToOneField(Address, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
+    address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     license_number = models.CharField(max_length=50, null=True, blank=True)
     verification_status = models.CharField(max_length=20, default='pending')
     created_at = models.DateTimeField(default=timezone.now)
