@@ -6,14 +6,28 @@ import "../Styles/Base/glass.css";
 
 import { FaRecycle } from "react-icons/fa";
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Components/AuthProvider";
+import Loading from "../Content/Loading.json";
+import { Box, Slide, Alert, Snackbar } from "@mui/material";
+import Lottie from "lottie-react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 export const SignUpPage = () => {
   const [backendError, setBackendError] = useState("");
   const { saveAccessToken, accessToken } = useContext(AuthContext);
+  const [snackbar, setsnackbar] = useState(false);
+  const [is_loading, set_is_loading] = useState(false);
+  const [rolee, setrole] = useState("");
   const navigate = useNavigate();
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: Loading,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
   // Redirect away from signup page if already authenticated
   useEffect(() => {
@@ -63,6 +77,8 @@ export const SignUpPage = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const { password2, terms, role, ...payload } = values;
+    set_is_loading(true);
+    setrole(values.role);
     let url = "http://localhost:8000/api/auth/signup/user/";
     if (values.role === "Admin")
       url = "http://localhost:8000/api/auth/signup/admin/";
@@ -70,9 +86,6 @@ export const SignUpPage = () => {
       url = "http://localhost:8000/api/auth/signup/company/";
 
     try {
-      console.log("📤 Submitting to:", url);
-      console.log("📤 Payload:", payload);
-
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,35 +94,20 @@ export const SignUpPage = () => {
       });
 
       const data = await response.json();
-
-      console.log("📥 Response status:", response.status);
-      console.log("📥 Response data:", data); // 👈 Check what backend returns
+      set_is_loading(false);
 
       if (!response.ok) {
         setBackendError(data.email?.[0] || data.detail || "Signup failed.");
       } else {
+        setsnackbar(true);
+
         const accessToken = data.access || data.token?.access;
-        console.log("🔑 Token received:", accessToken ? "Yes" : "No"); // 👈 Debug
-        console.log("🔑 Token value:", accessToken?.substring(0, 30) + "..."); // 👈 Debug
 
         if (accessToken) {
           saveAccessToken(accessToken);
-          console.log("💾 Token saved to context and sessionStorage");
-
-          // Verify it was saved
-          console.log(
-            "✅ SessionStorage check:",
-            sessionStorage.getItem("access_token")?.substring(0, 30) + "..."
-          );
         } else {
           console.log("⚠️ No token in response!");
         }
-
-        alert("Signup successful!");
-        if (role === "Admin") navigate("/admin/dashboard", { replace: true });
-        else if (role === "User")
-          navigate("/user/dashboard", { replace: true });
-        else navigate("/company/dashboard", { replace: true });
       }
     } catch (error) {
       console.log("❌ Request failed:", error);
@@ -118,6 +116,12 @@ export const SignUpPage = () => {
       setSubmitting(false);
       resetForm();
     }
+  };
+  const closesnackbar = () => {
+    setsnackbar(false);
+    if (rolee === "Admin") navigate("/admin/dashboard", { replace: true });
+    else if (rolee === "User") navigate("/", { replace: true });
+    else navigate("/company", { replace: true });
   };
 
   return (
@@ -271,6 +275,67 @@ export const SignUpPage = () => {
           </Formik>
         </div>
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        open={snackbar}
+        onClose={closesnackbar}
+        autoHideDuration={2000}
+        slots={{ transition: Slide }}
+      >
+        <Alert
+          onClose={closesnackbar}
+          severity="success"
+          variant="filled"
+          sx={{
+            width: 400,
+            fontSize: 17,
+            fontWeight: "bold",
+            borderRadius: 5,
+          }}
+        >
+          <Box sx={{ marginLeft: 11 }}>Signup Successful</Box>
+        </Alert>
+      </Snackbar>
+      {is_loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            zIndex: 1001,
+          }}
+        >
+          <div>
+            <Lottie
+              animationData={defaultOptions.animationData}
+              loop={defaultOptions.loop}
+              autoplay={defaultOptions.autoplay}
+              style={{ width: 450, height: 450 }}
+            />
+          </div>
+
+          <div>
+            <p
+              style={{
+                fontSize: 80,
+                marginTop: 0,
+                fontFamily: "Montserrat",
+                color: "#E6FFE6",
+                marginLeft: 30,
+              }}
+            >
+              Loading ...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
