@@ -27,6 +27,7 @@ const Navbar = ({
   brand = "WasteWare",
   links = [],
   profileImage = "/assets/profile-placeholder.jpg",
+  profilePath,
 }) => {
   const [darkMode, setDarkMode] = useState(false);
   const location = useLocation(); // Get current route
@@ -126,7 +127,7 @@ const Navbar = ({
             )}
           </button>
 
-          <Link to="/profile">
+          <Link to={profilePath}>
             <img src={profileImage} alt="Profile" className="navbar-profile" />
           </Link>
           <button className="logout-btn" onClick={handleLogout}>

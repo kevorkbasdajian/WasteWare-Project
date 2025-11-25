@@ -49,7 +49,7 @@ const Dashboard = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} />
+      <Navbar links={links} profilePath="/client/profile" />
       <HeaderBox
         text="Welcome Back, Christian Al Alam"
         gradientColors={["#E53935", "#FF7043"]}

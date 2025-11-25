@@ -49,7 +49,7 @@ const ClientProfile = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} />
+      <Navbar links={links} profilePath="/client/profile" />
       <HeaderBox
         text="Personal Profile"
         gradientColors={["#2E7D32", "#0288D1"]}

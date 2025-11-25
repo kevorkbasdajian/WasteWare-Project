@@ -49,7 +49,7 @@ const ClientMap = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} />
+      <Navbar links={links} profilePath="/client/profile" />
       <HeaderBox
         text="Interactive Map"
         gradientColors={["#0288D1", "#26C6DA"]}

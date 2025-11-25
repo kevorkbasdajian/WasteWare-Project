@@ -303,7 +303,7 @@ const Reports = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} />
+      <Navbar links={links} profilePath="/client/profile" />
 
       <HeaderBox
         text="Report Environmental Issue"
