@@ -3,21 +3,33 @@ import React, { useContext, useEffect, useState } from "react";
 import "../Styles/Base/fonts.css";
 import "../Styles/Page/SignUp.css";
 import "../Styles/Base/glass.css";
-
+import "@fontsource/roboto/300.css";
 import { FaRecycle } from "react-icons/fa";
-
+import { Box, Slide, Alert, Snackbar } from "@mui/material";
+import Lottie from "lottie-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-router-dom";
-
 import { AuthContext } from "../Components/AuthProvider";
+import Loading from "../Content/Loading.json";
+import "@fontsource/montserrat/700.css";
 
 export const LoginPage = () => {
   // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState("");
   const { saveAccessToken, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const [snackbar, setsnackbar] = useState(false);
+  const [user_type, set_user_type] = useState("");
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: Loading,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+  const [is_loading, set_is_loading] = useState(false);
   // If user is already authenticated, redirect away from login page
   useEffect(() => {
     const token =
@@ -56,39 +68,40 @@ export const LoginPage = () => {
     /*When the Sign Up Button is pressed*/
   }
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log("Entered the handle submit");
+    set_is_loading(true);
     try {
       const response = await fetch("http://localhost:8000/api/auth/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values), // Formik values
       });
-
+      set_is_loading(false);
       const data = await response.json();
       if (!response.ok) {
         setErrorMessage(data.error);
       } else {
         const accessToken = data.access || data.token?.access;
         if (accessToken) saveAccessToken(accessToken);
-        alert(JSON.stringify(data, null, 2));
-        const user_type = data.user_type;
-        if (user_type === "company") {
-          console.log("should have navigation");
-          navigate("/Company", { replace: true });
-        }
+        setsnackbar(true);
+        // alert(JSON.stringify(data, null, 2));
+        set_user_type(data.user_type);
         setErrorMessage("");
-        // navigate client-side (no full page reload)
-        if (user_type === "user") navigate("/", { replace: true });
-        else if (user_type === "admin")
-          navigate("/admin/dashboard", { replace: true });
       }
-      // ...existing code...
     } catch (error) {
       alert("Request failed: " + error.message);
     } finally {
       resetForm();
       setSubmitting(false);
     }
+  };
+  const closesnackbar = () => {
+    setsnackbar(false);
+    if (user_type === "company") {
+      navigate("/company", { replace: true });
+    }
+    if (user_type === "user") navigate("/", { replace: true });
+    else if (user_type === "admin")
+      navigate("/admin/dashboard", { replace: true });
   };
 
   return (
@@ -168,6 +181,67 @@ export const LoginPage = () => {
           </Formik>
         </div>
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        open={snackbar}
+        onClose={closesnackbar}
+        autoHideDuration={2000}
+        slots={{ transition: Slide }}
+      >
+        <Alert
+          onClose={closesnackbar}
+          severity="success"
+          variant="filled"
+          sx={{
+            width: 400,
+            fontSize: 17,
+            fontWeight: "bold",
+            borderRadius: 5,
+          }}
+        >
+          <Box sx={{ marginLeft: 11 }}>Login Successful</Box>
+        </Alert>
+      </Snackbar>
+      {is_loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            zIndex: 1001,
+          }}
+        >
+          <div>
+            <Lottie
+              animationData={defaultOptions.animationData}
+              loop={defaultOptions.loop}
+              autoplay={defaultOptions.autoplay}
+              style={{ width: 450, height: 450 }}
+            />
+          </div>
+
+          <div>
+            <p
+              style={{
+                fontSize: 80,
+                marginTop: 0,
+                fontFamily: "Montserrat",
+                color: "#E6FFE6",
+                marginLeft: 30,
+              }}
+            >
+              Loading ...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
