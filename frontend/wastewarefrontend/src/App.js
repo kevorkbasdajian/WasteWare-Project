@@ -8,6 +8,7 @@ import Reports from "./Pages/clientReports";
 import { AuthProvider } from "./Components/AuthProvider";
 import CompanyDashboard from "./Pages/companyDashboard";
 import TruckRoutes from "./Pages/companyRoutes";
+import Chatbot from "./Components/chatbot";
 function App() {
   return (
     <div className="App">
@@ -20,6 +21,7 @@ function App() {
           <Route path="/report" element={<Reports />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
+        <Chatbot />
       </AuthProvider>
     </div>
   );
