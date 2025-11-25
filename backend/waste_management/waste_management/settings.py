@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'company',
     'clientReports',
 ]
 
@@ -50,26 +51,47 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',  # ✅ Explicitly allow Authorization
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://localhost:3000",
 #     "http://127.0.0.1:3000",
 # ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
 
 
 from datetime import timedelta
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'authentication.jwt_auth.CustomJWTAuthentication',  # Your custom JWT auth
     ),
+     'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [  # ✅ Make sure this is here
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
+    ],
+    
 }
 
 SIMPLE_JWT = {
-    'USER_ID_FIELD': 'user_id',
-    "USER_ID_CLAIM": "user_id",
+    # 'USER_ID_FIELD': 'user_id',
+    # "USER_ID_CLAIM": "user_id",
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # longer lifetime for simplicity
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
@@ -85,6 +107,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'waste_management.urls'
@@ -127,7 +150,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '..', '.env'))
 DATABASES = {
     'default': env.db( 
         'DATABASE_URL', 
-        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db' 
+        default='postgres://postgres:Kevork55.@localhost:5432/waste_db' 
         )
 }
 
@@ -158,6 +181,9 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 USE_I18N = True
 
 USE_TZ = True
@@ -172,5 +198,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# AUTH_USER_MODEL = 'authentication.Users'
 
 # CORS_ALLOW_ALL_ORIGINS = True  # for development only

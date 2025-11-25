@@ -5,8 +5,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('christian', include('authentication.urls')),
-    path('api/report/', include('clientReports.urls')),
+    path('api/auth/', include('authentication.urls')),
+    path("api/company/", include("company.urls")),
+
+
+    path('api/reports/', include('clientReports.urls')),
 ]
 
 # Serve media files in development

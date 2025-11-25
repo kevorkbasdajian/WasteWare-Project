@@ -29,7 +29,7 @@ export const SignUpPage = () => {
     if (token) {
       navigate("/", { replace: true });
     }
-  }, [accessToken, navigate]);
+  }, [navigate]);
 
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
@@ -70,30 +70,49 @@ export const SignUpPage = () => {
       url = "http://localhost:8000/api/auth/signup/company/";
 
     try {
-      console.log("enter submit");
+      console.log("📤 Submitting to:", url);
+      console.log("📤 Payload:", payload);
+
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload), // Formik values
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
+
+      console.log("📥 Response status:", response.status);
+      console.log("📥 Response data:", data); // 👈 Check what backend returns
 
       if (!response.ok) {
         setBackendError(data.email?.[0] || data.detail || "Signup failed.");
       } else {
         const accessToken = data.access || data.token?.access;
-        if (accessToken) saveAccessToken(accessToken);
+        console.log("🔑 Token received:", accessToken ? "Yes" : "No"); // 👈 Debug
+        console.log("🔑 Token value:", accessToken?.substring(0, 30) + "..."); // 👈 Debug
+
+        if (accessToken) {
+          saveAccessToken(accessToken);
+          console.log("💾 Token saved to context and sessionStorage");
+
+          // Verify it was saved
+          console.log(
+            "✅ SessionStorage check:",
+            sessionStorage.getItem("access_token")?.substring(0, 30) + "..."
+          );
+        } else {
+          console.log("⚠️ No token in response!");
+        }
+
         alert("Signup successful!");
-        // client-side navigation (no full page reload)
         if (role === "Admin") navigate("/admin/dashboard", { replace: true });
         else if (role === "User")
           navigate("/user/dashboard", { replace: true });
         else navigate("/company/dashboard", { replace: true });
       }
     } catch (error) {
-      console.log("request failed");
+      console.log("❌ Request failed:", error);
       alert("Request failed: " + error.message);
     } finally {
       setSubmitting(false);

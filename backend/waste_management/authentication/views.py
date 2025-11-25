@@ -9,9 +9,11 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
+
 
 class LogoutView(APIView):
-    permission_classes = [] 
+    permission_classes = [AllowAny]  
 
     def post(self, request):
         try:
@@ -42,6 +44,7 @@ def get_tokens_for_user(obj):
         token['role'] = str(obj.role.role_name)
     elif (isinstance(obj,Companies)):
         token['company_id'] = obj.company_id
+
     
 
     token['email'] = obj.email
@@ -53,6 +56,8 @@ def get_tokens_for_user(obj):
 # User Signup
 # --------------------------
 class UserSignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = UserSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -69,6 +74,8 @@ class UserSignupView(APIView):
 # Admin Signup
 # --------------------------
 class AdminSignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = AdminSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -85,6 +92,8 @@ class AdminSignupView(APIView):
 # Company Signup
 # --------------------------
 class CompanySignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = CompanySignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -101,6 +110,8 @@ class CompanySignupView(APIView):
 # Login View
 # --------------------------
 class LoginView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         print("Starting login process...")  # Debug log
         serializer = LoginSerializer(data=request.data)

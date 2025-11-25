@@ -3,12 +3,14 @@
    Purpose: Styles for the client reports page
    =============================================== */
 
-@import '../Base/colors.css';
-@import '../Base/variables.css';
-@import '../Base/darkMode.css';
+@import "../Base/colors.css";
+@import "../Base/variables.css";
+@import "../Base/darkMode.css";
 
 /* Ensure widths include padding so inputs don't overflow parent */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -231,7 +233,7 @@
 .location-select {
   padding: 0.75rem 1rem;
   border: 2px solid #e0e0e0;
-  width : 100%;
+  width: 100%;
   border-radius: 0.5rem;
   font-size: 1rem;
   cursor: pointer;
@@ -249,7 +251,7 @@
 .emergency-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #EF4444, #DC2626);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
   border: none;
   border-radius: 1rem;
@@ -257,7 +259,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
   line-height: 1.5;
 }
 
@@ -457,7 +459,7 @@
 }
 
 .priority-btn:hover {
-    background: var(--priority-color);
+  background: var(--priority-color);
   border-color: var(--priority-color);
   color: var(--white);
   box-shadow: 0 4px 10px var(--priority-color);
@@ -544,14 +546,14 @@
     font-size: 0.95rem;
   }
 
-  .address-input::placeholder{
+  .address-input::placeholder {
     color: var(--placeholder-gray);
   }
 
   .report-container {
     padding: 1rem;
   }
-} 
+}
 
 /* Optional Badge */
 .optional-badge {
@@ -633,12 +635,12 @@
 }
 
 .remove-photo-btn {
-  background: linear-gradient(135deg, #EF4444, #DC2626);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
 }
 
 .remove-photo-btn:hover {
-  background: linear-gradient(135deg, #DC2626, #B91C1C);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
@@ -650,7 +652,7 @@
 
 /* Error Messages */
 .error-message {
-  color: #EF4444;
+  color: #ef4444;
   font-size: 0.875rem;
   margin-top: 0.25rem;
   margin-bottom: 0.5rem;
@@ -680,15 +682,15 @@
 }
 
 .status-message.success {
-  background-color: #D1FAE5;
-  color: #065F46;
-  border: 2px solid #10B981;
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 2px solid #10b981;
 }
 
 .status-message.error {
-  background-color: #FEE2E2;
-  color: #991B1B;
-  border: 2px solid #EF4444;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 2px solid #ef4444;
 }
 
 /* Improve field focus with errors */
@@ -697,7 +699,7 @@
 .gps-input:invalid,
 .location-select:invalid,
 .details-textarea:invalid {
-  border-color: #EF4444 !important;
+  border-color: #ef4444 !important;
 }
 
 /* Responsive adjustments for photo actions */
@@ -706,7 +708,7 @@
     opacity: 1; /* Always show on mobile */
     background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
   }
-  
+
   .change-photo-btn,
   .remove-photo-btn {
     padding: 0.6rem 0.8rem;
@@ -719,7 +721,7 @@
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .change-photo-btn,
   .remove-photo-btn {
     width: 100%;

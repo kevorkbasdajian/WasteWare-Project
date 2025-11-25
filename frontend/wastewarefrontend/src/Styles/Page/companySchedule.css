@@ -1,0 +1,288 @@
+@import "../Base/fonts.css";
+@import "../Base/colors.css";
+@import "../Base/glass.css";
+
+.headerr {
+  margin-top: 80px;
+}
+.glass2.y {
+  margin-top: 20px;
+  padding-block: 10px;
+  background: linear-gradient(to bottom right, #0288d1 30%, #26c6da 100%);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+  z-index: 0;
+  flex: 1;
+}
+.b1t1holders {
+  margin-right: auto;
+  /* margin-bottom: 10px; */
+  margin-left: 10px;
+}
+.b1t1s {
+  color: white;
+  font-weight: bold;
+  font-size: 25px;
+  margin-left: 20px;
+}
+
+.grids {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 3.5rem;
+  margin-bottom: 1.5 rem;
+
+  width: 80%;
+}
+.truckid {
+  padding: 0.875rem 1.25rem;
+  border-radius: 25px;
+  border: 2px solid #a5d6a7;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.3s;
+}
+.wasteCategory {
+  padding: 0.875rem 1.25rem;
+  border-radius: 20px;
+  border: 2px solid #a5d6a7;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.routeStops {
+  width: 90%;
+  padding: 0.875rem 1.25rem;
+  border-radius: 15px;
+  border: 2px solid #a5d6a7;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  margin-bottom: 1.5rem;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.driverName {
+  padding: 0.875rem 1.25rem;
+  border-radius: 25px;
+  border: 2px solid #a5d6a7;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.3s;
+}
+.status {
+  padding: 0.875rem 1.25rem;
+  border-radius: 25px;
+  border: 2px solid #a5d6a7;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.addRouteButton {
+  margin-right: auto;
+  /* border: 1px solid black; */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+  margin-bottom: 14px;
+  flex-direction: column;
+}
+.actualButton {
+  background: #4caf50;
+  color: white;
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 90%;
+  justify-content: center;
+  height: 70px;
+}
+.B2h2 {
+  margin-right: auto;
+  margin-bottom: 20px;
+  margin-left: 10px;
+}
+
+.dumping {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0f2f1;
+  padding: 0.3rem 0.5rem;
+  border-radius: 50px;
+  gap: 0.3rem;
+  cursor: default;
+  margin-left: 10px;
+  /* height: 20px; */
+}
+.dumpingdiv {
+  display: flex;
+  /* margin: 1rem 0; */
+  flex-direction: row;
+  height: 200px;
+  width: 400px;
+}
+.dumping-card-style {
+  border: 2px dashed #4caf50;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+  width: 400px;
+}
+
+.dumping-card-style:hover {
+  border-style: solid;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.dumping-card-style i {
+  font-size: 2rem;
+  color: #4caf50;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.dumping-card-style .title {
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+.dumping-card-style .subtitle {
+  font-size: 0.85rem;
+  color: #666;
+}
+.charttitle {
+  margin-right: auto;
+  margin-left: 20px;
+}
+.containerforcharts {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 90%;
+}
+.charttitle {
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #55a476ff;
+}
+.label {
+  display: block;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+.collectiondate {
+  width: 100%;
+
+  padding: 0.875rem 1.25rem;
+  border-radius: 25px;
+  outline: none;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  /* appearance: none; removes default dropdown arrow styling differences */
+  box-sizing: border-box;
+}
+.textbox {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 16px;
+  border: none;
+  font-size: 1rem;
+  resize: vertical;
+}
+.head {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.h2 {
+  /* margin: 0; */
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 0;
+}
+.datenav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+.backbtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.statusl {
+  margin-left: 20px;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.9rem;
+}
+.comp {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10b981;
+}
+.time {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20%;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  margin-right: auto;
+  margin-left: auto;
+  height: 200px;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}

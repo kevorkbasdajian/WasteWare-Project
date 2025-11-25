@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import "../Styles/Page/clientReports.css";
-import fetchWithAuth, {
+import "../../Styles/Page/clientReports.css";
+import {
+  fetchWithAuth,
   useFetchWithAuth,
-} from "../Components/fetchWithAuth.js";
-import Navbar from "../Components/navbar.js";
+} from "../../Components/fetchWithAuth.js";
+import Navbar from "../../Components/navbar.js";
+import HeaderBox from "../../Components/HeaderBox.js";
 
 // Validation Schema
 const reportValidationSchema = Yup.object().shape({
@@ -140,35 +142,29 @@ const Reports = () => {
       path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
-      icon: <i className="fa-solid fa-house fa-lg" />,
+      icon: "fa-solid fa-house fa-lg",
     },
     {
       name: "Map",
-      path: "/map",
+      path: "/client/map",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
-      icon: <i className="fa-solid fa-map-location-dot fa-lg" />,
+      icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Report",
-      path: "/report",
+      path: "/client/report",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
-      icon: <i className="fa-solid fa-camera fa-lg" />,
+      icon: "fa-solid fa-camera fa-lg",
     },
-    {
-      name: "Rewards",
-      path: "/rewards",
-      color: "var(--gradient-orange)",
-      glowColor: "#F97316",
-      icon: <i className="fa-solid fa-gift fa-lg" />,
-    },
+
     {
       name: "Profile",
-      path: "/profile",
+      path: "/client/profile",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: <i className="fa-solid fa-user fa-lg" />,
+      icon: "fa-solid fa-user fa-lg",
     },
   ];
 
@@ -213,62 +209,78 @@ const Reports = () => {
     { setSubmitting, resetForm, setStatus }
   ) => {
     try {
+      // Parse coordinates
+      const [lat, lng] = values.coordinates
+        .split(",")
+        .map((c) => parseFloat(c.trim()));
+
+      // Always use FormData (simpler approach)
       const formData = new FormData();
 
-      // Map severity string to integer expected by backend
-      const severityMap = {
-        low: 1,
-        medium: 2,
-        high: 3,
-        critical: 4,
-      };
-
-      // Append required fields, ensuring strings
-      formData.append("title", String(values.title || ""));
-      formData.append("type_of_report", String(values.category || ""));
-      formData.append(
-        "severity_level",
-        String(severityMap[values.severity] || 1)
-      );
-      formData.append("response_priority", String(values.priority || ""));
-      formData.append("coordinates", String(values.coordinates || ""));
-      formData.append("street_address", String(values.address || ""));
-      formData.append("city_name", String(values.city || ""));
-      formData.append("governorate", String(values.governorate || ""));
-      formData.append("description", String(values.details || ""));
+      // Append all fields
+      formData.append("title", values.title);
+      formData.append("category", values.category);
+      formData.append("severity", values.severity); // Send as string: "low", "medium", etc.
+      formData.append("priority", values.priority);
+      formData.append("details", values.details || "");
+      formData.append("street", values.address || "");
+      formData.append("city", values.city);
+      formData.append("region", values.governorate);
+      formData.append("latitude", lat);
+      formData.append("longitude", lng);
 
       // Append photo only if it exists
       if (values.photo) {
-        formData.append("photo", values.photo);
+        formData.append("image_url", values.photo);
       }
-
-      // Optional: authentication token
-      const token = localStorage.getItem("access_token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       // Send POST request
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/report/reports/",
+        "http://localhost:8000/api/reports/create/",
         {
           method: "POST",
           body: formData,
+          // ✅ CRITICAL: Do NOT set Content-Type header
+          // Let the browser set it automatically with the boundary parameter
         }
       );
 
+      await handleResponse(response, setStatus, resetForm);
+    } catch (err) {
+      console.error("🚨 Error submitting report:", err);
+      setStatus({ success: false, message: "Error submitting report." });
+      alert("Error submitting report.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Helper function to handle response
+  const handleResponse = async (response, setStatus, resetForm) => {
+    try {
+      const contentType = response.headers.get("content-type");
+      let data;
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const textData = await response.text();
+        console.error("Non-JSON response:", textData);
+        data = { error: "Server error", details: textData };
+      }
+
       if (response.ok) {
-        const data = await response.json();
         console.log("✅ Report created:", data);
         alert("Report submitted successfully! 🎉");
         setStatus({ success: true, message: "Report submitted successfully!" });
         resetForm();
+        setPhotoPreview(null);
       } else {
-        const errorData = await response.json();
-        console.error("❌ Error:", errorData);
+        console.error("❌ Error:", data);
 
-        // Show field-specific errors
         let errorMessage = "";
-        if (typeof errorData === "object") {
-          errorMessage = Object.entries(errorData)
+        if (typeof data === "object") {
+          errorMessage = Object.entries(data)
             .map(([key, val]) => `${key}: ${val}`)
             .join("\n");
         } else {
@@ -278,28 +290,27 @@ const Reports = () => {
         setStatus({ success: false, message: errorMessage });
         alert(errorMessage);
       }
-    } catch (err) {
-      console.error("🚨 Error submitting report:", err);
-      setStatus({ success: false, message: "Error submitting report." });
-      alert("Error submitting report.");
-    } finally {
-      setSubmitting(false);
+    } catch (parseError) {
+      console.error("Error parsing response:", parseError);
+      setStatus({
+        success: false,
+        message: "Error processing server response",
+      });
+      alert("Error processing server response");
     }
-
-    console.log("Submitting values:", values);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    window.location.href = "/login";
   };
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar links={links} />
+
+      <HeaderBox
+        text="Report Environmental Issue"
+        gradientColors={["#3949AB", "#5C6BC0"]}
+      />
 
       <div className="report-container">
-        <h1 className="report-main-title">Report Environmental Issue</h1>
+        {/* <h1 className="report-main-title">Report Environmental Issue</h1> */}
 
         <Formik
           initialValues={initialValues}
@@ -442,6 +453,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="Tripoli">Tripoli</option>
                         <option value="Sidon">Sidon</option>
+                        <option value="Sidon">Metn</option>
                       </Field>
                       <ErrorMessage
                         name="city"
@@ -460,6 +472,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="North">North</option>
                         <option value="South">South</option>
+                        <option value="Sidon">Mount Lebanon</option>
                       </Field>
                       <ErrorMessage
                         name="governorate"
@@ -474,7 +487,20 @@ const Reports = () => {
                 <button type="button" className="emergency-btn">
                   Emergency?
                   <br />
-                  📞 112
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <i
+                      class="fa fa-phone fa-2x"
+                      aria-hidden="true"
+                      style={{ marginRight: 10 }}
+                    />
+                    <p style={{ color: "white", fontSize: 25 }}>112</p>
+                  </div>
                 </button>
 
                 {/* Submit Button */}
