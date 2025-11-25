@@ -232,6 +232,7 @@ const Reports = () => {
       // Append photo only if it exists
       if (values.photo) {
         formData.append("image_url", values.photo);
+        console.log(values.photo);
       }
 
       // Send POST request

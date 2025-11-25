@@ -31,12 +31,7 @@ body.dark-mode .page {
 }
 
 .theme-toggle-btn i {
-  background: linear-gradient(
-    120deg,
-    #FF9800 0%,
-    #FFB74D 50%,
-    #FFCC80 100%
-  );
+  background: linear-gradient(120deg, #ff9800 0%, #ffb74d 50%, #ffcc80 100%);
   background-size: 200% 100%;
   background-position: 100% 0;
   -webkit-background-clip: text;
@@ -48,7 +43,7 @@ body.dark-mode .page {
 .theme-toggle-btn:hover i {
   background-position: 0% 0;
   filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.6))
-          drop-shadow(0 0 15px rgba(255, 183, 77, 0.4));
+    drop-shadow(0 0 15px rgba(255, 183, 77, 0.4));
   animation: shimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
 }
@@ -60,12 +55,7 @@ body.dark-mode .page {
 
 /* Dark mode specific icon color */
 body.dark-mode .theme-toggle-btn i {
-  background: linear-gradient(
-    120deg,
-    #FDD835 0%,
-    #FFEB3B 50%,
-    #FFF59D 100%
-  );
+  background: linear-gradient(120deg, #fdd835 0%, #ffeb3b 50%, #fff59d 100%);
   background-size: 200% 100%;
 }
 
@@ -77,11 +67,11 @@ body.dark-mode .navbar {
 body.dark-mode .navbar-title {
   background: linear-gradient(
     120deg,
-    #4CAF50 0%,
-    #66BB6A 25%,
-    #81C784 50%,
-    #A5D6A7 75%,
-    #C8E6C9 100%
+    #4caf50 0%,
+    #66bb6a 25%,
+    #81c784 50%,
+    #a5d6a7 75%,
+    #c8e6c9 100%
   );
   background-size: 200% 100%;
   background-position: 100% 0;
@@ -95,17 +85,15 @@ body.dark-mode .navbar-link {
 }
 
 body.dark-mode .navbar-profile {
-  border-color: #66BB6A;
+  border-color: #66bb6a;
 }
 
 /* ================ Dashboard Dark Mode ================ */
-
 
 /* ================ Reports Page Dark Mode ================ */
 body.dark-mode .report-left,
 body.dark-mode .report-right {
   background: #1f2937;
-  
 }
 
 body.dark-mode .report-main-title {
@@ -141,12 +129,12 @@ body.dark-mode .location-select:focus {
 
 body.dark-mode .title-input::placeholder,
 body.dark-mode .address-input::placeholder,
-body.dark-mode .details-textarea::placeholder{
+body.dark-mode .details-textarea::placeholder {
   color: var(--placeholder-gray);
 }
 
-body.dark-mode .category-btn:hover{
-    box-shadow: 0 4px 10px var(--white);
+body.dark-mode .category-btn:hover {
+  box-shadow: 0 4px 10px var(--white);
 }
 
 body.dark-mode .category-subtext {
@@ -168,4 +156,114 @@ body.dark-mode .priority-btn.active {
   border-color: 2px var(--white) solid;
 }
 
+/* =========================
+   Chatbot - Dark Mode Styles
+   (add these into darkMode.css)
+   ========================= */
 
+body.dark-mode .chatbot-container {
+  /* container background already defined elsewhere, but ensure contrast */
+  background: linear-gradient(180deg, #111827, #0b1220);
+  color: var(--white);
+  box-shadow: 0 6px 30px rgba(2, 6, 23, 0.7);
+}
+
+/* messages area */
+body.dark-mode .chatbot-messages {
+  background: #0b1116; /* darker than container for separation */
+}
+
+/* bot bubble */
+body.dark-mode .message.bot .message-content {
+  background: #111827;
+  color: #e6eef6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* user bubble */
+body.dark-mode .message.user .message-content {
+  background: linear-gradient(135deg, #166534, #22c55e); /* keep green accent */
+  color: white;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.08);
+}
+
+/* avatars */
+body.dark-mode .bot-avatar {
+  background: linear-gradient(135deg, #166534, #1f8a4a);
+  color: white;
+}
+
+/* header */
+body.dark-mode .chatbot-header {
+  background: linear-gradient(135deg, #0f1724, #071126);
+  color: var(--white);
+}
+
+/* input and quick replies */
+body.dark-mode .chatbot-input,
+body.dark-mode .chatbot-quick-replies {
+  background: #0f1724;
+  border-top-color: #1f2937;
+}
+
+/* input fields */
+body.dark-mode .chatbot-input input {
+  background: #111827;
+  border-color: #263142;
+  color: #e6eef6;
+}
+
+/* quick reply buttons */
+body.dark-mode .quick-reply-btn {
+  background: #111827;
+  border-color: #263142;
+  color: #e6eef6;
+}
+body.dark-mode .quick-reply-btn:hover:not(:disabled) {
+  background: #16a34a; /* hover still green */
+  color: #fff;
+  border-color: #16a34a;
+}
+
+/* typing indicator */
+body.dark-mode .typing span {
+  background: #9ca3af;
+}
+
+/* scrollbar styling - messages & quick replies (WebKit) */
+body.dark-mode .chatbot-messages::-webkit-scrollbar,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar {
+  width: 6px;
+  height: 4px; /* for horizontal scrollbar on quick replies */
+}
+
+body.dark-mode .chatbot-messages::-webkit-scrollbar-track,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.dark-mode .chatbot-messages::-webkit-scrollbar-thumb,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+/* Firefox scrollbar fallback */
+body.dark-mode .chatbot-messages,
+body.dark-mode .chatbot-quick-replies {
+  scrollbar-color: #374151 transparent;
+  scrollbar-width: thin;
+}
+
+/* ensure buttons/icons contrast in dark mode */
+body.dark-mode .chatbot-toggle,
+body.dark-mode .chatbot-input button {
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.6);
+}
+
+/* small responsive tweak: keep contrast on small screens */
+@media (max-width: 480px) {
+  body.dark-mode .chatbot-container {
+    background: #0b1116;
+  }
+}

@@ -6,6 +6,7 @@
 @import "../Base/colors.css";
 @import "../Base/variables.css";
 @import "../Base/darkMode.css";
+@import "../Base/fonts.css";
 
 /* Ensure widths include padding so inputs don't overflow parent */
 *,

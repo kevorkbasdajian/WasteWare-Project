@@ -10,6 +10,7 @@ urlpatterns = [
 
 
     path('api/reports/', include('clientReports.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
 ]
 
 # Serve media files in development

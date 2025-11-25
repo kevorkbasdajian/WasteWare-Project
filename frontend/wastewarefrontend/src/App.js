@@ -11,6 +11,9 @@ import TruckRoutes from "./Pages/Company/companyRoutes";
 import CompanySchedule from "./Pages/Company/companySchedule";
 import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
+import CompanyDashboard from "./Pages/companyDashboard";
+import TruckRoutes from "./Pages/companyRoutes";
+import Chatbot from "./Components/chatbot";
 function App() {
   return (
     <div className="App">
@@ -27,6 +30,7 @@ function App() {
           <Route path="/company/schedule" element={<CompanySchedule />} />
           <Route path="/company/routes" element={<TruckRoutes />} />
         </Routes>
+        <Chatbot />
       </AuthProvider>
     </div>
   );
