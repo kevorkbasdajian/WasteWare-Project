@@ -9,9 +9,11 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
+
 
 class LogoutView(APIView):
-    permission_classes = [] 
+    permission_classes = [AllowAny]  
 
     def post(self, request):
         try:
@@ -35,11 +37,17 @@ class LogoutView(APIView):
 # Helper function to generate JWT token
 # --------------------------
 
-def get_tokens_for_user(user):
+def get_tokens_for_user(obj):
     token = AccessToken()
-    token['user_id'] = user.user_id
-    token['email'] = user.email
-    token['role'] = str(user.role.role_name) if user.role else None
+    if(isinstance(obj,Users)):
+        token['user_id'] = obj.user_id
+        token['role'] = str(obj.role.role_name)
+    elif (isinstance(obj,Companies)):
+        token['company_id'] = obj.company_id
+
+    
+
+    token['email'] = obj.email
     return {
         'access': str(token),
     }
@@ -48,6 +56,8 @@ def get_tokens_for_user(user):
 # User Signup
 # --------------------------
 class UserSignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = UserSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -64,6 +74,8 @@ class UserSignupView(APIView):
 # Admin Signup
 # --------------------------
 class AdminSignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = AdminSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -80,6 +92,8 @@ class AdminSignupView(APIView):
 # Company Signup
 # --------------------------
 class CompanySignupView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         serializer = CompanySignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -96,6 +110,8 @@ class CompanySignupView(APIView):
 # Login View
 # --------------------------
 class LoginView(APIView):
+    permission_classes = [AllowAny]  
+
     def post(self, request):
         print("Starting login process...")  # Debug log
         serializer = LoginSerializer(data=request.data)
@@ -123,7 +139,6 @@ class LoginView(APIView):
         try:
             company = Companies.objects.get(email=email)
             if verify_password(password, company.password_hash):
-                print(f"Setting cookie for company login: {email}")  # Debug log
                 token = get_tokens_for_user(company)
                 access = token['access']
                 response = Response({'user_type': 'company', 'company_id': company.company_id, 'access': access}, status=status.HTTP_200_OK)

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'company',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -49,25 +50,41 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',  # ✅ Explicitly allow Authorization
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://localhost:3000",
 # ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
 
 
 from datetime import timedelta
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'authentication.jwt_auth.CustomJWTAuthentication',  # Your custom JWT auth
     ),
+     'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    
 }
 
 SIMPLE_JWT = {
-    'USER_ID_FIELD': 'user_id',
-    "USER_ID_CLAIM": "user_id",
+    # 'USER_ID_FIELD': 'user_id',
+    # "USER_ID_CLAIM": "user_id",
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # longer lifetime for simplicity
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
@@ -82,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'waste_management.urls'

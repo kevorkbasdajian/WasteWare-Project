@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from "react";
-import "../Styles/Page/clientDashboard.css"; // Dashboard CSS in same folder
-import Navbar from "../Components/navbar.js"; // Component import
-import { AuthContext } from "../Components/AuthProvider";
+import "../../Styles/Page/clientDashboard.css"; // Dashboard CSS in same folder
+import Navbar from "../../Components/navbar.js";
+import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -50,27 +50,11 @@ const Dashboard = () => {
     if (!token) {
       navigate("/Login", { replace: true });
     }
-  }, [navigate, accessToken]);
-
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (err) {
-      console.error("Logout request failed", err);
-    } finally {
-      clearAuth();
-      navigate("/Login");
-    }
-  };
+  }, [navigate]);
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar links={links} />
       <main className="dashboard-content">
         <h1>Dashboard Content</h1>
       </main>

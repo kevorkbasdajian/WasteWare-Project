@@ -29,7 +29,7 @@ export const SignUpPage = () => {
     if (token) {
       navigate("/", { replace: true });
     }
-  }, [accessToken, navigate]);
+  }, [navigate]);
 
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),

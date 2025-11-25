@@ -4,7 +4,9 @@ import "../Styles/Component/navbar.css"; // Navbar CSS in same folder
 import "../Styles/Base/colors.css";
 import "../Styles/Base/variables.css";
 import "../Styles/Base/glass.css";
-import { useFetchWithAuth } from "./fetchWithAuth";
+import { AuthContext } from "./AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
 /**
  * ===============================================
  * File: Navbar.js
@@ -24,8 +26,24 @@ const Navbar = ({
   brand = "WasteWare",
   links = [],
   profileImage = "/assets/profile-placeholder.jpg",
-  onLogout = () => {},
 }) => {
+  const { clearAuth, accessToken } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/auth/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (err) {
+      console.error("Logout request failed", err);
+    } finally {
+      clearAuth();
+      navigate("/Login");
+    }
+  };
   return (
     <nav className="navbar glass">
       <div className="navbar-container">
@@ -61,7 +79,7 @@ const Navbar = ({
           <Link to="/profile">
             <img src={profileImage} alt="Profile" className="navbar-profile" />
           </Link>
-          <button className="logout-btn" onClick={onLogout}>
+          <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
         </div>

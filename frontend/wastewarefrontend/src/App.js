@@ -1,12 +1,13 @@
 // import './App.css';
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Dashboard from "./Pages/clientDashboard";
+import Dashboard from "./Pages/Client/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignUpPage";
 import { AuthProvider } from "./Components/AuthProvider";
-import CompanyDashboard from "./Pages/companyDashboard";
-import TruckRoutes from "./Pages/companyRoutes";
+import CompanyDashboard from "./Pages/Company/companyDashboard";
+import TruckRoutes from "./Pages/Company/companyRoutes";
+import CompanySchedule from "./Pages/Company/companySchedule";
 function App() {
   return (
     <div className="App">
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/Company" element={<CompanyDashboard />} />
           <Route path="/Company/Routes" element={<TruckRoutes />} />
+          <Route path="/Company/Schedule" element={<CompanySchedule />} />
 
           <Route path="/Login" element={<LoginPage />} />
         </Routes>

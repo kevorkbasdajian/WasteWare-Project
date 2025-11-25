@@ -32,7 +32,7 @@ export const LoginPage = () => {
     if (token) {
       navigate("/", { replace: true });
     }
-  }, [accessToken, navigate]);
+  }, [navigate]);
 
   {
     /*Validation Using Yup*/
@@ -56,6 +56,7 @@ export const LoginPage = () => {
     /*When the Sign Up Button is pressed*/
   }
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    console.log("Entered the handle submit");
     try {
       const response = await fetch("http://localhost:8000/api/auth/login/", {
         method: "POST",
@@ -64,7 +65,6 @@ export const LoginPage = () => {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         setErrorMessage(data.error);
       } else {
@@ -72,12 +72,15 @@ export const LoginPage = () => {
         if (accessToken) saveAccessToken(accessToken);
         alert(JSON.stringify(data, null, 2));
         const user_type = data.user_type;
+        if (user_type === "company") {
+          console.log("should have navigation");
+          navigate("/Company", { replace: true });
+        }
         setErrorMessage("");
         // navigate client-side (no full page reload)
         if (user_type === "user") navigate("/", { replace: true });
         else if (user_type === "admin")
           navigate("/admin/dashboard", { replace: true });
-        else navigate("/company/dashboard", { replace: true });
       }
       // ...existing code...
     } catch (error) {

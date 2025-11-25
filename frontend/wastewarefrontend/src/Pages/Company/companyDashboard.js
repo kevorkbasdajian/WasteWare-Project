@@ -1,8 +1,7 @@
 import { useContext } from "react";
-import "../Styles/Page/clientDashboard.css";
-import Navbar from "../Components/navbar.js";
-// import { useFetchWithAuth } from "../Components/fetchWithAuth";
-import { AuthContext } from "../Components/AuthProvider";
+import "../../Styles/Page/clientDashboard.css";
+import Navbar from "../../Components/navbar.js";
+import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 const CompanyDashboard = () => {
