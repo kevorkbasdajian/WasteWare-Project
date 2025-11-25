@@ -29,6 +29,9 @@ class ReportCreateSerializer(serializers.ModelSerializer):
     priority = serializers.CharField(write_only=True, required=False, allow_blank=True)
     details = serializers.CharField(write_only=True, required=False, allow_blank=True, source='description')
     
+    # Handle image upload
+    image_url = serializers.ImageField(required=False, allow_null=True)
+    
     class Meta:
         model = Reports
         fields = [
@@ -55,8 +58,15 @@ class ReportCreateSerializer(serializers.ModelSerializer):
             'construction': 'construction debris',
             'organic': 'organic waste',
             'ewaste': 'E-waste',
+            # Also accept full names directly
+            'illegal dumping': 'illegal dumping',
+            'public littering': 'public littering',
+            'hazardous materials': 'hazardous materials',
+            'construction debris': 'construction debris',
+            'organic waste': 'organic waste',
+            'e-waste': 'E-waste',
         }
-        return category_map.get(value, value)
+        return category_map.get(value.lower(), value)
 
     def validate_severity(self, value):
         """Map frontend severity to database integer"""
@@ -67,7 +77,11 @@ class ReportCreateSerializer(serializers.ModelSerializer):
             'critical': 4,
         }
         if value:
-            return severity_map.get(value.lower(), 1)
+            # Handle both string and integer input
+            if isinstance(value, str):
+                return severity_map.get(value.lower(), 1)
+            elif isinstance(value, int):
+                return value
         return None
 
     def validate_priority(self, value):

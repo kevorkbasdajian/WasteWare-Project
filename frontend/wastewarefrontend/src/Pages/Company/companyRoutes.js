@@ -77,42 +77,42 @@ const TruckRoutes = () => {
   const links = [
     {
       name: "Home",
-      path: "/Company",
+      path: "/company",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: <i className="fa-solid fa-house fa-lg" />,
     },
     {
       name: "Routes",
-      path: "/Company/Routes",
+      path: "/company/routes",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
       icon: <i className="fa-solid fa-map-location-dot fa-lg" />,
     },
     {
       name: "Schedule",
-      path: "/Company/Schedule",
+      path: "/company/schedule",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: <i className="fa-solid fa-camera fa-lg" />,
     },
     {
       name: "Notifications",
-      path: "/Company/Notifications",
+      path: "/company/notifications",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
       icon: <i className="fa-solid fa-gift fa-lg" />,
     },
     {
       name: "Reports",
-      path: "/Company/Reports",
+      path: "/company/reports",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
       icon: <i className="fa-solid fa-user fa-lg" />,
     },
     {
       name: "Profile",
-      path: "/Company/Profile",
+      path: "/company/profile",
       color: "var(--gradient-green-blue)",
       glowColor: "#9d10b9ff",
       icon: <i className="fa-solid fa-user fa-lg" />,
@@ -556,7 +556,7 @@ const TruckRoutes = () => {
       }}
     >
       <Navbar links={links} />
-      <div className="headerr">
+      <div style={{ marginTop: 80 }}>
         <HeaderBox
           text="Truck Routes"
           gradientColors={["#7df083ff", "#43a047"]}

@@ -9,7 +9,12 @@ export const useFetchWithAuth = () => {
   const fetchWithAuth = async (url, options = {}) => {
     const headers = options.headers || {};
     headers["Accept"] = "application/json";
-    headers["Content-Type"] = "application/json";
+
+    // ✅ CRITICAL FIX: Only set Content-Type if body is NOT FormData
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+    // If body IS FormData, don't set Content-Type - let browser set it with boundary
 
     // Prefer in-memory token from context, fallback to sessionStorage
     const token =
@@ -25,7 +30,7 @@ export const useFetchWithAuth = () => {
     console.log(
       "Token being sent:",
       token ? token.substring(0, 20) + "..." : "NO TOKEN"
-    ); // Add this
+    );
 
     if (token) headers["Authorization"] = `Bearer ${token}`;
 

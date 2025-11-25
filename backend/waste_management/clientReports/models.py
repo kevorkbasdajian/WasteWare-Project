@@ -63,7 +63,7 @@ class Reports(models.Model):
         blank=True
     )
     description = models.TextField(null=True, blank=True)
-    image_url = models.TextField(null=True, blank=True)
+    image_url = models.ImageField(upload_to='reports/', null=True, blank=True)
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

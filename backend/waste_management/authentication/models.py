@@ -50,6 +50,16 @@ class Users(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
+
+    # Add these properties for Django ERST Framework compatibility
+    @property
+    def is_authenticated(sefl):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+    
     class Meta:
         db_table = 'Users'
 

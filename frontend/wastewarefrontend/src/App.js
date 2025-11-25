@@ -4,22 +4,28 @@ import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Pages/Client/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignUpPage";
+import Reports from "./Pages/Client/clientReports";
 import { AuthProvider } from "./Components/AuthProvider";
 import CompanyDashboard from "./Pages/Company/companyDashboard";
 import TruckRoutes from "./Pages/Company/companyRoutes";
 import CompanySchedule from "./Pages/Company/companySchedule";
+import ClientMap from "./Pages/Client/clientMap";
+import ClientProfile from "./Pages/Client/clientProfile";
 function App() {
   return (
     <div className="App">
       <AuthProvider>
         <Routes>
-          <Route path="/SignUp" element={<SignupPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Dashboard />} />
-          <Route path="/Company" element={<CompanyDashboard />} />
-          <Route path="/Company/Routes" element={<TruckRoutes />} />
-          <Route path="/Company/Schedule" element={<CompanySchedule />} />
+          <Route path="/client/map" element={<ClientMap />} />
+          <Route path="/client/report" element={<Reports />} />
+          <Route path="/client/profile" element={<ClientProfile />} />
 
-          <Route path="/Login" element={<LoginPage />} />
+          <Route path="/company" element={<CompanyDashboard />} />
+          <Route path="/company/schedule" element={<CompanySchedule />} />
+          <Route path="/company/routes" element={<TruckRoutes />} />
         </Routes>
       </AuthProvider>
     </div>

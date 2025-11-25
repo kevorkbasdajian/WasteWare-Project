@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import "../Styles/Page/clientReports.css";
+import "../../Styles/Page/clientReports.css";
 import {
   fetchWithAuth,
   useFetchWithAuth,
-} from "../Components/fetchWithAuth.js";
-import Navbar from "../Components/navbar.js";
+} from "../../Components/fetchWithAuth.js";
+import Navbar from "../../Components/navbar.js";
+import HeaderBox from "../../Components/HeaderBox.js";
 
 // Validation Schema
 const reportValidationSchema = Yup.object().shape({
@@ -145,28 +146,22 @@ const Reports = () => {
     },
     {
       name: "Map",
-      path: "/map",
+      path: "/client/map",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Report",
-      path: "/report",
+      path: "/client/report",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-    {
-      name: "Rewards",
-      path: "/rewards",
-      color: "var(--gradient-orange)",
-      glowColor: "#F97316",
-      icon: "fa-solid fa-gift fa-lg",
-    },
+
     {
       name: "Profile",
-      path: "/profile",
+      path: "/client/profile",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
       icon: "fa-solid fa-user fa-lg",
@@ -214,72 +209,43 @@ const Reports = () => {
     { setSubmitting, resetForm, setStatus }
   ) => {
     try {
-      const formData = new FormData();
-
-      // Map severity string to integer expected by backend
-      const severityMap = {
-        low: 1,
-        medium: 2,
-        high: 3,
-        critical: 4,
-      };
-
       // Parse coordinates
       const [lat, lng] = values.coordinates
         .split(",")
         .map((c) => parseFloat(c.trim()));
 
-      // Append required fields
-      formData.append("title", String(values.title || ""));
-      formData.append("category", String(values.category || ""));
-      formData.append("severity", String(severityMap[values.severity] || 1));
-      formData.append("priority", String(values.priority || ""));
-      formData.append("details", String(values.details || ""));
-      formData.append("street", String(values.address || ""));
-      formData.append("city", String(values.city || ""));
-      formData.append("region", String(values.governorate || ""));
-      formData.append("lattittude", lat || "");
-      formData.append("longitude", lng || "");
+      // Always use FormData (simpler approach)
+      const formData = new FormData();
+
+      // Append all fields
+      formData.append("title", values.title);
+      formData.append("category", values.category);
+      formData.append("severity", values.severity); // Send as string: "low", "medium", etc.
+      formData.append("priority", values.priority);
+      formData.append("details", values.details || "");
+      formData.append("street", values.address || "");
+      formData.append("city", values.city);
+      formData.append("region", values.governorate);
+      formData.append("latitude", lat);
+      formData.append("longitude", lng);
 
       // Append photo only if it exists
       if (values.photo) {
         formData.append("image_url", values.photo);
       }
 
-      // Send POST request - fetchWithAuth handles the token automatically
+      // Send POST request
       const response = await fetchWithAuth(
         "http://localhost:8000/api/reports/create/",
         {
           method: "POST",
           body: formData,
-          // Don't set Content-Type header - browser sets it automatically with boundary for FormData
+          // ✅ CRITICAL: Do NOT set Content-Type header
+          // Let the browser set it automatically with the boundary parameter
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("✅ Report created:", data);
-        alert("Report submitted successfully! 🎉");
-        setStatus({ success: true, message: "Report submitted successfully!" });
-        resetForm();
-        setPhotoPreview(null); // Clear photo preview too
-      } else {
-        const errorData = await response.json();
-        console.error("❌ Error:", errorData);
-
-        // Show field-specific errors
-        let errorMessage = "";
-        if (typeof errorData === "object") {
-          errorMessage = Object.entries(errorData)
-            .map(([key, val]) => `${key}: ${val}`)
-            .join("\n");
-        } else {
-          errorMessage = "Failed to submit report.";
-        }
-
-        setStatus({ success: false, message: errorMessage });
-        alert(errorMessage);
-      }
+      await handleResponse(response, setStatus, resetForm);
     } catch (err) {
       console.error("🚨 Error submitting report:", err);
       setStatus({ success: false, message: "Error submitting report." });
@@ -289,12 +255,62 @@ const Reports = () => {
     }
   };
 
+  // Helper function to handle response
+  const handleResponse = async (response, setStatus, resetForm) => {
+    try {
+      const contentType = response.headers.get("content-type");
+      let data;
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const textData = await response.text();
+        console.error("Non-JSON response:", textData);
+        data = { error: "Server error", details: textData };
+      }
+
+      if (response.ok) {
+        console.log("✅ Report created:", data);
+        alert("Report submitted successfully! 🎉");
+        setStatus({ success: true, message: "Report submitted successfully!" });
+        resetForm();
+        setPhotoPreview(null);
+      } else {
+        console.error("❌ Error:", data);
+
+        let errorMessage = "";
+        if (typeof data === "object") {
+          errorMessage = Object.entries(data)
+            .map(([key, val]) => `${key}: ${val}`)
+            .join("\n");
+        } else {
+          errorMessage = "Failed to submit report.";
+        }
+
+        setStatus({ success: false, message: errorMessage });
+        alert(errorMessage);
+      }
+    } catch (parseError) {
+      console.error("Error parsing response:", parseError);
+      setStatus({
+        success: false,
+        message: "Error processing server response",
+      });
+      alert("Error processing server response");
+    }
+  };
+
   return (
     <div className="page">
       <Navbar links={links} />
 
+      <HeaderBox
+        text="Report Environmental Issue"
+        gradientColors={["#3949AB", "#5C6BC0"]}
+      />
+
       <div className="report-container">
-        <h1 className="report-main-title">Report Environmental Issue</h1>
+        {/* <h1 className="report-main-title">Report Environmental Issue</h1> */}
 
         <Formik
           initialValues={initialValues}
@@ -471,7 +487,20 @@ const Reports = () => {
                 <button type="button" className="emergency-btn">
                   Emergency?
                   <br />
-                  📞 112
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <i
+                      class="fa fa-phone fa-2x"
+                      aria-hidden="true"
+                      style={{ marginRight: 10 }}
+                    />
+                    <p style={{ color: "white", fontSize: 25 }}>112</p>
+                  </div>
                 </button>
 
                 {/* Submit Button */}

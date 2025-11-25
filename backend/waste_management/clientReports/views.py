@@ -2,9 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .authentication import CustomJWTAuthentication
 from .models import Reports
-from .serializers import ReportCreateSerializer, ReportListSerializer, ReportDetailSerializer
+from .serializers import ReportCreateSerializer
 from authentication.models import Users
 
 
@@ -15,24 +16,35 @@ class CreateReportView(APIView):
     """
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
         try:
-            # Get user directly from request (set by CustomJWTAuthentication)
-            user_id = request.auth.get('user_id') if request.auth else None
-            user = None
+            print("=" * 80)
+            print("🔍 DEBUG INFO:")
+            print(f"Content-Type: {request.content_type}")
+            print(f"Method: {request.method}")
+            print(f"Parser: {request.parser_context.get('parser')}")
+            print(f"Request.user: {request.user}")
+            print(f"Request.auth: {request.auth}")
             
-            if user_id:
-                try:
-                    user = Users.objects.get(user_id=user_id)
-                except Users.DoesNotExist:
-                    return Response(
-                        {'error': 'User not found'}, 
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-
+            # Try to access data - this is where the error might occur
+            try:
+                print(f"Request.data keys: {request.data.keys() if hasattr(request.data, 'keys') else 'N/A'}")
+                print(f"Request.FILES: {request.FILES.keys() if request.FILES else 'No files'}")
+            except Exception as data_error:
+                print(f"❌ Error accessing request.data: {data_error}")
+                import traceback
+                traceback.print_exc()
+                raise
+            
+            print("=" * 80)
+            
+            # Get user from request (already authenticated)
+            user = request.user if request.user.is_authenticated else None
+            
             serializer = ReportCreateSerializer(
-                data=request.data, 
+                data=request.data,
                 context={'user': user}
             )
             
@@ -45,9 +57,15 @@ class CreateReportView(APIView):
                     'status': report.status
                 }, status=status.HTTP_201_CREATED)
             
+            print("Serializer errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
         except Exception as e:
+            import traceback
+            print("=" * 80)
+            print("🚨 FULL ERROR:")
+            print(traceback.format_exc())
+            print("=" * 80)
             return Response(
                 {'error': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -61,6 +79,7 @@ class CreateReportPublicView(APIView):
     """
     authentication_classes = []
     permission_classes = []
+    parser_classes = [MultiPartParser, FormParser, JSONParser]  # ✅ Add this line!
 
     def post(self, request):
         try:
@@ -91,6 +110,9 @@ class CreateReportPublicView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
         except Exception as e:
+            import traceback
+            print("FULL ERROR TRACEBACK:")
+            print(traceback.format_exc())
             return Response(
                 {'error': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -1,11 +1,11 @@
 import React, { useContext, useEffect } from "react";
-import "../../Styles/Page/clientDashboard.css"; // Dashboard CSS in same folder
+import "../../Styles/Page/clientProfile.css"; // Dashboard CSS in same folder
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
-const Dashboard = () => {
+const ClientProfile = () => {
   const { clearAuth, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
   const links = [
@@ -51,11 +51,11 @@ const Dashboard = () => {
     <div className="page">
       <Navbar links={links} />
       <HeaderBox
-        text="Welcome Back, Christian Al Alam"
-        gradientColors={["#E53935", "#FF7043"]}
+        text="Personal Profile"
+        gradientColors={["#2E7D32", "#0288D1"]}
       />
     </div>
   );
 };
 
-export default Dashboard;
+export default ClientProfile;
