@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .authentication import CustomJWTAuthentication
 from .models import Reports
-from .serializers import ReportCreateSerializer
+from .serializers import ReportCreateSerializer, ReportListSerializer, ReportDetailSerializer
 from authentication.models import Users
 
 
@@ -163,7 +163,8 @@ class ListAllReportsView(APIView):
             user_id = request.auth.get('user_id') if request.auth else None
             role = request.auth.get('role') if request.auth else None
             
-            if role != 'Admin':
+            print("Role:", role)
+            if role != 'Admin' and role != 'Company':
                 return Response(
                     {'error': 'Permission denied. Admin access required.'}, 
                     status=status.HTTP_403_FORBIDDEN
@@ -215,7 +216,7 @@ class UpdateReportStatusView(APIView):
         try:
             role = request.auth.get('role') if request.auth else None
             
-            if role != 'Admin':
+            if role != 'Admin' and role != 'Company':
                 return Response(
                     {'error': 'Permission denied. Admin access required.'}, 
                     status=status.HTTP_403_FORBIDDEN

@@ -25,18 +25,17 @@ const ClientMap = () => {
     },
     {
       name: "Report",
-      path: "/client/report",
+      path: "/client/reports",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-
     {
-      name: "Profile",
-      path: "/client/profile",
+      name: "Notifications",
+      path: "/company/notifications",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: "fa-solid fa-user fa-lg",
+      icon: "fa-solid fa-bell fa-lg",
     },
   ];
 

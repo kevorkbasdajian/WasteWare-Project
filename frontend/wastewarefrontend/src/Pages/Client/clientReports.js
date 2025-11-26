@@ -123,17 +123,17 @@ const Reports = () => {
   ];
 
   const severityLevels = [
-    { id: "low", color: "#2E7D32" },
-    { id: "medium", color: "#FF9800" },
+    { id: "low", color: "#4CAF50" },
+    { id: "medium", color: "#FFC107" },
     { id: "high", color: "#FF9800" },
-    { id: "critical", color: "#EF4444" },
+    { id: "critical", color: "#F44336" },
   ];
 
   const priorityLevels = [
-    { id: "routine", label: "Routine", color: "#2E7D32" },
-    { id: "moderate", label: "Moderate", color: "#FF9800" },
+    { id: "routine", label: "Routine", color: "#4CAF50" },
+    { id: "moderate", label: "Moderate", color: "#FFC107" },
     { id: "high", label: "High", color: "#FF9800" },
-    { id: "emergency", label: "Emergency", color: "#EF4444" },
+    { id: "emergency", label: "Emergency", color: "#F44336" },
   ];
 
   const links = [
@@ -153,18 +153,17 @@ const Reports = () => {
     },
     {
       name: "Report",
-      path: "/client/report",
+      path: "/client/reports",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-
     {
-      name: "Profile",
-      path: "/client/profile",
+      name: "Notifications",
+      path: "/company/notifications",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: "fa-solid fa-user fa-lg",
+      icon: "fa-solid fa-bell fa-lg",
     },
   ];
 

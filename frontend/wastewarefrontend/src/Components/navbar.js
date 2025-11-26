@@ -111,7 +111,7 @@ const Navbar = ({
           ))}
         </ul>
 
-        {/* Profile & Logout */}
+        {/* Dark Mode, Profile & Logout */}
         <div className="navbar-actions">
           {/* Dark Mode Toggle Button */}
           <button
