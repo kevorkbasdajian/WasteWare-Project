@@ -1,0 +1,312 @@
+.route-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.route-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.route-table thead {
+  background-color: #388e3c;
+  color: white;
+}
+
+.route-table thead th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-bottom: 2px solid #2e7d32;
+  text-align: center;
+}
+
+.route-table thead th:first-child {
+  width: 50px;
+}
+
+.route-row {
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s;
+}
+
+.route-row:hover {
+  background-color: #f5f5f5;
+}
+
+.route-row td {
+  padding: 16px;
+  font-size: 0.9rem;
+}
+
+.collapse-cell {
+  width: 50px;
+  text-align: center;
+}
+
+.collapse-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 8px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.collapse-button:hover {
+  color: #388e3c;
+}
+
+.route-id {
+  font-weight: 600;
+  color: #333;
+}
+
+.center {
+  text-align: center;
+}
+
+.date {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-block;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Details Section */
+.details-row {
+  background-color: #fafafa;
+}
+
+.details-container {
+  padding: 24px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.details-title {
+  color: #388e3c;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+}
+
+/* Info Cards Grid */
+.info-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+  .info-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .info-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+}
+
+.driver-card {
+  border-left-color: #2196f3;
+}
+
+.truck-card {
+  border-left-color: #ff9800;
+}
+
+.waste-card {
+  border-left-color: #4caf50;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.card-header i {
+  font-size: 1.3rem;
+}
+
+.driver-card .card-header i {
+  color: #2196f3;
+}
+
+.truck-card .card-header i {
+  color: #ff9800;
+}
+
+.waste-card .card-header i {
+  color: #4caf50;
+}
+
+.card-header h4 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.card-content p {
+  margin: 10px 0;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.card-content strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.availability {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.availability.yes {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.availability.no {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+/* Route Stops Section */
+.route-stops-section {
+  margin-top: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stops-header {
+  color: #388e3c;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stops-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stops-table thead {
+  background-color: #f5f5f5;
+}
+
+.stops-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.stops-table td {
+  padding: 12px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.stops-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.stops-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.stop-number {
+  font-weight: 600;
+  color: #388e3c;
+}
+
+.location-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.stop-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.stop-status.completed {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.stop-status.pending {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+.no-stops {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}

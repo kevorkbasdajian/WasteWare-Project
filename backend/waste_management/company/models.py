@@ -62,10 +62,10 @@ class Dumping(models.Model):
 
 class Route(models.Model):
     STATUS_CHOICES = [
-        ('scheduled', 'Scheduled'),
+        # ('scheduled', 'Scheduled'),
         ('active', 'Active'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
+        ('inactive', 'Inactive'),
+        # ('cancelled', 'Cancelled'),
     ]
     route_id = models.AutoField(primary_key=True)
     waste_type = models.ForeignKey(WasteType, on_delete=models.CASCADE)
@@ -99,10 +99,9 @@ class RouteStop(models.Model):
 
 class Schedule(models.Model):
     STATUS_CHOICES = [
-        ('scheduled', 'Scheduled'),
+        ('available', 'Available'),
         ('inProgress','inProgress'),
         ('completed', 'Completed'),
-        ('canceled', 'Canceled'),
     ]
     
     schedule_id = models.AutoField(primary_key=True)
@@ -126,3 +125,28 @@ class Schedule(models.Model):
         # Validate that start_time is before end_time
         if self.start_time and self.end_time and self.start_time >= self.end_time:
             raise ValidationError('Start time must be before end time.')
+
+
+# models.py - Add this to your existing models
+
+class Pickup(models.Model):
+    STATUS_CHOICES = [
+        ('Not Started', 'Not Started'),
+        ('In Progress', 'In Progress'),
+        ('completed', 'Completed'),
+    ]
+    
+    pickup_id = models.AutoField(primary_key=True)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='pickups')
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='pickups')
+    weight_collected = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0.00)
+    live_location = models.JSONField(null=True, blank=True)  # {"latitude": <num>, "longitude": <num>}
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'Pickups'
+        
+    def __str__(self):
+        return f"Pickup {self.pickup_id} - Route {self.route_id} - {self.status}"

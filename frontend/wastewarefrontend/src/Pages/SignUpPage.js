@@ -13,6 +13,7 @@ import Loading from "../Content/Loading.json";
 import { Box, Slide, Alert, Snackbar } from "@mui/material";
 import Lottie from "lottie-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import AlertSnackbar from "../Components/Alert";
 export const SignUpPage = () => {
   const [backendError, setBackendError] = useState("");
   const { saveAccessToken, accessToken } = useContext(AuthContext);
@@ -275,27 +276,12 @@ export const SignUpPage = () => {
           </Formik>
         </div>
       </div>
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+
+      <AlertSnackbar
         open={snackbar}
         onClose={closesnackbar}
-        autoHideDuration={2000}
-        slots={{ transition: Slide }}
-      >
-        <Alert
-          onClose={closesnackbar}
-          severity="success"
-          variant="filled"
-          sx={{
-            width: 400,
-            fontSize: 17,
-            fontWeight: "bold",
-            borderRadius: 5,
-          }}
-        >
-          <Box sx={{ marginLeft: 11 }}>Signup Successful</Box>
-        </Alert>
-      </Snackbar>
+        message="Signup Successful"
+      />
       {is_loading && (
         <div
           style={{

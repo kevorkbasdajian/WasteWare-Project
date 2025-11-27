@@ -11,6 +11,7 @@ import TruckRoutes from "./Pages/Company/companyRoutes";
 import CompanySchedule from "./Pages/Company/companySchedule";
 import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
+import CompanyPickups from "./Pages/Company/companyPickups";
 function App() {
   return (
     <div className="App">
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
+
           <Route path="/" element={<Dashboard />} />
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/report" element={<Reports />} />
@@ -26,6 +28,7 @@ function App() {
           <Route path="/company" element={<CompanyDashboard />} />
           <Route path="/company/schedule" element={<CompanySchedule />} />
           <Route path="/company/routes" element={<TruckRoutes />} />
+          <Route path="/company/pickups" element={<CompanyPickups />} />
         </Routes>
       </AuthProvider>
     </div>

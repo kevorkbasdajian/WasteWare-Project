@@ -8,6 +8,7 @@ import {
 } from "../../Components/fetchWithAuth.js";
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
+import AlertSnackbar from "../../Components/Alert.js";
 
 // Validation Schema
 const reportValidationSchema = Yup.object().shape({
@@ -82,6 +83,7 @@ const Reports = () => {
   const fetchWithAuth = useFetchWithAuth();
   const [autoGPS, setAutoGPS] = useState(true);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [snackbar, setsnackbar] = useState(false);
 
   const categories = [
     {
@@ -240,8 +242,6 @@ const Reports = () => {
         {
           method: "POST",
           body: formData,
-          // ✅ CRITICAL: Do NOT set Content-Type header
-          // Let the browser set it automatically with the boundary parameter
         }
       );
 
@@ -270,8 +270,8 @@ const Reports = () => {
       }
 
       if (response.ok) {
-        console.log("✅ Report created:", data);
-        alert("Report submitted successfully! 🎉");
+        setsnackbar(true);
+        // alert("Report submitted successfully! 🎉");
         setStatus({ success: true, message: "Report submitted successfully!" });
         resetForm();
         setPhotoPreview(null);
@@ -298,6 +298,9 @@ const Reports = () => {
       });
       alert("Error processing server response");
     }
+  };
+  const closesnackbar = () => {
+    setsnackbar(false);
   };
 
   return (
@@ -495,7 +498,7 @@ const Reports = () => {
                     }}
                   >
                     <i
-                      class="fa fa-phone fa-2x"
+                      className="fa fa-phone fa-2x"
                       aria-hidden="true"
                       style={{ marginRight: 10 }}
                     />
@@ -652,6 +655,12 @@ const Reports = () => {
           )}
         </Formik>
       </div>
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closesnackbar}
+        message="Report submitted successfully! 🎉"
+        autoHideDuration={4000}
+      />
     </div>
   );
 };

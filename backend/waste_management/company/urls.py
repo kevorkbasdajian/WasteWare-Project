@@ -6,7 +6,8 @@ from .views import (
     DumpingViewSet, 
     RouteViewSet,
     WasteTypeViewSet,
-    ScheduleViewSet  # Make sure this is imported
+    ScheduleViewSet,
+    PickupViewSet,
 )
 
 router = DefaultRouter()
@@ -15,7 +16,9 @@ router.register(r'trucks', TruckViewSet, basename='truck')
 router.register(r'dumpings', DumpingViewSet, basename='dumping')
 router.register(r'routes', RouteViewSet, basename='route')
 router.register(r'waste-types', WasteTypeViewSet, basename='wastetype')
-router.register(r'schedules', ScheduleViewSet, basename='schedule')  # Add this line
+router.register(r'schedules', ScheduleViewSet, basename='schedule') 
+router.register(r'pickups', PickupViewSet, basename='pickup')  
+
 
 urlpatterns = [
     path('', include(router.urls)),

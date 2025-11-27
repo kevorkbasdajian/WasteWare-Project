@@ -1,13 +1,23 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import "../../Styles/Page/clientDashboard.css";
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import HeaderBox from "../../Components/HeaderBox.js";
 
 const CompanyDashboard = () => {
   //   const fetchWithAuth = useFetchWithAuth();
   const { clearAuth } = useContext(AuthContext);
+  const { accessToken } = useContext(AuthContext);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = accessToken;
+    if (!token) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
   const links = [
     {
       name: "Home",
@@ -31,8 +41,8 @@ const CompanyDashboard = () => {
       icon: <i className="fa-solid fa-camera fa-lg" />,
     },
     {
-      name: "Notifications",
-      path: "/company/notifications",
+      name: "Pickups",
+      path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
       icon: <i className="fa-solid fa-gift fa-lg" />,
@@ -68,11 +78,14 @@ const CompanyDashboard = () => {
       navigate("/Login");
     }
   };
-  const { accessToken } = useContext(AuthContext);
 
   return (
     <div className="page">
       <Navbar links={links} onLogout={handleLogout} />
+      <HeaderBox
+        text="Company Dashboard"
+        gradientColors={["#F97316 30%", "#EF4444 100%"]}
+      />
       <main className="dashboard-content">
         <h1>Dashboard Content</h1>
       </main>

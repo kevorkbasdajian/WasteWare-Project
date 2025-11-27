@@ -1,26 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Navbar from "../../Components/navbar.js";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 import "../../Styles/Page/companySchedule.css";
 import "../../Styles/Base/glass.css";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth";
+import { AuthContext } from "../../Components/AuthProvider.js";
+import AlertSnackbar from "../../Components/Alert.js";
+import Modalwindow from "../../Components/Modal.js";
+import ScheduleTable from "../../Components/ScheduleTable.js";
 
 const CompanySchedule = () => {
   const navigate = useNavigate();
   const fetchWithAuth = useFetchWithAuth();
 
+  const [snackbar, setsnackbar] = useState(false);
+
   const [formData, setFormData] = useState({
     pickup_date: "",
     start_time: "",
     end_time: "",
-    status: "scheduled",
+    status: "available",
     notes: "",
   });
 
   const [schedules, setSchedules] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [errors, setErrors] = useState({});
+  const { accessToken } = useContext(AuthContext);
+  const [viewallmodal, setviewallmodal] = useState(false);
+  const [allSchedules, setAllSchedules] = useState([]);
+  const [loadingAllSchedules, setLoadingAllSchedules] = useState(false);
 
   const links = [
     {
@@ -45,8 +55,8 @@ const CompanySchedule = () => {
       icon: <i className="fa-solid fa-camera fa-lg" />,
     },
     {
-      name: "Notifications",
-      path: "/company/notifications",
+      name: "Pickups",
+      path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
       icon: <i className="fa-solid fa-gift fa-lg" />,
@@ -71,6 +81,13 @@ const CompanySchedule = () => {
     fetchSchedules();
   }, [selectedDate]);
 
+  useEffect(() => {
+    const token = accessToken;
+    if (!token) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+
   const fetchSchedules = async () => {
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
@@ -83,6 +100,31 @@ const CompanySchedule = () => {
       }
     } catch (error) {
       console.error("Error fetching schedules:", error);
+    }
+  };
+
+  const fetchAllSchedules = async () => {
+    setLoadingAllSchedules(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/company/schedules/"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAllSchedules(data);
+      }
+    } catch (error) {
+      console.error("Error fetching all schedules:", error);
+    } finally {
+      setLoadingAllSchedules(false);
+    }
+  };
+
+  const modifyviewallmodal = (value) => {
+    console.log("Modal view is:", value);
+    setviewallmodal(value);
+    if (value) {
+      fetchAllSchedules();
     }
   };
 
@@ -115,18 +157,20 @@ const CompanySchedule = () => {
 
       if (response.ok) {
         const newSchedule = await response.json();
-        alert("Schedule created successfully!");
+        setsnackbar(true);
         setFormData({
           pickup_date: "",
           start_time: "",
           end_time: "",
-          status: "scheduled",
+          status: "available",
           notes: "",
         });
         fetchSchedules();
       } else {
         const errorData = await response.json();
         setErrors(errorData);
+        console.error("Schedule creation failed:", errorData); // Add this
+        alert(`Error: ${JSON.stringify(errorData)}`); // Add this to see the error
       }
     } catch (error) {
       console.error("Error creating schedule:", error);
@@ -153,8 +197,7 @@ const CompanySchedule = () => {
     switch (status) {
       case "completed":
         return "#10B981"; // green
-      case "canceled":
-        return "#EF4444"; // red
+
       case "inProgress":
         return "rgba(186, 17, 238, 1)";
       default:
@@ -175,6 +218,9 @@ const CompanySchedule = () => {
     if (hours < 12) return "Good Morning";
     if (hours < 18) return "Good Afternoon";
     return "Good Evening";
+  };
+  const closesnackbar = () => {
+    setsnackbar(false);
   };
 
   return (
@@ -245,9 +291,8 @@ const CompanySchedule = () => {
                     width: "100%",
                   }}
                 >
-                  <option value="scheduled">Scheduled</option>
+                  <option value="available">Available</option>
                   <option value="completed">Completed</option>
-                  <option value="canceled">Canceled</option>
                   <option value="inProgress">In Progress</option>
                 </select>
               </div>
@@ -328,6 +373,23 @@ const CompanySchedule = () => {
               Create Schedule
             </button>
           </form>
+          <button
+            type="button"
+            className="actualButton"
+            onClick={() => modifyviewallmodal(true)}
+            style={{
+              background: "linear-gradient(135deg, #60a5fa, #8b5cf6)",
+              fontSize: "25px",
+              marginBottom: 20,
+            }}
+            onMouseEnter={(e) =>
+              (e.target.style.transform = "translateY(-2px)")
+            }
+            onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+          >
+            <i className="fa  fa-eye" style={{ marginRight: "0.5rem" }} />
+            View All Schedules
+          </button>
         </div>
 
         {/* Right Side - Daily Schedule View */}
@@ -368,7 +430,7 @@ const CompanySchedule = () => {
                 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
               >
                 <div className="comp" style={{ background: "#F97316" }} />
-                <span style={{ fontSize: 16 }}>Scheduled</span>
+                <span style={{ fontSize: 16 }}>Available</span>
               </div>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
@@ -384,17 +446,6 @@ const CompanySchedule = () => {
               >
                 <div className="comp" />
                 <span style={{ fontSize: 16 }}>Completed</span>
-              </div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
-                <div
-                  className="comp"
-                  style={{
-                    background: "#EF4444",
-                  }}
-                />
-                <span style={{ fontSize: 16 }}>Canceled</span>
               </div>
             </div>
 
@@ -484,6 +535,49 @@ const CompanySchedule = () => {
           </div>
         </div>
       </div>
+      <AlertSnackbar
+        message="Schedule created successfully"
+        open={snackbar}
+        onClose={closesnackbar}
+        autoHideDuration={4000}
+      />
+      <Modalwindow
+        open={viewallmodal}
+        onClose={() => modifyviewallmodal(false)}
+      >
+        <div
+          className="modal"
+          style={{ width: "95%", maxWidth: "1400px", overflowY: "scroll" }}
+        >
+          <div
+            style={{
+              right: 20,
+              top: 30,
+              position: "absolute",
+              height: 50,
+              width: 50,
+            }}
+          >
+            <button
+              onClick={() => modifyviewallmodal(false)}
+              className="closebtn"
+            >
+              <i className="fa-solid fa-x fa-lg" />
+            </button>
+          </div>
+          <p className="modaltitle">All Schedules</p>
+
+          <div style={{ marginTop: "20px", padding: "20px" }}>
+            {loadingAllSchedules ? (
+              <p style={{ textAlign: "center", color: "#666" }}>
+                Loading schedules...
+              </p>
+            ) : (
+              <ScheduleTable schedules={allSchedules} />
+            )}
+          </div>
+        </div>
+      </Modalwindow>
     </div>
   );
 };
