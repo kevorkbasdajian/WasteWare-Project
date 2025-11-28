@@ -163,14 +163,13 @@ class ListAllReportsView(APIView):
             user_id = request.auth.get('user_id') if request.auth else None
             role = request.auth.get('role') if request.auth else None
             
-            print("Role:", role)
             if role != 'Admin' and role != 'Company':
                 return Response(
                     {'error': 'Permission denied. Admin access required.'}, 
                     status=status.HTTP_403_FORBIDDEN
                 )
             
-            reports = Reports.objects.all()
+            reports = Reports.objects.select_related('user', 'address').all()
             serializer = ReportListSerializer(reports, many=True)
             return Response({
                 'count': reports.count(),
@@ -194,7 +193,7 @@ class ReportDetailView(APIView):
 
     def get(self, request, report_id):
         try:
-            report = Reports.objects.get(report_id=report_id)
+            report = Reports.objects.select_related('user', 'address', 'handled_by').get(report_id=report_id)
             serializer = ReportDetailSerializer(report)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Reports.DoesNotExist:

@@ -51,7 +51,7 @@
 }
 
 .reports-table thead {
-  background: var(--purple);
+  background: var(--gradient-purple);
   color: white;
 }
 

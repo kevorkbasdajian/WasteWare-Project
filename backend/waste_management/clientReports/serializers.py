@@ -2,12 +2,16 @@ from rest_framework import serializers
 from .models import Reports
 from authentication.models import Addresses, Users
 
-
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Addresses
         fields = ['street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
 
+class UserBasicSerializer(serializers.ModelSerializer):
+    """Serializer for user information in reports"""
+    class Meta:
+        model = Users
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_number', 'profile_image']
 
 class ReportCreateSerializer(serializers.ModelSerializer):
     # Accept address fields directly
@@ -48,7 +52,7 @@ class ReportCreateSerializer(serializers.ModelSerializer):
             'latitude',
             'longitude',
         ]
-
+    
     def validate_category(self, value):
         """Map frontend category IDs to database values"""
         category_map = {
@@ -67,7 +71,7 @@ class ReportCreateSerializer(serializers.ModelSerializer):
             'e-waste': 'E-waste',
         }
         return category_map.get(value.lower(), value)
-
+    
     def validate_severity(self, value):
         """Map frontend severity to database integer"""
         severity_map = {
@@ -83,14 +87,14 @@ class ReportCreateSerializer(serializers.ModelSerializer):
             elif isinstance(value, int):
                 return value
         return None
-
+    
     def validate_priority(self, value):
         """Validate priority is one of allowed values"""
         allowed = ['routine', 'moderate', 'high', 'emergency']
         if value and value.lower() in allowed:
             return value.lower()
         return None
-
+    
     def create(self, validated_data):
         # Extract address fields
         street = validated_data.pop('street', '')
@@ -98,17 +102,17 @@ class ReportCreateSerializer(serializers.ModelSerializer):
         region = validated_data.pop('region', '')
         latitude = validated_data.pop('latitude', None)
         longitude = validated_data.pop('longitude', None)
-
+        
         # Map severity string to integer
         severity = validated_data.pop('severity', None)
         if severity:
             validated_data['severity_level'] = severity
-
+        
         # Map priority
         priority = validated_data.pop('priority', None)
         if priority:
             validated_data['response_priority'] = priority
-
+        
         # Create address if location data provided
         address = None
         if street or city or latitude:
@@ -120,14 +124,13 @@ class ReportCreateSerializer(serializers.ModelSerializer):
                 longitude=longitude
             )
             validated_data['address'] = address
-
+        
         # Get user from context
         user = self.context.get('user')
         if user:
             validated_data['user'] = user
-
+        
         return Reports.objects.create(**validated_data)
-
 
 class ReportListSerializer(serializers.ModelSerializer):
     """Serializer for listing reports"""
@@ -137,7 +140,7 @@ class ReportListSerializer(serializers.ModelSerializer):
     severity_display = serializers.CharField(source='get_severity_level_display', read_only=True)
     priority_display = serializers.CharField(source='get_response_priority_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
-
+    
     class Meta:
         model = Reports
         fields = [
@@ -158,21 +161,55 @@ class ReportListSerializer(serializers.ModelSerializer):
             'created_at',
             'resolved_at',
         ]
-
+    
     def get_user_name(self, obj):
         if obj.user:
             return f"{obj.user.first_name} {obj.user.last_name}"
         return None
 
-
-class ReportDetailSerializer(ReportListSerializer):
-    """Serializer for single report detail"""
-    handled_by_name = serializers.SerializerMethodField()
-
-    class Meta(ReportListSerializer.Meta):
-        fields = ReportListSerializer.Meta.fields + ['handled_by_name']
-
-    def get_handled_by_name(self, obj):
-        if obj.handled_by:
-            return f"{obj.handled_by.first_name} {obj.handled_by.last_name}"
+class ReportDetailSerializer(serializers.ModelSerializer):
+    """Serializer for single report detail with full user data"""
+    address = AddressSerializer(read_only=True)
+    user = UserBasicSerializer(read_only=True)  # ✅ Full user object
+    handled_by = UserBasicSerializer(read_only=True)  # ✅ Full handler object
+    type_display = serializers.CharField(source='get_type_of_report_display', read_only=True)
+    severity_display = serializers.CharField(source='get_severity_level_display', read_only=True)
+    priority_display = serializers.CharField(source='get_response_priority_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    location = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Reports
+        fields = [
+            'report_id',
+            'user',  # ✅ Full user object instead of just user_name
+            'title',
+            'type_of_report',
+            'type_display',
+            'severity_level',
+            'severity_display',
+            'response_priority',
+            'priority_display',
+            'address',
+            'location',
+            'description',
+            'image_url',
+            'status',
+            'status_display',
+            'handled_by',
+            'created_at',
+            'resolved_at',
+        ]
+    
+    def get_location(self, obj):
+        """Get formatted location string from address"""
+        if obj.address:
+            parts = []
+            if obj.address.street:
+                parts.append(obj.address.street)
+            if obj.address.city:
+                parts.append(obj.address.city)
+            if obj.address.region:
+                parts.append(obj.address.region)
+            return ', '.join(parts) if parts else None
         return None

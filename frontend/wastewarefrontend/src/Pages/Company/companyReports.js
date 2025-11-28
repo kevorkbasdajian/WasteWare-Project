@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
 import Navbar from "../../Components/navbar.js";
-import "../../Styles/Page/companyReports.css";
 import HeaderBox from "../../Components/HeaderBox.js";
+import ReportModal from "../Modal/reportModal.js";
+import "../../Styles/Page/companyReports.css";
 
 const CompanyReports = () => {
   const fetchWithAuth = useFetchWithAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, pending, reviewed, resolved
+  const [filter, setFilter] = useState("all");
 
-  // modal state
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -54,7 +55,7 @@ const CompanyReports = () => {
     },
   ];
 
-  // Fetch all reports (admin only)
+  // Fetch all reports
   useEffect(() => {
     fetchReports();
   }, []);
@@ -93,10 +94,10 @@ const CompanyReports = () => {
 
       if (response.ok) {
         alert("Status updated successfully!");
-        fetchReports(); // Refresh list
-        // if modal open and the report is the same, refresh modal
+        fetchReports();
+        // Refresh modal if it's open and showing the same report
         if (isModalOpen && selectedReport?.report_id === reportId) {
-          viewDetails(reportId, true); // force refresh modal data
+          viewDetails(reportId, true);
         }
       } else {
         alert("Failed to update status");
@@ -106,11 +107,10 @@ const CompanyReports = () => {
     }
   };
 
-  // View report details (fetches detail endpoint and opens modal)
-  // pass `forceReload = false` to avoid re-fetching when not needed
+  // View report details
   const viewDetails = async (reportId, forceReload = false) => {
     try {
-      // If we already have the selectedReport cached and it's the same, just open
+      // If cached and not forcing reload, just open modal
       if (
         !forceReload &&
         selectedReport &&
@@ -130,6 +130,8 @@ const CompanyReports = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Report data received:", data);
+        console.log("User data:", data.user);
         setSelectedReport(data);
         setIsModalOpen(true);
       } else {
@@ -144,22 +146,11 @@ const CompanyReports = () => {
     }
   };
 
-  // Close modal helper
+  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
-    // keep selectedReport if you want to reuse; uncomment to clear it:
-    // setSelectedReport(null);
     setModalError(null);
   };
-
-  // close on ESC
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === "Escape" && isModalOpen) closeModal();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isModalOpen]);
 
   // Filter reports
   const filteredReports = reports.filter((report) => {
@@ -171,10 +162,7 @@ const CompanyReports = () => {
     <div className="page">
       <Navbar links={links} />
 
-      <HeaderBox
-        text="Report Dashboard"
-        gradientColors={["#3949AB", "#5C6BC0"]}
-      />
+      <HeaderBox text="Report Dashboard" gradientColors={"--gradient-purple"} />
 
       <div className="company-reports-container">
         {/* Filter Tabs */}
@@ -271,146 +259,14 @@ const CompanyReports = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="modal-overlay"
-          onMouseDown={(e) => {
-            // close when clicking overlay (but not when clicking inside modal)
-            if (e.target.classList.contains("modal-overlay")) closeModal();
-          }}
-        >
-          <div
-            className="modal-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Report details"
-          >
-            <header className="modal-header">
-              <h2>
-                Report Details{" "}
-                {selectedReport ? (
-                  <span style={{ fontSize: "0.85rem", color: "#666" }}>
-                    #{selectedReport.report_id}
-                  </span>
-                ) : null}
-              </h2>
-              <button
-                className="modal-close"
-                onClick={closeModal}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </header>
-
-            <div className="modal-body">
-              {modalLoading ? (
-                <div className="loading-spinner-container">
-                  <i className="fa-solid fa-spinner fa-spin fa-2x"></i>
-                  <p>Loading...</p>
-                </div>
-              ) : modalError ? (
-                <div className="no-reports">
-                  <p>{modalError}</p>
-                </div>
-              ) : selectedReport ? (
-                <div className="report-detail-grid">
-                  <div className="detail-row">
-                    <strong>Title:</strong> <span>{selectedReport.title}</span>
-                  </div>
-                  <div className="detail-row">
-                    <strong>Report ID:</strong>{" "}
-                    <span>#{selectedReport.report_id}</span>
-                  </div>
-                  <div className="detail-row">
-                    <strong>Type:</strong>{" "}
-                    <span>
-                      {selectedReport.type_display ||
-                        selectedReport.type_of_report}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <strong>Status:</strong>{" "}
-                    <span>
-                      {selectedReport.status_display || selectedReport.status}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <strong>Created At:</strong>{" "}
-                    <span>
-                      {new Date(selectedReport.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  {selectedReport.resolved_at && (
-                    <div className="detail-row">
-                      <strong>Resolved At:</strong>{" "}
-                      <span>
-                        {new Date(selectedReport.resolved_at).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="detail-row">
-                    <strong>Description:</strong>{" "}
-                    <div className="detail-rich">
-                      {selectedReport.description || "No description"}
-                    </div>
-                  </div>
-
-                  {/* Example for user / location / images - adjust to your payload */}
-                  {selectedReport.user && (
-                    <div className="detail-row">
-                      <strong>Reported By:</strong>{" "}
-                      <span>
-                        {selectedReport.user.full_name ||
-                          selectedReport.user.email ||
-                          selectedReport.user.user_id}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedReport.location && (
-                    <div className="detail-row">
-                      <strong>Location:</strong>{" "}
-                      <span>{selectedReport.location}</span>
-                    </div>
-                  )}
-
-                  {selectedReport.images &&
-                    selectedReport.images.length > 0 && (
-                      <div className="detail-row">
-                        <strong>Images:</strong>
-                        <div className="detail-images">
-                          {selectedReport.images.map((imgUrl, idx) => (
-                            <img key={idx} src={imgUrl} alt={`report-${idx}`} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Raw JSON fallback (helpful during dev) */}
-                  <div className="detail-row">
-                    <strong>Raw:</strong>
-                    <pre style={{ maxHeight: 200, overflow: "auto" }}>
-                      {JSON.stringify(selectedReport, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              ) : (
-                <div className="no-reports">
-                  <p>No details available</p>
-                </div>
-              )}
-            </div>
-
-            <footer className="modal-footer">
-              <button className="details-btn" onClick={closeModal}>
-                Close
-              </button>
-            </footer>
-          </div>
-        </div>
-      )}
+      {/* Reusable Modal Component */}
+      <ReportModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        report={selectedReport}
+        loading={modalLoading}
+        error={modalError}
+      />
     </div>
   );
 };
