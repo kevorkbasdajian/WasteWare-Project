@@ -42,7 +42,7 @@ export const LoginPage = () => {
         }
       })();
     if (token) {
-      navigate("/", { replace: true });
+      navigate("/client", { replace: true });
     }
   }, [navigate]);
 
@@ -99,7 +99,7 @@ export const LoginPage = () => {
     if (user_type === "company") {
       navigate("/company", { replace: true });
     }
-    if (user_type === "user") navigate("/", { replace: true });
+    if (user_type === "user") navigate("/client", { replace: true });
     else if (user_type === "admin")
       navigate("/admin/dashboard", { replace: true });
   };

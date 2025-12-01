@@ -210,3 +210,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Load Gemini API key from environment variable
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+
+# For Profile Image Update
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

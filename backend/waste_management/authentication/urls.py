@@ -1,5 +1,7 @@
 from django.urls import path
-from .views import UserSignupView, CompanySignupView, LoginView, AdminSignupView,LogoutView
+from django.conf import settings
+from django.conf.urls.static import static
+from .views import UserSignupView, CompanySignupView, LoginView, AdminSignupView, LogoutView, ProfileView, UpdateProfileView, UserManagementListView, UserUpdateView, UserDeleteView
 
 urlpatterns = [
     path('signup/user/', UserSignupView.as_view(), name='user-signup'),
@@ -7,4 +9,10 @@ urlpatterns = [
     path('signup/company/', CompanySignupView.as_view(), name='company-signup'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='auth_logout'),
-]
+    path('profile/', ProfileView.as_view(), name='profile'),
+    path('profile/update/', UpdateProfileView.as_view(), name='update-profile'),
+    path('admin/users/', UserManagementListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:user_id>/', UserUpdateView.as_view(), name='admin-user-update'),
+    path('admin/users/<int:user_id>/delete/', UserDeleteView.as_view(), name='admin-user-delete'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

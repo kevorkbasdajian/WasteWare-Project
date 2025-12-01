@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../Components/AuthProvider.js";
+import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
 import * as Yup from "yup";
 import "../../Styles/Page/clientReports.css";
-import {
-  fetchWithAuth,
-  useFetchWithAuth,
-} from "../../Components/fetchWithAuth.js";
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
 
@@ -63,15 +62,14 @@ const reportValidationSchema = Yup.object().shape({
     .min(10, "Details must be at least 10 characters")
     .max(2000, "Details are too long"),
 
-  // Photo is optional - no required validation
   photo: Yup.mixed()
     .nullable()
     .test("fileSize", "File is too large (max 5MB)", (value) => {
-      if (!value) return true; // Allow empty
-      return value.size <= 5242880; // 5MB
+      if (!value) return true;
+      return value.size <= 5242880;
     })
     .test("fileType", "Unsupported file format", (value) => {
-      if (!value) return true; // Allow empty
+      if (!value) return true;
       return ["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(
         value.type
       );
@@ -79,7 +77,11 @@ const reportValidationSchema = Yup.object().shape({
 });
 
 const Reports = () => {
+  // ✅ FIXED: Correct destructuring from useContext (object, not array)
+  const { clearAuth, accessToken, userData, isLoadingUser } =
+    useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
+  const navigate = useNavigate();
   const [autoGPS, setAutoGPS] = useState(true);
   const [photoPreview, setPhotoPreview] = useState(null);
 
@@ -139,7 +141,7 @@ const Reports = () => {
   const links = [
     {
       name: "Home",
-      path: "/",
+      path: "/client",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -158,16 +160,8 @@ const Reports = () => {
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-    {
-      name: "Notifications",
-      path: "/company/notifications",
-      color: "var(--gradient-green-blue)",
-      glowColor: "#10B981",
-      icon: "fa-solid fa-bell fa-lg",
-    },
   ];
 
-  // Initial form values
   const initialValues = {
     title: "",
     category: "",
@@ -196,7 +190,6 @@ const Reports = () => {
   const handleRemovePhoto = (setFieldValue) => {
     setFieldValue("photo", null);
     setPhotoPreview(null);
-    // Clear file input
     const photoInput = document.getElementById("photo-input");
     if (photoInput) {
       photoInput.value = "";
@@ -208,18 +201,14 @@ const Reports = () => {
     { setSubmitting, resetForm, setStatus }
   ) => {
     try {
-      // Parse coordinates
       const [lat, lng] = values.coordinates
         .split(",")
         .map((c) => parseFloat(c.trim()));
 
-      // Always use FormData (simpler approach)
       const formData = new FormData();
-
-      // Append all fields
       formData.append("title", values.title);
       formData.append("category", values.category);
-      formData.append("severity", values.severity); // Send as string: "low", "medium", etc.
+      formData.append("severity", values.severity);
       formData.append("priority", values.priority);
       formData.append("details", values.details || "");
       formData.append("street", values.address || "");
@@ -228,20 +217,15 @@ const Reports = () => {
       formData.append("latitude", lat);
       formData.append("longitude", lng);
 
-      // Append photo only if it exists
       if (values.photo) {
         formData.append("image_url", values.photo);
-        console.log(values.photo);
       }
 
-      // Send POST request
       const response = await fetchWithAuth(
         "http://localhost:8000/api/reports/create/",
         {
           method: "POST",
           body: formData,
-          // ✅ CRITICAL: Do NOT set Content-Type header
-          // Let the browser set it automatically with the boundary parameter
         }
       );
 
@@ -255,7 +239,6 @@ const Reports = () => {
     }
   };
 
-  // Helper function to handle response
   const handleResponse = async (response, setStatus, resetForm) => {
     try {
       const contentType = response.headers.get("content-type");
@@ -270,7 +253,6 @@ const Reports = () => {
       }
 
       if (response.ok) {
-        console.log("✅ Report created:", data);
         alert("Report submitted successfully! 🎉");
         setStatus({ success: true, message: "Report submitted successfully!" });
         resetForm();
@@ -300,9 +282,39 @@ const Reports = () => {
     }
   };
 
+  useEffect(() => {
+    if (!accessToken) {
+      navigate("/login", { replace: true });
+    }
+  }, [accessToken, navigate]);
+
+  // Show loading state while user data is being fetched
+  if (isLoadingUser) {
+    return (
+      <div className="loading">
+        <i className="fa-solid fa-spinner fa-spin"></i>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // Show error if no user data
+  if (!userData) {
+    return (
+      <div className="error-page">
+        <p>Unable to load user data</p>
+        <button onClick={() => navigate("/login")}>Go to Login</button>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
-      <Navbar links={links} profilePath="/client/profile" />
+      <Navbar
+        links={links}
+        profilePath="/client/profile"
+        profileImage={`http://localhost:8000${userData.avatar}`}
+      />
 
       <HeaderBox
         text="Report Environmental Issue"
@@ -310,8 +322,6 @@ const Reports = () => {
       />
 
       <div className="report-container">
-        {/* <h1 className="report-main-title">Report Environmental Issue</h1> */}
-
         <Formik
           initialValues={initialValues}
           validationSchema={reportValidationSchema}
@@ -453,7 +463,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="Tripoli">Tripoli</option>
                         <option value="Sidon">Sidon</option>
-                        <option value="Sidon">Metn</option>
+                        <option value="Metn">Metn</option>
                       </Field>
                       <ErrorMessage
                         name="city"
@@ -472,7 +482,7 @@ const Reports = () => {
                         <option value="Beirut">Beirut</option>
                         <option value="North">North</option>
                         <option value="South">South</option>
-                        <option value="Sidon">Mount Lebanon</option>
+                        <option value="Mount Lebanon">Mount Lebanon</option>
                       </Field>
                       <ErrorMessage
                         name="governorate"
@@ -495,7 +505,7 @@ const Reports = () => {
                     }}
                   >
                     <i
-                      class="fa fa-phone fa-2x"
+                      className="fa fa-phone fa-2x"
                       aria-hidden="true"
                       style={{ marginRight: 10 }}
                     />

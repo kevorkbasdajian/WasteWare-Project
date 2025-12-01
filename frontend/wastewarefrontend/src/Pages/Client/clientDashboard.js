@@ -1,17 +1,20 @@
-import React, { useContext, useEffect } from "react";
-import "../../Styles/Page/clientDashboard.css"; // Dashboard CSS in same folder
+import React, { useContext, useEffect, useState } from "react";
+import "../../Styles/Page/clientDashboard.css";
 import Navbar from "../../Components/navbar.js";
-import { AuthContext } from "../../Components/AuthProvider";
+import { AuthContext } from "../../Components/AuthProvider.js";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const Dashboard = () => {
-  const { clearAuth, accessToken } = useContext(AuthContext);
+  const { clearAuth, accessToken, userData, isLoadingUser } =
+    useContext(AuthContext);
   const navigate = useNavigate();
+  const [selectedPeriod, setSelectedPeriod] = useState("week");
+
   const links = [
     {
       name: "Home",
-      path: "/",
+      path: "/client",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -30,29 +33,345 @@ const Dashboard = () => {
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
+  ];
+
+  // Sample data for charts - replace with real data from your API
+  const activityData = {
+    week: [
+      { day: "Mon", reports: 3 },
+      { day: "Tue", reports: 5 },
+      { day: "Wed", reports: 2 },
+      { day: "Thu", reports: 7 },
+      { day: "Fri", reports: 4 },
+      { day: "Sat", reports: 6 },
+      { day: "Sun", reports: 3 },
+    ],
+    month: [
+      { day: "Week 1", reports: 15 },
+      { day: "Week 2", reports: 22 },
+      { day: "Week 3", reports: 18 },
+      { day: "Week 4", reports: 25 },
+    ],
+    year: [
+      { day: "Jan", reports: 45 },
+      { day: "Feb", reports: 52 },
+      { day: "Mar", reports: 61 },
+      { day: "Apr", reports: 48 },
+      { day: "May", reports: 70 },
+      { day: "Jun", reports: 65 },
+    ],
+  };
+
+  const notifications = [
     {
-      name: "Notifications",
-      path: "/company/notifications",
-      color: "var(--gradient-green-blue)",
-      glowColor: "#10B981",
-      icon: "fa-solid fa-bell fa-lg",
+      id: 1,
+      type: "success",
+      title: "Report Approved",
+      message: "Your waste report #2845 has been verified",
+      time: "2 hours ago",
+      icon: "fa-check-circle",
+    },
+    {
+      id: 2,
+      type: "info",
+      title: "New Collection Schedule",
+      message: "Recycling pickup scheduled for tomorrow",
+      time: "5 hours ago",
+      icon: "fa-calendar",
+    },
+    {
+      id: 3,
+      type: "warning",
+      title: "EcoPoints Expiring",
+      message: "500 points will expire in 7 days",
+      time: "1 day ago",
+      icon: "fa-exclamation-triangle",
+    },
+  ];
+
+  const nearbyCenters = [
+    {
+      id: 1,
+      name: "Green Recycling Hub",
+      distance: "0.8 km",
+      type: "Recycling",
+    },
+    {
+      id: 2,
+      name: "EcoCenter Downtown",
+      distance: "1.2 km",
+      type: "Mixed Waste",
+    },
+    { id: 3, name: "CompostPro Station", distance: "2.1 km", type: "Organic" },
+  ];
+
+  const weeklySchedule = [
+    {
+      day: "Monday",
+      task: "Recycling Collection",
+      time: "8:00 AM",
+      status: "completed",
+    },
+    {
+      day: "Tuesday",
+      task: "Community Clean-up",
+      time: "3:00 PM",
+      status: "upcoming",
+    },
+    {
+      day: "Wednesday",
+      task: "Organic Waste",
+      time: "7:00 AM",
+      status: "upcoming",
+    },
+    {
+      day: "Friday",
+      task: "E-Waste Drop-off",
+      time: "10:00 AM",
+      status: "upcoming",
     },
   ];
 
   useEffect(() => {
-    const token = accessToken;
-    if (!token) {
-      navigate("/Login", { replace: true });
+    if (!accessToken) {
+      navigate("/login", { replace: true });
     }
-  }, [navigate]);
+  }, [accessToken, navigate]);
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate("/login");
+  };
+
+  if (isLoadingUser) {
+    return (
+      <div className="loading">
+        <i className="fa-solid fa-spinner fa-spin"></i>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="error-page">
+        <p>Unable to load user data</p>
+        <button onClick={() => navigate("/login")}>Go to Login</button>
+      </div>
+    );
+  }
+
+  const maxReports = Math.max(
+    ...activityData[selectedPeriod].map((d) => d.reports)
+  );
 
   return (
     <div className="page">
-      <Navbar links={links} profilePath="/client/profile" />
+      <Navbar
+        links={links}
+        profilePath="/client/profile"
+        profileImage={`http://localhost:8000${userData.avatar}`}
+        onLogout={handleLogout}
+      />
+
       <HeaderBox
-        text="Welcome Back, Christian Al Alam"
+        text={`Welcome Back, ${userData.name}!`}
         gradientColors={["#E53935", "#FF7043"]}
       />
+
+      <div className="dashboard-container">
+        {/* Stats Overview - Environmental Impact Style */}
+        <div className="impact-section stats-section">
+          <h2>Your Statistics Overview</h2>
+          <div className="stats-grid">
+            <div className="stat-card impact-style">
+              <div className="stat-icon-large">
+                <i className="fa-solid fa-chart-simple"></i>
+              </div>
+              <h3>{userData.stats?.reportsSubmitted || 0}</h3>
+              <p>Reports Submitted</p>
+            </div>
+
+            <div className="stat-card impact-style">
+              <div className="stat-icon-large">
+                <i className="fa-solid fa-leaf"></i>
+              </div>
+              <h3>{userData.stats?.ecoPoints || 0}</h3>
+              <p>EcoPoints</p>
+            </div>
+
+            <div className="stat-card impact-style">
+              <div className="stat-icon-large">
+                <i className="fa-solid fa-earth-americas"></i>
+              </div>
+              <h3>{userData.stats?.co2Reduced || 0}</h3>
+              <p>Tons CO2 Reduced</p>
+            </div>
+
+            <div className="stat-card impact-style">
+              <div className="stat-icon-large">
+                <i className="fa-solid fa-calendar-days"></i>
+              </div>
+              <h3>{userData.stats?.daysActive || 0}</h3>
+              <p>Days Active</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="main-content-grid">
+          {/* Activity Chart */}
+          <div className="chart-section">
+            <div className="section-header">
+              <h2>Activity Overview</h2>
+              <div className="period-selector">
+                <button
+                  className={selectedPeriod === "week" ? "active" : ""}
+                  onClick={() => setSelectedPeriod("week")}
+                >
+                  Week
+                </button>
+                <button
+                  className={selectedPeriod === "month" ? "active" : ""}
+                  onClick={() => setSelectedPeriod("month")}
+                >
+                  Month
+                </button>
+                <button
+                  className={selectedPeriod === "year" ? "active" : ""}
+                  onClick={() => setSelectedPeriod("year")}
+                >
+                  Year
+                </button>
+              </div>
+            </div>
+            <div className="chart-container">
+              {activityData[selectedPeriod].map((data, index) => (
+                <div key={index} className="bar-wrapper">
+                  <div className="bar-container">
+                    <div
+                      className="bar"
+                      style={{
+                        height: `${(data.reports / maxReports) * 100}%`,
+                      }}
+                    >
+                      <span className="bar-value">{data.reports}</span>
+                    </div>
+                  </div>
+                  <span className="bar-label">{data.day}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="notifications-section">
+            <div className="section-header">
+              <h2>Notifications</h2>
+              <button
+                className="view-all-btn"
+                onClick={() => navigate("/company/notifications")}
+              >
+                View All
+              </button>
+            </div>
+            <div className="notifications-list">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`notification-item ${notification.type}`}
+                >
+                  <div className="notification-icon">
+                    <i className={`fa-solid ${notification.icon}`}></i>
+                  </div>
+                  <div className="notification-content">
+                    <h4>{notification.title}</h4>
+                    <p>{notification.message}</p>
+                    <span className="notification-time">
+                      {notification.time}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Secondary Content Grid */}
+        <div className="secondary-content-grid">
+          {/* Nearby Centers Map */}
+          <div className="nearby-centers-section">
+            <div className="section-header">
+              <h2>Nearby Centers</h2>
+              <button
+                className="view-map-btn"
+                onClick={() => navigate("/client/map")}
+              >
+                <i className="fa-solid fa-map"></i> View Map
+              </button>
+            </div>
+            <div className="map-placeholder">
+              <i className="fa-solid fa-map-location-dot"></i>
+              <p>Interactive map will load here</p>
+            </div>
+            <div className="centers-list">
+              {nearbyCenters.map((center) => (
+                <div key={center.id} className="center-item">
+                  <div className="center-icon">
+                    <i className="fa-solid fa-location-dot"></i>
+                  </div>
+                  <div className="center-info">
+                    <h4>{center.name}</h4>
+                    <p>
+                      <span className="center-type">{center.type}</span>
+                      <span className="center-distance">
+                        • {center.distance}
+                      </span>
+                    </p>
+                  </div>
+                  <button className="directions-btn">
+                    <i className="fa-solid fa-directions"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Weekly Schedule */}
+          <div className="schedule-section">
+            <div className="section-header">
+              <h2>Weekly Schedule</h2>
+              <button className="add-event-btn">
+                <i className="fa-solid fa-plus"></i>
+              </button>
+            </div>
+            <div className="schedule-list">
+              {weeklySchedule.map((item, index) => (
+                <div key={index} className={`schedule-item ${item.status}`}>
+                  <div className="schedule-day">
+                    <span className="day-name">{item.day}</span>
+                    <span className="day-time">{item.time}</span>
+                  </div>
+                  <div className="schedule-task">
+                    <h4>{item.task}</h4>
+                    <span className={`status-badge ${item.status}`}>
+                      {item.status === "completed" ? (
+                        <>
+                          <i className="fa-solid fa-check"></i> Completed
+                        </>
+                      ) : (
+                        <>
+                          <i className="fa-solid fa-clock"></i> Upcoming
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

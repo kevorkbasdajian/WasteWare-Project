@@ -18,7 +18,7 @@ export const SignUpPage = () => {
   const { saveAccessToken, accessToken } = useContext(AuthContext);
   const [snackbar, setsnackbar] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
-  const [rolee, setrole] = useState("");
+  const [role, setrole] = useState("");
   const navigate = useNavigate();
   const defaultOptions = {
     loop: true,
@@ -41,7 +41,7 @@ export const SignUpPage = () => {
         }
       })();
     if (token) {
-      navigate("/", { replace: true });
+      navigate("/client", { replace: true });
     }
   }, [navigate]);
 
@@ -119,8 +119,8 @@ export const SignUpPage = () => {
   };
   const closesnackbar = () => {
     setsnackbar(false);
-    if (rolee === "Admin") navigate("/admin/dashboard", { replace: true });
-    else if (rolee === "User") navigate("/", { replace: true });
+    if (role === "Admin") navigate("/admin/dashboard", { replace: true });
+    else if (role === "User") navigate("/client", { replace: true });
     else navigate("/company", { replace: true });
   };
 

@@ -26,7 +26,7 @@ import { useContext } from "react";
 const Navbar = ({
   brand = "WasteWare",
   links = [],
-  profileImage = "/assets/profile-placeholder.jpg",
+  profileImage,
   profilePath,
 }) => {
   const [darkMode, setDarkMode] = useState(false);
@@ -90,7 +90,7 @@ const Navbar = ({
 
         {/* Dynamic Links */}
         <ul className="navbar-links">
-          {links.map((link, index) => (
+          {links.map((link) => (
             <li key={link.path}>
               {" "}
               {/* Use path as key for better performance */}

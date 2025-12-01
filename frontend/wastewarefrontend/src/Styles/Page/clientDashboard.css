@@ -1,15 +1,13 @@
 /* ===============================================
    File: clientDashboard.css
-   Purpose: Styles for the user dashboard page — includes
-            layout, hero section, cards, and responsive design.
-   Used by: Dashboard and home pages
+   Purpose: Enhanced styles for user dashboard
    =============================================== */
 
-@import '../Base/colors.css';
-@import '../Base/variables.css';
-@import '../Component/buttons.css';
-@import '../Component/navbar.css';
-@import '../Base/darkMode.css';
+@import "../Base/colors.css";
+@import "../Base/variables.css";
+@import "../Component/buttons.css";
+@import "../Component/navbar.css";
+@import "../Base/darkMode.css";
 
 /* ---------------------------
    Dashboard Layout
@@ -23,108 +21,677 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ---------------------------
-   Hero Section
----------------------------- */
-.hero-section {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.hero-greeting {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--eco-green);
-  margin-bottom: 1rem;
-  min-height: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-tagline {
-  font-size: 1.5rem;
-  color: var(--text-dark);
-  opacity: 0.8;
-}
-
-/* ---------------------------
-   Dashboard Cards
----------------------------- */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
+.dashboard-container {
+  padding: 20px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.dashboard-card {
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  background: var(--white);
-  box-shadow: 0 8px 32px var(--shadow);
-  cursor: pointer;
+/* ---------------------------
+   Stats Overview (Impact Style at Top)
+---------------------------- */
+
+.impact-section.stats-section {
+  background: linear-gradient(135deg, #e53935 0%, #ff7043 50%, #ff8a65 100%);
+  border-radius: 24px;
+  padding: 36px 40px;
+  box-shadow: 0 10px 40px rgba(229, 57, 53, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  color: white;
   position: relative;
   overflow: hidden;
-  transition: all var(--transition-speed) ease;
+  transition: transform 0.3s ease;
+  margin-bottom: 40px;
 }
 
-.dashboard-card::before {
-  content: '';
+.impact-section.stats-section::before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  animation: rotate 20s linear infinite;
 }
 
-.dashboard-card:hover::before {
-  left: 100%;
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.dashboard-card:hover {
-  transform: translateY(-10px) scale(1.02);
+.impact-section.stats-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 50px rgba(229, 57, 53, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-.card-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: block;
-  color: var(--eco-green);
-}
-
-.card-title {
-  font-size: 1.5rem;
+.impact-section.stats-section h2 {
+  margin-bottom: 28px;
+  font-size: 1.15rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  color: white;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.card-description {
+.impact-section.stats-section h2::before {
+  content: "\f200";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 1.5rem;
+}
+
+.impact-section.stats-section .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card.impact-style {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 30px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card.impact-style:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stat-icon-large {
+  font-size: 48px;
+  margin-bottom: 8px;
+  opacity: 0.95;
+  transition: transform 0.3s ease;
+}
+
+.stat-card.impact-style:hover .stat-icon-large {
+  transform: scale(1.1);
+}
+
+.stat-card.impact-style h3 {
+  margin: 0;
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card.impact-style p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---------------------------
+   Main Content Grid
+---------------------------- */
+
+.main-content-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* ---------------------------
+   Activity Chart
+---------------------------- */
+
+.chart-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.period-selector {
+  display: flex;
+  gap: 8px;
+  background: #f5f5f5;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.period-selector button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.period-selector button.active {
+  background: white;
+  color: #e53935;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 250px;
+  padding: 20px 0;
+  gap: 12px;
+}
+
+.bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-container {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar {
+  width: 100%;
+  max-width: 60px;
+  background: linear-gradient(180deg, #e53935, #ff7043);
+  border-radius: 8px 8px 4px 4px;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.bar:hover {
   opacity: 0.8;
-  line-height: 1.6;
+  transform: scaleY(1.05);
+}
+
+.bar-value {
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bar-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* ---------------------------
+   Notifications
+---------------------------- */
+
+.notifications-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.view-all-btn {
+  background: transparent;
+  border: none;
+  color: #e53935;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.view-all-btn:hover {
+  opacity: 0.7;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f9f9f9;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.notification-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-item.success .notification-icon {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.notification-item.info .notification-icon {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.notification-item.warning .notification-icon {
+  background: #fff3e0;
+  color: #ff9800;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.notification-content p {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ---------------------------
+   Secondary Content Grid
+---------------------------- */
+
+.secondary-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* ---------------------------
+   Nearby Centers
+---------------------------- */
+
+.nearby-centers-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view-map-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.view-map-btn:hover {
+  background: #d32f2f;
+}
+
+.map-placeholder {
+  background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+  height: 200px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.map-placeholder i {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.map-placeholder p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.centers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.center-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.center-item:hover {
+  transform: translateX(4px);
+}
+
+.center-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #e53935, #ff7043);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.center-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.center-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.center-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.center-type {
+  font-weight: 500;
+}
+
+.center-distance {
+  color: #999;
+}
+
+.directions-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #e53935;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.directions-btn:hover {
+  background: #d32f2f;
+}
+
+/* ---------------------------
+   Weekly Schedule
+---------------------------- */
+
+.schedule-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.add-event-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #e53935;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.add-event-btn:hover {
+  background: #d32f2f;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-item {
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #e53935;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.schedule-item.completed {
+  border-left-color: #4caf50;
+  opacity: 0.7;
+}
+
+.schedule-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-day {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.day-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.day-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.schedule-task h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.completed {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.status-badge.upcoming {
+  background: #fff3e0;
+  color: #ff9800;
 }
 
 /* ---------------------------
    Responsive Design
 ---------------------------- */
-@media (max-width: 768px) {
-  .dashboard-grid {
+
+@media (max-width: 1024px) {
+  .main-content-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
 
-  .hero-greeting {
-    font-size: 2rem;
+  .secondary-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px;
   }
 
-  .hero-tagline {
-    font-size: 1.1rem;
+  .impact-section.stats-section .stats-grid {
+    grid-template-columns: 1fr;
   }
+
+  .stat-card.impact-style h3 {
+    font-size: 28px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .bar-container {
+    height: 150px;
+  }
+
+  .period-selector button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ---------------------------
+   Loading & Error States
+---------------------------- */
+
+.loading,
+.error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+}
+
+.loading i {
+  font-size: 48px;
+  color: #e53935;
+}
+
+.error-page button {
+  padding: 12px 24px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.error-page button:hover {
+  background: #d32f2f;
 }
