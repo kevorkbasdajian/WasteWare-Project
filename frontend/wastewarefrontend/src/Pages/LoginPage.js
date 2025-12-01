@@ -18,10 +18,10 @@ import AlertSnackbar from "../Components/Alert";
 export const LoginPage = () => {
   // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState("");
-  const { saveAccessToken, accessToken } = useContext(AuthContext);
+  const { saveAccessToken, accessToken, saveusertype, user_type } =
+    useContext(AuthContext);
   const navigate = useNavigate();
   const [snackbar, setsnackbar] = useState(false);
-  const [user_type, set_user_type] = useState("");
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -85,7 +85,8 @@ export const LoginPage = () => {
         if (accessToken) saveAccessToken(accessToken);
         setsnackbar(true);
         // alert(JSON.stringify(data, null, 2));
-        set_user_type(data.user_type);
+        console.log(user_type);
+        saveusertype(data.user_type);
         setErrorMessage("");
       }
     } catch (error) {

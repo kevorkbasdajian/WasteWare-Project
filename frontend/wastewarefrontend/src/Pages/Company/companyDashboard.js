@@ -8,7 +8,7 @@ import HeaderBox from "../../Components/HeaderBox.js";
 const CompanyDashboard = () => {
   //   const fetchWithAuth = useFetchWithAuth();
   const { clearAuth } = useContext(AuthContext);
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, user_type } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -16,6 +16,12 @@ const CompanyDashboard = () => {
     const token = accessToken;
     if (!token) {
       navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (user_type && user_type !== "company") {
+      navigate(-1);
     }
   }, [navigate]);
   const links = [

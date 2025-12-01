@@ -108,7 +108,7 @@ class Schedule(models.Model):
     pickup_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 

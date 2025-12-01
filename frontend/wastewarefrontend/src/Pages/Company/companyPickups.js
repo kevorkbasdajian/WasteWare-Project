@@ -5,6 +5,8 @@ import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 import RouteMap from "../../Components/RouteMap.js";
+import Lottie from "lottie-react";
+
 import {
   Calendar,
   Search,
@@ -15,9 +17,23 @@ import {
   Check,
 } from "lucide-react";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
+import truck from "../../Content/truck.json";
+import time from "../../Content/Time.json";
+import { RightPopupModal } from "../../Components/RightModal.js";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default marker icon in React-Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+});
 const CompanyPickups = () => {
   //   const fetchWithAuth = useFetchWithAuth();
-  const { clearAuth, accessToken } = useContext(AuthContext);
+  const { clearAuth, accessToken, user_type } = useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
   const navigate = useNavigate();
   const [selectedRoute, setSelectedRoute] = useState(null);
@@ -33,6 +49,38 @@ const CompanyPickups = () => {
   const [loadingRoutes, setLoadingRoutes] = useState(true);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
   const [companyAddress, setCompanyAddress] = useState(null);
+
+  // Add these after your existing state declarations
+  const [isEditDumpingModalOpen, setIsEditDumpingModalOpen] = useState(false);
+  const [editingDumping, setEditingDumping] = useState(null);
+
+  const [updatingDumping, setUpdatingDumping] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [editDumpingData, setEditDumpingData] = useState({
+    street: "",
+    city: "",
+    region: "",
+    latitude: "",
+    longitude: "",
+    postal_code: "",
+  });
+  const [mapCenter, setMapCenter] = useState([33.8938, 35.5018]);
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: truck,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+  const defaultOptions2 = {
+    loop: true,
+    autoplay: true,
+    animationData: time,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
   const links = [
     {
@@ -85,6 +133,12 @@ const CompanyPickups = () => {
       navigate("/Login", { replace: true });
     }
   }, [navigate]);
+
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     navigate(-1);
+  //   }
+  // }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -163,7 +217,7 @@ const CompanyPickups = () => {
   const fetchSchedules = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/schedules/?future_only=true&available=true"
+        "http://localhost:8000/api/company/schedules/?future_only=true&available=true&status_param='Available"
       );
 
       if (response.ok) {
@@ -187,24 +241,6 @@ const CompanyPickups = () => {
     );
   });
 
-  // const handleStartTracking = () => {
-  //   if (selectedRoute && selectedSchedule) {
-  //     setIsTracking(true);
-  //     setProgress(0);
-  //     setCollectedWeight(0);
-  //   }
-  // };
-
-  // const handleStopTracking = () => {
-  //   setIsTracking(false);
-  // };
-
-  // const handleResetTracking = () => {
-  //   setProgress(0);
-  //   setCollectedWeight(0);
-  //   setCurrentLocation(null);
-  //   setIsTracking(false);
-  // };
   const handleCreatePickup = async () => {
     if (!selectedRoute || !selectedSchedule) {
       setError("Please select both a route and schedule");
@@ -258,6 +294,163 @@ const CompanyPickups = () => {
       setCreatingPickup(false);
     }
   };
+
+  // Add these functions before the return statement
+  const handleEditDumping = (dump) => {
+    setEditingDumping(dump);
+    setEditDumpingData({
+      street: dump.address_detail?.street || "",
+      city: dump.address_detail?.city || "",
+      region: dump.address_detail?.region || "",
+      latitude: dump.address_detail?.latitude || "",
+      longitude: dump.address_detail?.longitude || "",
+      postal_code: dump.address_detail?.postal_code || "",
+    });
+
+    // Set map center to current dumping location
+    if (dump.address_detail?.latitude && dump.address_detail?.longitude) {
+      setMapCenter([
+        parseFloat(dump.address_detail.latitude),
+        parseFloat(dump.address_detail.longitude),
+      ]);
+    }
+
+    setIsEditDumpingModalOpen(true);
+    setEditError("");
+  };
+
+  const handleEditDumpingInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditDumpingData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      );
+      const data = await response.json();
+
+      if (data.address) {
+        setEditDumpingData((prev) => ({
+          ...prev,
+          street: data.address.road || prev.street,
+          city:
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            prev.city,
+          region: data.address.state || prev.region,
+          postal_code: data.address.postcode || prev.postal_code,
+        }));
+      }
+    } catch (error) {
+      console.error("Reverse geocoding failed:", error);
+    }
+  };
+  const handleUpdateDumping = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!editDumpingData.latitude || !editDumpingData.longitude) {
+      setEditError(
+        "Latitude and Longitude are required. Click on the map to set location."
+      );
+      return;
+    }
+
+    if (!editDumpingData.street || !editDumpingData.city) {
+      setEditError("Street and City are required");
+      return;
+    }
+
+    setUpdatingDumping(true);
+    setEditError("");
+
+    try {
+      const addressPayload = {
+        street: editDumpingData.street,
+        city: editDumpingData.city,
+        region: editDumpingData.region,
+        latitude: parseFloat(editDumpingData.latitude),
+        longitude: parseFloat(editDumpingData.longitude),
+        postal_code: editDumpingData.postal_code,
+      };
+
+      const addressResponse = await fetchWithAuth(
+        `http://localhost:8000/api/auth/addresses/${editingDumping.address_detail.address_id}/`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(addressPayload),
+        }
+      );
+
+      if (!addressResponse.ok) {
+        const errorData = await addressResponse.json();
+        throw new Error(errorData.detail || "Failed to update address");
+      }
+
+      // Refresh the route data to show updated dumping info
+      const updatedRoutes = await fetchRoutes();
+      setRoutes(updatedRoutes);
+
+      // Update selected route if it exists
+      if (selectedRoute) {
+        const updatedRoute = updatedRoutes.find(
+          (r) => r.route_id === selectedRoute.route_id
+        );
+        if (updatedRoute) {
+          setSelectedRoute(updatedRoute);
+        }
+      }
+
+      // Close modal and reset
+      setIsEditDumpingModalOpen(false);
+      setEditingDumping(null);
+      setEditDumpingData({
+        street: "",
+        city: "",
+        region: "",
+        latitude: "",
+        longitude: "",
+        postal_code: "",
+      });
+
+      alert("Dumping location updated successfully!");
+    } catch (err) {
+      console.error("Error updating dumping:", err);
+      setEditError(`Failed to update location: ${err.message}`);
+    } finally {
+      setUpdatingDumping(false);
+    }
+  };
+
+  const LocationMarker = () => {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
+        setEditDumpingData((prev) => ({
+          ...prev,
+          latitude: lat.toFixed(6),
+          longitude: lng.toFixed(6),
+        }));
+        setMapCenter([lat, lng]);
+        reverseGeocode(lat, lng);
+      },
+    });
+
+    return editDumpingData.latitude && editDumpingData.longitude ? (
+      <Marker
+        position={[
+          parseFloat(editDumpingData.latitude),
+          parseFloat(editDumpingData.longitude),
+        ]}
+      />
+    ) : null;
+  };
   return (
     <div className="skeleton">
       <Navbar links={links} onLogout={handleLogout} />
@@ -298,145 +491,206 @@ const CompanyPickups = () => {
           </div>
         )}
         {/* Left Panel - Route & Schedule Selection */}
-        <div className="leftside">
+        <div
+          className={`leftside ${selectedRoute ? "active" : "inactive"}`}
+          style={{
+            // borderWidth: 1,
+            // borderColor: "black",
+            // borderStyle: "solid",
+            margin: 10,
+          }}
+        >
           {/* Route Selection */}
-          <div className="routecard" style={{ marginBottom: 30 }}>
-            <div className="titleroute">
-              <div className="iconroute">
+          <div
+            className={`routecard ${selectedRoute ? "active" : "inactive"}`}
+            style={{ marginBottom: selectedRoute ? 30 : 20, width: "100%" }}
+          >
+            <div
+              className="titleroute"
+              style={{
+                marginBottom: selectedRoute ? 20 : 50,
+                alignSelf: selectedRoute ? "flex-start" : "center",
+              }}
+            >
+              <div
+                className="iconroute"
+                style={{
+                  width: selectedRoute ? "4rem" : "6rem",
+                  height: selectedRoute ? "4rem" : "6rem",
+                }}
+              >
                 <Navigation
                   style={{
-                    width: "2.25rem",
-                    height: "2.25rem",
+                    width: selectedRoute ? "2.25rem" : "3rem",
+                    height: selectedRoute ? "2.25rem" : "3rem",
                     color: "#ffffff",
                   }}
                 />
               </div>
-              <h2 className="title-text">Select Route</h2>
-            </div>
-
-            {/* Search */}
-            <div className="search">
-              <Search className="iconsearch" />
-              <input
-                type="text"
-                placeholder="Search routes..."
-                value={searchRoute}
-                onChange={(e) => setSearchRoute(e.target.value)}
-                className="input-field"
-              />
-            </div>
-
-            {/* Route Dropdown */}
-            <div className="routedropdown">
-              <button
-                onClick={() => setShowRouteDropdown(!showRouteDropdown)}
-                className="routedropdownbutton"
+              <h2
+                className={`title-text ${
+                  selectedRoute ? "active" : "inactive"
+                }`}
               >
-                <span
-                  style={{ color: "#374151", fontSize: 15, fontWeight: 600 }}
+                Select Route
+              </h2>
+            </div>
+            <div className={`lot ${selectedRoute ? "active" : "inactive"}`}>
+              {!selectedRoute && (
+                <div
+                  style={{
+                    borderRadius: 20,
+                    overflow: "hidden",
+                    marginBottom: 20,
+                    alignSelf: "flex-start",
+                  }}
                 >
-                  {selectedRoute
-                    ? `Route #${selectedRoute.route_id} - ${
-                        selectedRoute.waste_type?.name || "Unknown"
-                      }`
-                    : "Choose a route"}
-                </span>
-                <ChevronDown
-                  className={`routechevron ${
-                    showRouteDropdown ? "rotated" : ""
-                  }`}
-                />
-              </button>
-
-              {showRouteDropdown && (
-                <div className="optionroute">
-                  {loadingRoutes ? (
-                    <div
-                      style={{
-                        padding: "2rem",
-                        textAlign: "center",
-                        color: "#6b7280",
-                      }}
-                    >
-                      Loading routes...
-                    </div>
-                  ) : filteredRoutes.length === 0 ? (
-                    <div
-                      style={{
-                        padding: "2rem",
-                        textAlign: "center",
-                        color: "#6b7280",
-                      }}
-                    >
-                      No routes available
-                    </div>
-                  ) : (
-                    filteredRoutes.map((route, index) => (
-                      <button
-                        key={route.route_id}
-                        onClick={() => {
-                          setSelectedRoute(route);
-                          setShowRouteDropdown(false);
-                        }}
-                        className="optionbutton"
-                      >
-                        <div className="optbtnconchild">
-                          <div
-                            style={{
-                              backgroundColor:
-                                wasteTypeColors[route.waste_type?.name] ||
-                                "#94a3b8",
-                              borderRadius: "90px",
-                            }}
-                          />
-
-                          <div>
-                            <div
-                              style={{
-                                fontWeight: 600,
-                                color: "#1f2937",
-                                marginBottom: 10,
-                                width: "100%",
-                                fontSize: 16,
-                              }}
-                            >
-                              Route #{route.route_id} -{" "}
-                              {route.waste_type?.name || "Unknown"}
-                            </div>
-
-                            <div
-                              style={{
-                                fontSize: "0.875rem",
-                                color: "#6b7280",
-                                width: "100%",
-                              }}
-                            >
-                              {route.waste_type?.name || "N/A"} •{" "}
-                              {route.truck?.truck_id || "No truck"}
-                            </div>
-                          </div>
-
-                          {selectedRoute?.route_id === route.route_id && (
-                            <Check
-                              style={{
-                                width: "1.5rem",
-                                height: "1.5rem",
-                                color: "#2563eb",
-                                position: "absolute",
-                                right: 10,
-                              }}
-                            />
-                          )}
-                        </div>
-
-                        {index !== routes.length - 1 && (
-                          <hr style={{ marginBottom: -10 }} />
-                        )}
-                      </button>
-                    ))
-                  )}
+                  <Lottie
+                    animationData={defaultOptions.animationData}
+                    loop={defaultOptions.loop}
+                    autoplay={defaultOptions.autoplay}
+                    style={{ width: 350, height: 350 }}
+                  />
                 </div>
               )}
+
+              {/* Search */}
+              <div
+                style={{
+                  flex: 1,
+                  marginLeft: selectedRoute ? 0 : 20,
+                  alignSelf: selectedRoute ? "center" : "flex-start",
+                  marginTop: selectedRoute ? 0 : 10,
+                }}
+              >
+                <div className="search">
+                  <Search className="iconsearch" />
+                  <input
+                    type="text"
+                    placeholder="Search routes..."
+                    value={searchRoute}
+                    onChange={(e) => setSearchRoute(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Route Dropdown */}
+                <div className="routedropdown">
+                  <button
+                    onClick={() => setShowRouteDropdown(!showRouteDropdown)}
+                    className="routedropdownbutton"
+                  >
+                    <span
+                      style={{
+                        color: "#374151",
+                        fontSize: 15,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {selectedRoute
+                        ? `Route #${selectedRoute.route_id} - ${
+                            selectedRoute.waste_type?.name || "Unknown"
+                          }`
+                        : "Choose a route"}
+                    </span>
+                    <ChevronDown
+                      className={`routechevron ${
+                        showRouteDropdown ? "rotated" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {showRouteDropdown && (
+                    <div className="optionroute">
+                      {loadingRoutes ? (
+                        <div
+                          style={{
+                            padding: "2rem",
+                            textAlign: "center",
+                            color: "#6b7280",
+                          }}
+                        >
+                          Loading routes...
+                        </div>
+                      ) : filteredRoutes.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "2rem",
+                            textAlign: "center",
+                            color: "#6b7280",
+                          }}
+                        >
+                          No routes available
+                        </div>
+                      ) : (
+                        filteredRoutes.map((route, index) => (
+                          <button
+                            key={route.route_id}
+                            onClick={() => {
+                              setSelectedRoute(route);
+                              setShowRouteDropdown(false);
+                            }}
+                            className="optionbutton"
+                          >
+                            <div className="optbtnconchild">
+                              <div
+                                style={{
+                                  backgroundColor:
+                                    wasteTypeColors[route.waste_type?.name] ||
+                                    "#94a3b8",
+                                  borderRadius: "90px",
+                                }}
+                              />
+
+                              <div>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    color: "#1f2937",
+                                    marginBottom: 10,
+                                    width: "100%",
+                                    fontSize: 16,
+                                  }}
+                                >
+                                  Route #{route.route_id} -{" "}
+                                  {route.waste_type?.name || "Unknown"}
+                                </div>
+
+                                <div
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    color: "#6b7280",
+                                    width: "100%",
+                                  }}
+                                >
+                                  {route.waste_type?.name || "N/A"} •{" "}
+                                  {route.truck?.truck_id || "No truck"}
+                                </div>
+                              </div>
+
+                              {selectedRoute?.route_id === route.route_id && (
+                                <Check
+                                  style={{
+                                    width: "1.5rem",
+                                    height: "1.5rem",
+                                    color: "#2563eb",
+                                    position: "absolute",
+                                    right: 10,
+                                  }}
+                                />
+                              )}
+                            </div>
+
+                            {index !== routes.length - 1 && (
+                              <hr style={{ marginBottom: -10 }} />
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Route Details */}
@@ -494,19 +748,54 @@ const CompanyPickups = () => {
             )}
           </div>
 
-          <div className="routecard">
-            <div className="titleroute">
-              <div className="iconroute">
+          <div
+            className={`routecard ${selectedRoute ? "active" : "inactive"}`}
+            style={{ width: "100%", marginLeft: selectedRoute ? 0 : 60 }}
+          >
+            <div
+              className="titleroute"
+              style={{
+                marginBottom: selectedRoute ? 20 : 0,
+                alignSelf: selectedRoute ? "flex-start" : "center",
+              }}
+            >
+              <div
+                className="iconroute"
+                style={{
+                  width: selectedRoute ? "4rem" : "6rem",
+                  height: selectedRoute ? "4rem" : "6rem",
+                }}
+              >
                 <Calendar
                   style={{
-                    width: "2.25rem",
-                    height: "2.25rem",
+                    width: selectedRoute ? "2.25rem" : "3rem",
+                    height: selectedRoute ? "2.25rem" : "3rem",
                     color: "#ffffff",
                   }}
                 />
               </div>
-              <h2 className="title-text">Select Schedule</h2>
+              <h2
+                className={`title-text ${
+                  selectedRoute ? "active" : "inactive"
+                }`}
+              >
+                Select Schedule
+              </h2>
             </div>
+            {!selectedRoute && (
+              <div
+                style={{
+                  marginBottom: 0,
+                }}
+              >
+                <Lottie
+                  animationData={defaultOptions2.animationData}
+                  loop={defaultOptions2.loop}
+                  autoplay={defaultOptions2.autoplay}
+                  style={{ width: 350, height: 350 }}
+                />
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
@@ -562,8 +851,6 @@ const CompanyPickups = () => {
                         }
                       }}
                     >
-                      {/* ALL your schedule button content stays exactly the same here */}
-
                       {/* Left colored accent bar */}
                       <div className="bar" />
 
@@ -630,58 +917,60 @@ const CompanyPickups = () => {
                 })
               )}
             </div>
+            {selectedRoute && selectedSchedule && (
+              <button
+                onClick={handleCreatePickup}
+                disabled={creatingPickup}
+                className="createpickup"
+                style={{
+                  cursor: creatingPickup ? "not-allowed" : "pointer",
+                  opacity: creatingPickup ? 0.6 : 1,
+                  marginTop: 40,
+                  width: "100%",
+                }}
+                onMouseEnter={(e) => {
+                  if (!creatingPickup) {
+                    e.currentTarget.style.backgroundColor = "#e07a28";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 20px rgba(16, 185, 129, 0.3)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!creatingPickup) {
+                    e.currentTarget.style.backgroundColor = "#e07a28";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
+              >
+                {creatingPickup ? (
+                  <>
+                    <div
+                      style={{
+                        width: "1.25rem",
+                        height: "1.25rem",
+                        border: "3px solid #ffffff",
+                        borderTopColor: "transparent",
+                        borderRadius: "50%",
+                        animation: "spin 1s linear infinite",
+                      }}
+                    />
+                    Creating Pickup...
+                  </>
+                ) : (
+                  <>
+                    <Package style={{ width: "1.5rem", height: "1.5rem" }} />
+                    Create Pickup & Start Tracking
+                  </>
+                )}
+              </button>
+            )}
           </div>
-          {selectedRoute && selectedSchedule && (
-            <button
-              onClick={handleCreatePickup}
-              disabled={creatingPickup}
-              className="createpickup"
-              style={{
-                cursor: creatingPickup ? "not-allowed" : "pointer",
-                opacity: creatingPickup ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (!creatingPickup) {
-                  e.currentTarget.style.backgroundColor = "#F97316";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 20px rgba(16, 185, 129, 0.3)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!creatingPickup) {
-                  e.currentTarget.style.backgroundColor = "#F97316";
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }
-              }}
-            >
-              {creatingPickup ? (
-                <>
-                  <div
-                    style={{
-                      width: "1.25rem",
-                      height: "1.25rem",
-                      border: "3px solid #ffffff",
-                      borderTopColor: "transparent",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                  Creating Pickup...
-                </>
-              ) : (
-                <>
-                  <Package style={{ width: "1.5rem", height: "1.5rem" }} />
-                  Create Pickup & Start Tracking
-                </>
-              )}
-            </button>
-          )}
         </div>
         {/* Right Panel - Map & Details */}
-        <div className="rightside">
-          {selectedRoute && selectedRoute.route_stops && (
+        {selectedRoute && selectedRoute.route_stops && (
+          <div className="rightside">
             <div className="dumping-panel">
               <h3 className="dumping-title">
                 <Package className="icon-blue" />
@@ -710,7 +999,7 @@ const CompanyPickups = () => {
                           >
                             {idx + 1}
                           </div>
-                          <div>
+                          <div style={{ flex: 1 }}>
                             <div className="dump-name">{dump.Title}</div>
                             <div className="dump-coords">
                               {dump.address_detail?.latitude
@@ -738,6 +1027,21 @@ const CompanyPickups = () => {
                               </div>
                             )}
                           </div>
+                          {/* Edit Button */}
+                          <button
+                            onClick={() => handleEditDumping(dump)}
+                            className="editbtt"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#2563eb";
+                              e.currentTarget.style.transform = "scale(1.05)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#3b82f6";
+                              e.currentTarget.style.transform = "scale(1)";
+                            }}
+                          >
+                            <i className="fa-solid fa-pen-to-square"></i>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -745,207 +1049,329 @@ const CompanyPickups = () => {
                 })}
               </div>
             </div>
-          )}
 
-          {selectedRoute && (
-            <div style={{ marginTop: "2rem" }}>
-              <div
-                style={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  padding: "1.5rem",
-                  borderRadius: "1rem 1rem 0 0",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
+            {selectedRoute && (
+              <div style={{ marginTop: "2rem" }}>
                 <div
                   style={{
-                    width: "3rem",
-                    height: "3rem",
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    borderRadius: "0.75rem",
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    padding: "1.5rem",
+                    borderRadius: "1rem 1rem 0 0",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: "1rem",
                   }}
                 >
-                  <span style={{ fontSize: "1.5rem" }}>🗺️</span>
-                </div>
-                <div>
-                  <h2
+                  <div
                     style={{
-                      color: "white",
-                      margin: 0,
-                      fontSize: "1.5rem",
-                      fontWeight: 700,
+                      width: "3rem",
+                      height: "3rem",
+                      backgroundColor: "rgba(255, 255, 255, 0.2)",
+                      borderRadius: "0.75rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    Interactive Route Map
-                  </h2>
-                  <p
-                    style={{
-                      color: "rgba(255, 255, 255, 0.9)",
-                      margin: 0,
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    View and customize your collection route
-                  </p>
-                </div>
-              </div>
-
-              <RouteMap
-                route={selectedRoute}
-                companyAddress={companyAddress}
-                wasteTypeColor={
-                  wasteTypeColors[selectedRoute.waste_type?.name] || "#94a3b8"
-                }
-              />
-            </div>
-          )}
-          {/* Map Container */}
-          {/* <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-6 h-6 text-white" />
-                <h2 className="text-xl font-bold text-white">Live Route Map</h2>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setMapView("satellite")}
-                  className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                    mapView === "satellite"
-                      ? "bg-white text-gray-800"
-                      : "bg-gray-700 text-white"
-                  }`}
-                >
-                  Satellite
-                </button>
-                <button
-                  onClick={() => setMapView("street")}
-                  className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                    mapView === "street"
-                      ? "bg-white text-gray-800"
-                      : "bg-gray-700 text-white"
-                  }`}
-                >
-                  Street
-                </button>
-              </div>
-            </div>
-
-            <div className="relative h-[500px] bg-gradient-to-br from-slate-100 to-slate-200">
-              {selectedRoute ? (
-                <svg className="w-full h-full">
-                  {selectedRoute.dumpings.map((dump, idx) => {
-                    if (idx === selectedRoute.dumpings.length - 1) return null;
-                    const nextDump = selectedRoute.dumpings[idx + 1];
-
-                    const x1 = (dump.lng - 35.48) * 10000 + 100;
-                    const y1 = (33.9 - dump.lat) * 10000 + 50;
-                    const x2 = (nextDump.lng - 35.48) * 10000 + 100;
-                    const y2 = (33.9 - nextDump.lat) * 10000 + 50;
-
-                    const isCompleted =
-                      (progress / 100) * selectedRoute.dumpings.length >
-                      idx + 1;
-
-                    return (
-                      <g key={`path-${idx}`}>
-                        <line
-                          x1={x1}
-                          y1={y1}
-                          x2={x2}
-                          y2={y2}
-                          stroke="#94a3b8"
-                          strokeWidth="12"
-                          strokeLinecap="round"
-                        />
-                        <line
-                          x1={x1}
-                          y1={y1}
-                          x2={x2}
-                          y2={y2}
-                          stroke={
-                            isCompleted ? getCompletedColor() : getRouteColor()
-                          }
-                          strokeWidth="6"
-                          strokeLinecap="round"
-                          strokeDasharray={isCompleted ? "0" : "10,5"}
-                          className="transition-all duration-500"
-                        />
-                      </g>
-                    );
-                  })}
-
-                  {selectedRoute.dumpings.map((dump, idx) => {
-                    const x = (dump.lng - 35.48) * 10000 + 100;
-                    const y = (33.9 - dump.lat) * 10000 + 50;
-                    const isCompleted =
-                      (progress / 100) * selectedRoute.dumpings.length > idx;
-
-                    return (
-                      <g key={`dump-${dump.id}`}>
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="20"
-                          fill={isCompleted ? getCompletedColor() : "white"}
-                          stroke={getRouteColor()}
-                          strokeWidth="3"
-                          className="transition-all duration-500"
-                        />
-                        <text
-                          x={x}
-                          y={y + 5}
-                          textAnchor="middle"
-                          fill={isCompleted ? "white" : getRouteColor()}
-                          className="font-bold text-sm"
-                        >
-                          {idx + 1}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {isTracking && currentLocation && (
-                    <g>
-                      <circle
-                        cx={(currentLocation.lng - 35.48) * 10000 + 100}
-                        cy={(33.9 - currentLocation.lat) * 10000 + 50}
-                        r="25"
-                        fill="#3b82f6"
-                        className="animate-pulse"
-                      />
-                      <text
-                        x={(currentLocation.lng - 35.48) * 10000 + 100}
-                        y={(33.9 - currentLocation.lat) * 10000 + 55}
-                        textAnchor="middle"
-                        fill="white"
-                        className="font-bold"
-                        fontSize="20"
-                      >
-                        🚛
-                      </text>
-                    </g>
-                  )}
-                </svg>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-400 text-lg">
-                      Select a route to view map
+                    <span style={{ fontSize: "1.5rem" }}>🗺️</span>
+                  </div>
+                  <div>
+                    <h2
+                      style={{
+                        color: "white",
+                        margin: 0,
+                        fontSize: "1.5rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Interactive Route Map
+                    </h2>
+                    <p
+                      style={{
+                        color: "rgba(255, 255, 255, 0.9)",
+                        margin: 0,
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      View and customize your collection route
                     </p>
                   </div>
                 </div>
-              )}
-            </div>
-          </div> */}
-        </div>
+
+                <RouteMap
+                  route={selectedRoute}
+                  companyAddress={companyAddress}
+                  wasteTypeColor={
+                    wasteTypeColors[selectedRoute.waste_type?.name] || "#94a3b8"
+                  }
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
+      {/* Edit Dumping Modal */}
+      <RightPopupModal
+        isOpen={isEditDumpingModalOpen}
+        onClose={() => {
+          setIsEditDumpingModalOpen(false);
+          setEditingDumping(null);
+          setEditError("");
+        }}
+        title="Edit Dumping Location"
+      >
+        <div style={{ overflow: "auto", maxHeight: "calc(100vh - 120px)" }}>
+          <form
+            onSubmit={handleUpdateDumping}
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            {/* Map Section */}
+            <div
+              style={{
+                border: "2px solid #4caf50",
+                borderRadius: "10px",
+                padding: "1rem",
+                background: "#e8f5e9",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 1rem 0",
+                  color: "#2e7d32",
+                  fontSize: "1rem",
+                }}
+              >
+                📍 Update Location
+              </h3>
+
+              <p
+                style={{
+                  margin: "0 0 0.75rem 0",
+                  fontSize: "0.875rem",
+                  color: "#2e7d32",
+                  fontWeight: "600",
+                }}
+              >
+                Click on the map to set new coordinates
+              </p>
+
+              <MapContainer
+                center={mapCenter}
+                zoom={13}
+                style={{
+                  height: "300px",
+                  width: "100%",
+                  borderRadius: "8px",
+                  marginBottom: "1rem",
+                }}
+                key={mapCenter.join(",")} // Force re-render when center changes
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <LocationMarker />
+              </MapContainer>
+
+              {/* Address Fields */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem",
+                }}
+              >
+                <input
+                  name="street"
+                  placeholder="Street *"
+                  value={editDumpingData.street}
+                  onChange={handleEditDumpingInputChange}
+                  required
+                  style={{
+                    padding: "0.75rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    fontSize: "1rem",
+                    width: "100%",
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <input
+                    name="city"
+                    placeholder="City *"
+                    value={editDumpingData.city}
+                    onChange={handleEditDumpingInputChange}
+                    required
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "6px",
+                      border: "1px solid #ccc",
+                      fontSize: "1rem",
+                      width: "100%",
+                    }}
+                  />
+
+                  <input
+                    name="region"
+                    placeholder="Region"
+                    value={editDumpingData.region}
+                    onChange={handleEditDumpingInputChange}
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "6px",
+                      border: "1px solid #ccc",
+                      fontSize: "1rem",
+                      width: "100%",
+                    }}
+                  />
+                </div>
+
+                <input
+                  name="postal_code"
+                  placeholder="Postal Code"
+                  value={editDumpingData.postal_code}
+                  onChange={handleEditDumpingInputChange}
+                  style={{
+                    padding: "0.75rem",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                    fontSize: "1rem",
+                    width: "100%",
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <input
+                    name="latitude"
+                    type="number"
+                    step="any"
+                    placeholder="Latitude"
+                    value={editDumpingData.latitude}
+                    onChange={handleEditDumpingInputChange}
+                    disabled
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "6px",
+                      fontSize: "1rem",
+                      backgroundColor: "#f0f0f0",
+                      border: "1px solid #ccc",
+                      cursor: "not-allowed",
+                      width: "100%",
+                    }}
+                  />
+
+                  <input
+                    name="longitude"
+                    type="number"
+                    step="any"
+                    placeholder="Longitude"
+                    value={editDumpingData.longitude}
+                    onChange={handleEditDumpingInputChange}
+                    disabled
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "6px",
+                      fontSize: "1rem",
+                      backgroundColor: "#f0f0f0",
+                      border: "1px solid #ccc",
+                      cursor: "not-allowed",
+                      width: "100%",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {editError && (
+              <div
+                style={{
+                  padding: "0.75rem",
+                  backgroundColor: "#fee2e2",
+                  border: "1px solid #ef4444",
+                  borderRadius: "0.5rem",
+                  color: "#991b1b",
+                  fontSize: "0.875rem",
+                }}
+              >
+                {editError}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "center",
+                paddingTop: "1rem",
+                borderTop: "1px solid #e5e7eb",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditDumpingModalOpen(false);
+                  setEditingDumping(null);
+                  setEditError("");
+                }}
+                style={{ width: "100%" }}
+                className="cancelbutton"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#d1d5db";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#e5e7eb";
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={updatingDumping}
+                style={{
+                  backgroundColor: updatingDumping ? "#9ca3af" : "#4caf50",
+                  cursor: updatingDumping ? "not-allowed" : "pointer",
+                  opacity: updatingDumping ? 0.6 : 1,
+                  width: "100%",
+                }}
+                className="updatebutton"
+                onMouseEnter={(e) => {
+                  if (!updatingDumping) {
+                    e.currentTarget.style.backgroundColor = "#2e7d32";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!updatingDumping) {
+                    e.currentTarget.style.backgroundColor = "#4caf50";
+                  }
+                }}
+              >
+                {updatingDumping ? "Updating..." : "Update Location"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </RightPopupModal>
     </div>
   );
 };

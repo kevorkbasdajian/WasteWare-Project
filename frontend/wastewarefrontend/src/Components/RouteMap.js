@@ -87,12 +87,85 @@ const createCompanyIcon = () => {
   });
 };
 
+// Add this function after createCompanyIcon()
+const optimizeRouteOrder = (companyLat, companyLng, dumpingLocations) => {
+  if (dumpingLocations.length <= 1) return dumpingLocations;
+
+  // Simple nearest neighbor algorithm for shortest path
+  const unvisited = [...dumpingLocations];
+  const optimized = [];
+
+  let currentLat = companyLat;
+  let currentLng = companyLng;
+
+  while (unvisited.length > 0) {
+    let nearestIndex = 0;
+    let minDistance = Infinity;
+
+    // Find nearest unvisited location
+    unvisited.forEach((location, index) => {
+      const lat = parseFloat(location.address_detail.latitude);
+      const lng = parseFloat(location.address_detail.longitude);
+
+      // Calculate distance (simple Euclidean distance)
+      const distance = Math.sqrt(
+        Math.pow(lat - currentLat, 2) + Math.pow(lng - currentLng, 2)
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestIndex = index;
+      }
+    });
+
+    // Add nearest location to optimized route
+    const nearest = unvisited.splice(nearestIndex, 1)[0];
+    optimized.push(nearest);
+
+    // Update current position
+    currentLat = parseFloat(nearest.address_detail.latitude);
+    currentLng = parseFloat(nearest.address_detail.longitude);
+  }
+
+  return optimized;
+};
+
 const RoutingMachine = ({ waypoints, color, companyAddress }) => {
   const map = useMap();
   const routingControlRef = useRef(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!map || !waypoints || waypoints.length === 0) return;
+
+    // Clean up previous routing control FIRST and IMMEDIATELY
+    if (routingControlRef.current) {
+      try {
+        const control = routingControlRef.current;
+
+        // Remove event listeners first
+        control.off();
+
+        // Remove from map
+        if (map && map.removeControl) {
+          map.removeControl(control);
+        }
+
+        // Clear the route line from the map
+        control.getPlan().setWaypoints([]);
+      } catch (e) {
+        console.log("Error removing control:", e);
+      }
+      routingControlRef.current = null;
+    }
 
     // Build the full waypoint list: company -> all dumpings -> back to company
     const allWaypoints = [];
@@ -125,24 +198,18 @@ const RoutingMachine = ({ waypoints, color, companyAddress }) => {
     // Ensure we have at least 2 waypoints
     if (allWaypoints.length < 2) return;
 
-    // Clean up previous routing control
-    if (routingControlRef.current) {
-      try {
-        map.removeControl(routingControlRef.current);
-      } catch (e) {
-        console.log("Error removing control:", e);
-      }
-      routingControlRef.current = null;
-    }
-
-    // Small delay to ensure map is ready
+    // Small delay to ensure map is ready and previous control is fully removed
     const timeoutId = setTimeout(() => {
+      // Check if component is still mounted
+      if (!mountedRef.current) return;
+
       try {
-        routingControlRef.current = L.Routing.control({
+        const routingControl = L.Routing.control({
           waypoints: allWaypoints,
-          routeWhileDragging: true,
+          routeWhileDragging: false,
           showAlternatives: false,
-          addWaypoints: true,
+          addWaypoints: false,
+          draggableWaypoints: false,
           lineOptions: {
             styles: [
               { color: "white", opacity: 0.8, weight: 8 },
@@ -157,27 +224,50 @@ const RoutingMachine = ({ waypoints, color, companyAddress }) => {
           router: L.Routing.osrmv1({
             serviceUrl: "https://router.project-osrm.org/route/v1",
             profile: "driving",
+            timeout: 5000,
           }),
           fitSelectedRoutes: true,
-        }).addTo(map);
+        });
 
-        // Hide the routing instructions panel
-        const routingContainer = routingControlRef.current.getContainer();
-        if (routingContainer) {
-          routingContainer.style.display = "none";
+        // Add error handling for routing
+        routingControl.on("routingerror", function (e) {
+          console.log("Routing error:", e);
+        });
+
+        // Only add to map if component is still mounted
+        if (mountedRef.current && map) {
+          routingControl.addTo(map);
+          routingControlRef.current = routingControl;
+
+          // Hide the routing instructions panel
+          const routingContainer = routingControl.getContainer();
+          if (routingContainer) {
+            routingContainer.style.display = "none";
+          }
         }
       } catch (error) {
         console.error("Error creating routing control:", error);
       }
-    }, 100);
+    }, 300);
 
     return () => {
       clearTimeout(timeoutId);
+
       if (routingControlRef.current) {
         try {
-          // Remove from map safely
+          const control = routingControlRef.current;
+
+          // Remove event listeners
+          control.off();
+
+          // Clear waypoints first
+          if (control.getPlan) {
+            control.getPlan().setWaypoints([]);
+          }
+
+          // Remove from map if still exists
           if (map && map.removeControl) {
-            map.removeControl(routingControlRef.current);
+            map.removeControl(control);
           }
         } catch (e) {
           console.log("Cleanup error:", e);
@@ -192,10 +282,12 @@ const RoutingMachine = ({ waypoints, color, companyAddress }) => {
 
 const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
   const [mapReady, setMapReady] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
 
   useEffect(() => {
-    // Reset map ready state when route changes
+    // Reset map ready state when route changes and force remount
     setMapReady(false);
+    setMapKey((prev) => prev + 1);
     const timer = setTimeout(() => setMapReady(true), 300);
     return () => clearTimeout(timer);
   }, [route?.route_id]);
@@ -219,11 +311,21 @@ const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
   }
 
   // Get all dumping locations
-  const dumpingLocations = route.route_stops
+  const allDumpingLocations = route.route_stops
     .map((stop) => stop.dumping)
     .filter(
       (dump) => dump.address_detail?.latitude && dump.address_detail?.longitude
     );
+
+  // Optimize the route order for shortest path
+  const dumpingLocations =
+    companyAddress?.latitude && companyAddress?.longitude
+      ? optimizeRouteOrder(
+          parseFloat(companyAddress.latitude),
+          parseFloat(companyAddress.longitude),
+          allDumpingLocations
+        )
+      : allDumpingLocations;
 
   if (dumpingLocations.length === 0) {
     return (
@@ -269,7 +371,7 @@ const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
     <div
       style={{
         width: "100%",
-        height: "600px",
+        height: "550px",
         borderRadius: "1rem",
         overflow: "hidden",
         position: "relative",
@@ -308,7 +410,7 @@ const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
       )}
 
       <MapContainer
-        key={`map-${route.route_id}`}
+        key={`map-${route.route_id}-${mapKey}`}
         center={[centerLat, centerLng]}
         zoom={13}
         style={{ width: "100%", height: "100%" }}
@@ -372,10 +474,7 @@ const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
       {/* Legend */}
       <div className="map-legend">
         <div className="legend-title">Map Legend</div>
-        <div className="legend-item">
-          <span style={{ fontSize: "1.5rem" }}>🏢</span>
-          <span>Company Start Point</span>
-        </div>
+
         <div className="legend-item">
           <div
             style={{
@@ -404,7 +503,7 @@ const RouteMap = ({ route, companyAddress, wasteTypeColor }) => {
         </div>
         <div className="legend-item">
           <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-            💡 Drag waypoints to customize route
+            Route optimized for shortest path
           </span>
         </div>
       </div>

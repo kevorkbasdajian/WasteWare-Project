@@ -19,8 +19,8 @@ export const SignUpPage = () => {
   const { saveAccessToken, accessToken } = useContext(AuthContext);
   const [snackbar, setsnackbar] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
-  const [rolee, setrole] = useState("");
   const navigate = useNavigate();
+  const { user_type, set_user_type, saveusertype } = useContext(AuthContext);
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -53,9 +53,6 @@ export const SignUpPage = () => {
     phone_number: Yup.string()
       .matches(/^\d{11}$/, "Phone number must be 11 digits")
       .required("Phone number is required"),
-    role: Yup.string()
-      .oneOf(["User", "Admin"], "Please select a valid role")
-      .required("Please select a role"),
     password: Yup.string()
       .required("Password is required")
       .min(6, "Password must be at least 6 characters"),
@@ -73,18 +70,12 @@ export const SignUpPage = () => {
     password: "",
     password2: "",
     terms: false,
-    role: "", // Empty string to show placeholder
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    const { password2, terms, role, ...payload } = values;
+    const { password2, terms, ...payload } = values;
     set_is_loading(true);
-    setrole(values.role);
     let url = "http://localhost:8000/api/auth/signup/user/";
-    if (values.role === "Admin")
-      url = "http://localhost:8000/api/auth/signup/admin/";
-    if (values.role === "Company")
-      url = "http://localhost:8000/api/auth/signup/company/";
 
     try {
       const response = await fetch(url, {
@@ -120,9 +111,8 @@ export const SignUpPage = () => {
   };
   const closesnackbar = () => {
     setsnackbar(false);
-    if (rolee === "Admin") navigate("/admin/dashboard", { replace: true });
-    else if (rolee === "User") navigate("/", { replace: true });
-    else navigate("/company", { replace: true });
+    saveusertype("user");
+    navigate("/", { replace: true });
   };
 
   return (
@@ -206,20 +196,6 @@ export const SignUpPage = () => {
                   component="div"
                   className="error_pn"
                 />
-                <br />
-                <Field
-                  as="select"
-                  name="role"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.role}
-                  className="role-select"
-                >
-                  <option value="">Select your role</option>
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                </Field>
-                <ErrorMessage name="role" component="div" className="error" />
                 <br />
 
                 <div className="passwords">

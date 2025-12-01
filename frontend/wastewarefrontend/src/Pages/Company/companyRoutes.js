@@ -69,7 +69,7 @@ const TruckRoutes = () => {
   const [routes, setRoutes] = useState([]);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routesError, setRoutesError] = useState(null);
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, user_type } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     truckId: "",
     wasteCategory: "",
@@ -131,6 +131,14 @@ const TruckRoutes = () => {
       navigate("/Login", { replace: true });
     }
   }, [navigate]);
+
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     console.log("should redirect to ...");
+  //     navigate(-1);
+  //   }
+  //   console.log("user type is", user_type);
+  // }, [navigate]);
   useEffect(() => {
     const fetchRoutes = async () => {
       setLoadingRoutes(true);

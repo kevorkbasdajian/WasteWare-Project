@@ -2,16 +2,11 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Driver, Truck, Dumping, Route, RouteStop, WasteType,Schedule,Pickup
 from authentication.models import Address
+from authentication.serializers import AddressSerializer  
 
 
-# -------------------------
-# Address serializer (allows nested creation)
-# -------------------------
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = ['address_id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
-        read_only_fields = ['address_id']
+
+
 
 # -------------------------
 # Driver serializer (use driver_id PK)

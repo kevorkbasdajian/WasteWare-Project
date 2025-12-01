@@ -27,7 +27,7 @@ const CompanySchedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [errors, setErrors] = useState({});
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, user_type } = useContext(AuthContext);
   const [viewallmodal, setviewallmodal] = useState(false);
   const [allSchedules, setAllSchedules] = useState([]);
   const [loadingAllSchedules, setLoadingAllSchedules] = useState(false);
@@ -87,6 +87,12 @@ const CompanySchedule = () => {
       navigate("/Login", { replace: true });
     }
   }, [navigate]);
+
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     navigate(-1);
+  //   }
+  // }, [navigate]);
 
   const fetchSchedules = async () => {
     try {

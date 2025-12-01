@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer
-from .models import Users, Companies, Roles
+from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer
+from .models import Users, Companies, Roles,Address
 from .utils import verify_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
@@ -10,6 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
 
 
 class LogoutView(APIView):
@@ -113,7 +116,6 @@ class LoginView(APIView):
     permission_classes = [AllowAny]  
 
     def post(self, request):
-        print("Starting login process...")  # Debug log
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
@@ -148,3 +150,17 @@ class LoginView(APIView):
             pass
 
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+class AddressViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing addresses
+    """
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Optionally restricts the returned addresses
+        """
+        return Address.objects.all()

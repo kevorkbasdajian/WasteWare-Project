@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const ClientProfile = () => {
-  const { clearAuth, accessToken } = useContext(AuthContext);
+  const { clearAuth, accessToken, user_type } = useContext(AuthContext);
   const navigate = useNavigate();
   const links = [
     {
@@ -44,6 +44,12 @@ const ClientProfile = () => {
     const token = accessToken;
     if (!token) {
       navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
     }
   }, [navigate]);
 

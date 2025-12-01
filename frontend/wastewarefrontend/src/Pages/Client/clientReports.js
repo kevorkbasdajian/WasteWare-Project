@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import "../../Styles/Page/clientReports.css";
@@ -9,6 +9,8 @@ import {
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
 import AlertSnackbar from "../../Components/Alert.js";
+import { AuthContext } from "../../Components/AuthProvider.js";
+import { useNavigate } from "react-router-dom";
 
 // Validation Schema
 const reportValidationSchema = Yup.object().shape({
@@ -84,6 +86,8 @@ const Reports = () => {
   const [autoGPS, setAutoGPS] = useState(true);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [snackbar, setsnackbar] = useState(false);
+  const { accessToken, user_type } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const categories = [
     {
@@ -183,6 +187,18 @@ const Reports = () => {
     details: "",
     photo: null,
   };
+
+  useEffect(() => {
+    const token = accessToken;
+    if (!token) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   const handlePhotoUpload = (e, setFieldValue) => {
     const file = e.target.files[0];

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies, Roles
+from .models import Users, Companies, Roles,Address
 from .utils import hash_password, verify_password
 
 # --------------------------
@@ -55,3 +55,10 @@ class AdminSignupSerializer(UserSignupSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only=True)
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['address_id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
+        read_only_fields = ['address_id']
