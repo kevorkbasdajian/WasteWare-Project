@@ -26,7 +26,8 @@ import { useContext } from "react";
 const Navbar = ({
   brand = "WasteWare",
   links = [],
-  profileImage = "/assets/profile-placeholder.jpg",
+  profileImage,
+  profilePath,
 }) => {
   const [darkMode, setDarkMode] = useState(false);
   const location = useLocation(); // Get current route
@@ -89,7 +90,7 @@ const Navbar = ({
 
         {/* Dynamic Links */}
         <ul className="navbar-links">
-          {links.map((link, index) => (
+          {links.map((link) => (
             <li key={link.path}>
               {" "}
               {/* Use path as key for better performance */}
@@ -110,7 +111,7 @@ const Navbar = ({
           ))}
         </ul>
 
-        {/* Profile & Logout */}
+        {/* Dark Mode, Profile & Logout */}
         <div className="navbar-actions">
           {/* Dark Mode Toggle Button */}
           <button
@@ -126,7 +127,7 @@ const Navbar = ({
             )}
           </button>
 
-          <Link to="/profile">
+          <Link to={profilePath}>
             <img src={profileImage} alt="Profile" className="navbar-profile" />
           </Link>
           <button className="logout-btn" onClick={handleLogout}>

@@ -48,7 +48,7 @@ class Dumping(models.Model):
     Title = models.TextField()
     waste_type = models.ForeignKey(WasteType, on_delete=models.CASCADE)
     # String reference to avoid circular import and avoid creating Addresses table again
-    address = models.OneToOneField('authentication.Address', on_delete=models.CASCADE)
+    address = models.OneToOneField('authentication.Addresses', on_delete=models.CASCADE)
     maximum_capacity = models.IntegerField(null=True, blank=True)
     collected_waste = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)

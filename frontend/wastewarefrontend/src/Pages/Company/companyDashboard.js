@@ -19,18 +19,18 @@ const CompanyDashboard = () => {
     }
   }, [navigate]);
 
-  useEffect(() => {
-    if (user_type && user_type !== "company") {
-      navigate(-1);
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     navigate(-1);
+  //   }
+  // }, [navigate]);
   const links = [
     {
       name: "Home",
       path: "/company",
       color: "var(--gradient-red)",
       glowColor: "#EF4444", // Solid color for LED glow
-      icon: <i className="fa-solid fa-house fa-lg" />,
+      icon: "fa-solid fa-house fa-lg",
     },
     {
       name: "Routes",
@@ -56,16 +56,17 @@ const CompanyDashboard = () => {
     {
       name: "Reports",
       path: "/company/reports",
+      color: "var(--gradient-purple)",
+      glowColor: "#A855F7",
+      icon: "fa-solid fa-camera fa-lg",
+    },
+
+    {
+      name: "Notifications",
+      path: "/company/notifications",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: <i className="fa-solid fa-user fa-lg" />,
-    },
-    {
-      name: "Profile",
-      path: "/company/profile",
-      color: "var(--gradient-green-blue)",
-      glowColor: "#9d10b9ff",
-      icon: <i className="fa-solid fa-user fa-lg" />,
+      icon: "fa-solid fa-bell fa-lg",
     },
   ];
 

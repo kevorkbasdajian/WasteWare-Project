@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .authentication import CustomJWTAuthentication
 from .models import Reports
-from .serializers import ReportCreateSerializer
+from .serializers import ReportCreateSerializer, ReportListSerializer, ReportDetailSerializer
 from authentication.models import Users
 
 
@@ -159,17 +159,17 @@ class ListAllReportsView(APIView):
 
     def get(self, request):
         try:
-            # Check if user is admin
-            user_id = request.auth.get('user_id') if request.auth else None
-            role = request.auth.get('role') if request.auth else None
+            # # Check if user is admin
+            # user_id = request.auth.get('user_id') if request.auth else None
+            # role = request.auth.get('role') if request.auth else None
             
-            if role != 'Admin':
-                return Response(
-                    {'error': 'Permission denied. Admin access required.'}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            # if role != 'Admin' and role != 'Company':
+            #     return Response(
+            #         {'error': 'Permission denied. Admin access required.'}, 
+            #         status=status.HTTP_403_FORBIDDEN
+            #     )
             
-            reports = Reports.objects.all()
+            reports = Reports.objects.select_related('user', 'address').all()
             serializer = ReportListSerializer(reports, many=True)
             return Response({
                 'count': reports.count(),
@@ -193,7 +193,7 @@ class ReportDetailView(APIView):
 
     def get(self, request, report_id):
         try:
-            report = Reports.objects.get(report_id=report_id)
+            report = Reports.objects.select_related('user', 'address', 'handled_by').get(report_id=report_id)
             serializer = ReportDetailSerializer(report)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Reports.DoesNotExist:
@@ -213,13 +213,13 @@ class UpdateReportStatusView(APIView):
 
     def patch(self, request, report_id):
         try:
-            role = request.auth.get('role') if request.auth else None
+            # role = request.auth.get('role') if request.auth else None
             
-            if role != 'Admin':
-                return Response(
-                    {'error': 'Permission denied. Admin access required.'}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            # if role != 'Admin' and role != 'Company':
+            #     return Response(
+            #         {'error': 'Permission denied. Admin access required.'}, 
+            #         status=status.HTTP_403_FORBIDDEN
+            #     )
             
             report = Reports.objects.get(report_id=report_id)
             new_status = request.data.get('status')
@@ -271,18 +271,18 @@ class DeleteReportView(APIView):
 
     def delete(self, request, report_id):
         try:
-            user_id = request.auth.get('user_id') if request.auth else None
-            role = request.auth.get('role') if request.auth else None
+            # user_id = request.auth.get('user_id') if request.auth else None
+            # role = request.auth.get('role') if request.auth else None
+            
+            
+            # # Allow deletion if user owns the report or is admin
+            # if role != 'Admin' and report.user.user_id != user_id:
+            #     return Response(
+            #         {'error': 'Permission denied'}, 
+            #         status=status.HTTP_403_FORBIDDEN
+            #     )
             
             report = Reports.objects.get(report_id=report_id)
-            
-            # Allow deletion if user owns the report or is admin
-            if role != 'Admin' and report.user.user_id != user_id:
-                return Response(
-                    {'error': 'Permission denied'}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
             report.delete()
             return Response(
                 {'message': 'Report deleted successfully'}, 

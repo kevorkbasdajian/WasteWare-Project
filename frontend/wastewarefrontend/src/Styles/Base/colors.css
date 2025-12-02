@@ -7,26 +7,28 @@
 
 :root {
   /* --- Brand Colors --- */
-  --eco-green: #2E7D32;
-  --light-green: #A5D6A7;
-  --clean-blue: #0288D1;
-  --energy-orange: #FF9800;
-  --purple: #5C6BC0;
-  --red: #E53935;
-  --submit-blue: #30A4EC;
+  --eco-green: #2e7d32;
+  --light-green: #a5d6a7;
+  --clean-blue: #0288d1;
+  --energy-orange: #ff9800;
+  --purple: #5c6bc0;
+  --red: #e53935;
+  --submit-blue: #30a4ec;
+  --yellow: #ffd300;
+  --moon-color: #4a5c7a;
 
   /* --- Gradients --- */
-  --gradient-green-blue: linear-gradient(135deg, #2E7D32, #0288D1);
-  --gradient-clean-blue: linear-gradient(135deg, #0288D1, #26C6DA);
-  --gradient-orange: linear-gradient(135deg, #FF9800, #FF6F00);
-  --gradient-purple: linear-gradient(135deg, #3949AB, #5C6BC0);
-  --gradient-red: linear-gradient(135deg, #E53935, #FF7043);
+  --gradient-green-blue: linear-gradient(135deg, var(--eco-green), #0288d1);
+  --gradient-clean-blue: linear-gradient(135deg, var(--clean-blue), #26c6da);
+  --gradient-orange: linear-gradient(135deg, var(--energy-orange), #ff6f00);
+  --gradient-purple: linear-gradient(135deg, var(--purple), #5623be);
+  --gradient-red: linear-gradient(135deg, var(--red), #ff7043);
 
   /* --- Neutrals --- */
-  --white: #FFFFFF;
-  --light-gray: #F5F5F5;
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
   --text-dark: #333333;
-  --placeholder-gray: #9E9E9E;
+  --placeholder-gray: #9e9e9e;
 
   /* --- Effects --- */
   --shadow: rgba(0, 0, 0, 0.1);
@@ -35,7 +37,7 @@
 /* --- Dark Theme Overrides --- */
 [data-theme="dark"] {
   --white: #121212;
-  --light-gray: #1E1E1E;
-  --text-dark: #E0E0E0;
+  --light-gray: #1e1e1e;
+  --text-dark: #e0e0e0;
   --shadow: rgba(255, 255, 255, 0.1);
 }

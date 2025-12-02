@@ -42,7 +42,7 @@ export const SignUpPage = () => {
         }
       })();
     if (token) {
-      navigate("/", { replace: true });
+      navigate("/client", { replace: true });
     }
   }, [navigate]);
 
@@ -112,7 +112,7 @@ export const SignUpPage = () => {
   const closesnackbar = () => {
     setsnackbar(false);
     saveusertype("user");
-    navigate("/", { replace: true });
+    navigate("/client", { replace: true });
   };
 
   return (

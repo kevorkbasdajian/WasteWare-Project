@@ -30,13 +30,8 @@ body.dark-mode .page {
   position: relative;
 }
 
-.theme-toggle-btn i {
-  background: linear-gradient(
-    120deg,
-    #FF9800 0%,
-    #FFB74D 50%,
-    #FFCC80 100%
-  );
+.theme-toggle-btn .fa-sun {
+  background: var(--yellow);
   background-size: 200% 100%;
   background-position: 100% 0;
   -webkit-background-clip: text;
@@ -45,28 +40,12 @@ body.dark-mode .page {
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.theme-toggle-btn:hover i {
+.theme-toggle-btn:hover .fa-sun {
   background-position: 0% 0;
-  filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.6))
-          drop-shadow(0 0 15px rgba(255, 183, 77, 0.4));
+  filter: drop-shadow(0 0 8px var(--yellow))
+    drop-shadow(0 0 15px rgba(255, 211, 0, 0.4));
   animation: shimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
-}
-
-.theme-toggle-btn:hover {
-  transform: scale(1.15) rotate(15deg);
-  background: rgba(255, 152, 0, 0.1);
-}
-
-/* Dark mode specific icon color */
-body.dark-mode .theme-toggle-btn i {
-  background: linear-gradient(
-    120deg,
-    #FDD835 0%,
-    #FFEB3B 50%,
-    #FFF59D 100%
-  );
-  background-size: 200% 100%;
 }
 
 /* ================ Navbar Dark Mode ================ */
@@ -77,11 +56,11 @@ body.dark-mode .navbar {
 body.dark-mode .navbar-title {
   background: linear-gradient(
     120deg,
-    #4CAF50 0%,
-    #66BB6A 25%,
-    #81C784 50%,
-    #A5D6A7 75%,
-    #C8E6C9 100%
+    #4caf50 0%,
+    #66bb6a 25%,
+    #81c784 50%,
+    #a5d6a7 75%,
+    #c8e6c9 100%
   );
   background-size: 200% 100%;
   background-position: 100% 0;
@@ -95,17 +74,15 @@ body.dark-mode .navbar-link {
 }
 
 body.dark-mode .navbar-profile {
-  border-color: #66BB6A;
+  border-color: #66bb6a;
 }
 
 /* ================ Dashboard Dark Mode ================ */
-
 
 /* ================ Reports Page Dark Mode ================ */
 body.dark-mode .report-left,
 body.dark-mode .report-right {
   background: #1f2937;
-  
 }
 
 body.dark-mode .report-main-title {
@@ -141,12 +118,12 @@ body.dark-mode .location-select:focus {
 
 body.dark-mode .title-input::placeholder,
 body.dark-mode .address-input::placeholder,
-body.dark-mode .details-textarea::placeholder{
+body.dark-mode .details-textarea::placeholder {
   color: var(--placeholder-gray);
 }
 
-body.dark-mode .category-btn:hover{
-    box-shadow: 0 4px 10px var(--white);
+body.dark-mode .category-btn:hover {
+  box-shadow: 0 4px 10px var(--white);
 }
 
 body.dark-mode .category-subtext {
@@ -168,4 +145,334 @@ body.dark-mode .priority-btn.active {
   border-color: 2px var(--white) solid;
 }
 
+/* =========================
+   Chatbot - Dark Mode Styles
+   (add these into darkMode.css)
+   ========================= */
 
+body.dark-mode .chatbot-container {
+  /* container background already defined elsewhere, but ensure contrast */
+  background: linear-gradient(180deg, #111827, #0b1220);
+  color: var(--white);
+  box-shadow: 0 6px 30px rgba(2, 6, 23, 0.7);
+}
+
+/* messages area */
+body.dark-mode .chatbot-messages {
+  background: #0b1116; /* darker than container for separation */
+}
+
+/* bot bubble */
+body.dark-mode .message.bot .message-content {
+  background: #111827;
+  color: #e6eef6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* user bubble */
+body.dark-mode .message.user .message-content {
+  background: linear-gradient(135deg, #166534, #22c55e); /* keep green accent */
+  color: white;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.08);
+}
+
+/* avatars */
+body.dark-mode .bot-avatar {
+  background: linear-gradient(135deg, #166534, #1f8a4a);
+  color: white;
+}
+
+/* header */
+body.dark-mode .chatbot-header {
+  background: linear-gradient(135deg, #0f1724, #071126);
+  color: var(--white);
+}
+
+/* input and quick replies */
+body.dark-mode .chatbot-input,
+body.dark-mode .chatbot-quick-replies {
+  background: #0f1724;
+  border-top-color: #1f2937;
+}
+
+/* input fields */
+body.dark-mode .chatbot-input input {
+  background: #111827;
+  border-color: #263142;
+  color: #e6eef6;
+}
+
+/* quick reply buttons */
+body.dark-mode .quick-reply-btn {
+  background: #111827;
+  border-color: #263142;
+  color: #e6eef6;
+}
+body.dark-mode .quick-reply-btn:hover:not(:disabled) {
+  background: #16a34a; /* hover still green */
+  color: #fff;
+  border-color: #16a34a;
+}
+
+/* typing indicator */
+body.dark-mode .typing span {
+  background: #9ca3af;
+}
+
+/* scrollbar styling - messages & quick replies (WebKit) */
+body.dark-mode .chatbot-messages::-webkit-scrollbar,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar {
+  width: 6px;
+  height: 4px; /* for horizontal scrollbar on quick replies */
+}
+
+body.dark-mode .chatbot-messages::-webkit-scrollbar-track,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.dark-mode .chatbot-messages::-webkit-scrollbar-thumb,
+body.dark-mode .chatbot-quick-replies::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+/* Firefox scrollbar fallback */
+body.dark-mode .chatbot-messages,
+body.dark-mode .chatbot-quick-replies {
+  scrollbar-color: #374151 transparent;
+  scrollbar-width: thin;
+}
+
+/* ensure buttons/icons contrast in dark mode */
+body.dark-mode .chatbot-toggle,
+body.dark-mode .chatbot-input button {
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.6);
+}
+
+/* small responsive tweak: keep contrast on small screens */
+@media (max-width: 480px) {
+  body.dark-mode .chatbot-container {
+    background: #0b1116;
+  }
+}
+
+/* ===============================================
+   Profile Page - Dark Mode Styles
+   Add this to the END of your darkMode.css file
+   =============================================== */
+
+/* ================ Profile Page Dark Mode ================ */
+body.dark-mode .profile-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* ================ Loading & Error States ================ */
+body.dark-mode .loading {
+  color: #10b981;
+}
+
+body.dark-mode .loading p {
+  color: #9ca3af;
+}
+
+body.dark-mode .error-page {
+  color: #e5e7eb;
+}
+
+body.dark-mode .error-page p {
+  color: #9ca3af;
+}
+
+body.dark-mode .error-page button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+body.dark-mode .error-page button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* ================ Profile Card - Glassmorphism Dark ================ */
+body.dark-mode .profile-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .profile-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .profile-avatar {
+  border: 4px solid rgba(71, 85, 105, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 8px rgba(59, 130, 246, 0.15);
+}
+
+body.dark-mode .profile-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+}
+
+body.dark-mode .profile-name {
+  background: linear-gradient(135deg, #e5e7eb 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark-mode .profile-email {
+  color: #9ca3af;
+}
+
+body.dark-mode .btn-edit-profile {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+body.dark-mode .btn-edit-profile:hover {
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+}
+
+/* ================ Quick Stats ================ */
+body.dark-mode .profile-quick-stats {
+  border-top: 1px solid rgba(71, 85, 105, 0.3);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+body.dark-mode .quick-stat-value {
+  background: linear-gradient(135deg, #e5e7eb 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark-mode .quick-stat-label {
+  color: #9ca3af;
+}
+
+body.dark-mode .quick-stat-divider {
+  background: rgba(71, 85, 105, 0.3);
+}
+
+/* ================ Impact Card ================ */
+body.dark-mode .impact-card {
+  background: linear-gradient(135deg, #047857 0%, #0891b2 50%, #1e40af 100%);
+  box-shadow: 0 10px 40px rgba(5, 150, 105, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+body.dark-mode .impact-card:hover {
+  box-shadow: 0 14px 50px rgba(5, 150, 105, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+body.dark-mode .impact-header {
+  color: white;
+}
+
+body.dark-mode .impact-stat h3 {
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .impact-stat p {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ================ Small Stats Cards ================ */
+body.dark-mode .small-stat-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .small-stat-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .stat-icon.green {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  color: #34d399;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+body.dark-mode .stat-icon.orange {
+  background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+  color: #fbbf24;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+body.dark-mode .stat-icon.blue {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: #60a5fa;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+body.dark-mode .small-stat-card h3 {
+  background: linear-gradient(135deg, #e5e7eb 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark-mode .small-stat-card p {
+  color: #9ca3af;
+}
+
+/* ================ Settings Grid ================ */
+body.dark-mode .settings-grid .setting-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .setting-card::before {
+  background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+}
+
+body.dark-mode .setting-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(71, 85, 105, 0.2) inset;
+}
+
+body.dark-mode .setting-icon {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  color: #34d399;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
+body.dark-mode .setting-content h3 {
+  color: #e5e7eb;
+}
+
+body.dark-mode .setting-content p {
+  color: #6b7280;
+}
+
+/* ================ Responsive Dark Mode Adjustments ================ */
+@media (max-width: 968px) {
+  body.dark-mode .profile-page {
+    background: #0f172a;
+  }
+}
+
+@media (max-width: 640px) {
+  body.dark-mode .profile-page {
+    background: #0f172a;
+  }
+
+  body.dark-mode .profile-card,
+  body.dark-mode .small-stat-card,
+  body.dark-mode .setting-card {
+    background: rgba(30, 41, 59, 0.95);
+  }
+}

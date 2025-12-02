@@ -6,6 +6,7 @@
 @import "../Base/colors.css";
 @import "../Base/variables.css";
 @import "../Base/darkMode.css";
+@import "../Base/fonts.css";
 
 /* Ensure widths include padding so inputs don't overflow parent */
 *,
@@ -96,10 +97,18 @@
   background: var(--gradient-purple);
 }
 
+.photo-upload-area:hover .photo-upload-label i,
+.photo-upload-area:hover .photo-upload-label span {
+  color: var(--white);
+}
+
 .photo-upload-label {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   cursor: pointer;
 }
@@ -372,6 +381,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.category-btn:hover .category-name,
+.category-btn:hover .category-subtext {
+  color: var(--white);
+}
+
 .category-btn.active {
   border-color: var(--purple);
 }
@@ -604,7 +618,7 @@
 }
 
 .photo-preview-container:hover .photo-actions {
-  opacity: 1;
+  opacity: 0.4;
 }
 
 .change-photo-btn,

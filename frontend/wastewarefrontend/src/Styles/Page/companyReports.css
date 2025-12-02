@@ -1,0 +1,263 @@
+.company-reports-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.filter-tab {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--purple);
+  border-radius: 25px;
+  background: transparent;
+  color: var(--purple);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-tab:hover {
+  background: var(--purple);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.filter-tab.active {
+  background: var(--purple);
+  color: white;
+  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+}
+
+/* Table Container */
+.reports-table-container {
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px var(--purple);
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reports-table thead {
+  background: var(--gradient-purple);
+  color: white;
+}
+
+.reports-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.reports-table th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.reports-table th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.reports-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.2s ease;
+}
+
+.reports-table tbody tr:hover {
+  background: #f5f5f5;
+}
+
+.reports-table td {
+  padding: 1rem;
+  color: #000000;
+}
+
+.report-id {
+  font-weight: 700;
+  color: var(--purple);
+}
+
+.report-title-cell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type-badge {
+  background: var(--clean-blue);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Status Select */
+.status-select {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.status-select.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-select.status-reviewed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-select.status-resolved {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Details Button */
+.details-btn {
+  background: #2c3e50;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.details-btn:hover {
+  background: #34495e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+
+/* Loading & Empty States */
+.loading-spinner-container,
+.no-reports {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #999;
+}
+
+.loading-spinner-container i,
+.no-reports i {
+  color: var(--purple);
+  margin-bottom: 1rem;
+}
+
+/* Modal overlay & panel */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 2rem;
+}
+
+.modal-panel {
+  background: #fff;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(2, 6, 23, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.modal-close {
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Report detail layout */
+.report-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.detail-row strong {
+  min-width: 120px;
+  color: #333;
+}
+
+.detail-rich {
+  white-space: pre-wrap;
+  color: #444;
+}
+
+/* Images inside modal */
+.detail-images {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.detail-images img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}

@@ -85,8 +85,8 @@ const TruckRoutes = () => {
       name: "Home",
       path: "/company",
       color: "var(--gradient-red)",
-      glowColor: "#EF4444",
-      icon: <i className="fa-solid fa-house fa-lg" />,
+      glowColor: "#EF4444", // Solid color for LED glow
+      icon: "fa-solid fa-house fa-lg",
     },
     {
       name: "Routes",
@@ -112,16 +112,17 @@ const TruckRoutes = () => {
     {
       name: "Reports",
       path: "/company/reports",
+      color: "var(--gradient-purple)",
+      glowColor: "#A855F7",
+      icon: "fa-solid fa-camera fa-lg",
+    },
+
+    {
+      name: "Notifications",
+      path: "/company/notifications",
       color: "var(--gradient-green-blue)",
       glowColor: "#10B981",
-      icon: <i className="fa-solid fa-user fa-lg" />,
-    },
-    {
-      name: "Profile",
-      path: "/company/profile",
-      color: "var(--gradient-green-blue)",
-      glowColor: "#9d10b9ff",
-      icon: <i className="fa-solid fa-user fa-lg" />,
+      icon: "fa-solid fa-bell fa-lg",
     },
   ];
 
