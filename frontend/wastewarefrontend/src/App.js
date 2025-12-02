@@ -26,7 +26,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* client */}
-          <Route path="/client" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/reports" element={<Reports />} />
           <Route path="/client/profile" element={<ClientProfile />} />

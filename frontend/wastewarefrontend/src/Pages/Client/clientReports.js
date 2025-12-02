@@ -143,7 +143,7 @@ const Reports = () => {
   const links = [
     {
       name: "Home",
-      path: "/client",
+      path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
