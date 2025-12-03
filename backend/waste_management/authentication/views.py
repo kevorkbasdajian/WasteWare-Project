@@ -226,27 +226,37 @@ class UpdateProfileView(APIView):
                 user.profile_image = request.FILES['profile_image']
 
             # -----------------------
-            # ADDRESS (form-data format)
+            # ADDRESS (correct field names)
             # -----------------------
-            street = data.get("address.street")
-            city = data.get("address.city")
-            region = data.get("address.region")
+            street = data.get("street")
+            city = data.get("city")
+            region = data.get("region")
+            postal_code = data.get("postal_code")
+            latitude = data.get("latitude")
+            longitude = data.get("longitude")
 
-            if street or city or region:
+            if street or city or region or postal_code or latitude or longitude:
                 if user.address:
                     # Update existing address
                     if street: user.address.street = street
                     if city: user.address.city = city
                     if region: user.address.region = region
+                    if postal_code: user.address.postal_code = postal_code
+                    if latitude: user.address.latitude = latitude
+                    if longitude: user.address.longitude = longitude
                     user.address.save()
                 else:
                     # Create new address
                     new_address = Addresses.objects.create(
                         street=street or "",
                         city=city or "",
-                        region=region or ""
+                        region=region or "",
+                        postal_code=postal_code or "",
+                        latitude=latitude or None,
+                        longitude=longitude or None
                     )
                     user.address = new_address
+
 
             # -----------------------
             # SAVE USER

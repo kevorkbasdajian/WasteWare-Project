@@ -1,10 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext, use } from "react";
 import { useFetchWithAuth } from "./fetchWithAuth";
+import { AuthContext } from "./AuthProvider";
+import { useNavigate } from "react-router-dom";
 import "../Styles/Component/chatbot.css";
 
 const Chatbot = () => {
+  // const { userData, accessToken } = useContext(AuthContext);
+  const navigate = useNavigate();
   const fetchWithAuth = useFetchWithAuth();
   const [isOpen, setIsOpen] = useState(false);
+  // console.log("Name: ", userData.name);
   const [messages, setMessages] = useState([
     {
       type: "bot",
@@ -24,6 +29,12 @@ const Chatbot = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // useEffect(() => {
+  //   if (!accessToken) {
+  //     navigate("/login", { replace: true });
+  //   }
+  // })[(accessToken, navigate)];
 
   useEffect(() => {
     scrollToBottom();

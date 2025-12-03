@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies, Roles
+from .models import Users, Companies, Roles, Addresses
 from clientReports.models import Reports
 from .utils import hash_password, verify_password
 from django.utils import timezone
@@ -60,6 +60,16 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
+# --------------------------
+# Address Serializer
+# --------------------------
+class AddressSerializer(serializers.ModelSerializer):
+    """Serializer for address data"""
+    class Meta:
+        model = Addresses
+        fields = ['street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
+
+
 
 
 # --------------------------
@@ -71,6 +81,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()  # Returns profile_image URL
     stats = serializers.SerializerMethodField()  # Calculates all stats
     badge = serializers.CharField()  # Returns user badge text
+    address = AddressSerializer(read_only=True)
     
     class Meta:
         model = Users
@@ -81,6 +92,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'avatar',
             'badge',
             'phone_number',
+            'address',
             'account_status',
             'stats',
         ]
@@ -96,7 +108,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.profile_image.url)
             return obj.profile_image.url
-        return "https://i.pravatar.cc/150?img=12"
+        return ""
     
     def get_badge(self, obj):
         """Return user badge text based on account status or role"""
@@ -135,6 +147,67 @@ class ProfileSerializer(serializers.ModelSerializer):
             "days_active": days_active
         }
 
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    # Address input fields
+    street = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    region = serializers.CharField(required=False, allow_blank=True)
+    postal_code = serializers.CharField(required=False, allow_blank=True)
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+
+    class Meta:
+        model = Users
+        fields = [
+            "first_name",
+            "last_name",
+            "phone_number",
+            "profile_image",
+
+            # Address fields:
+            "street",
+            "city",
+            "region",
+            "postal_code",
+            "latitude",
+            "longitude",
+        ]
+
+    def update(self, instance, validated_data):
+        # -------------------------------
+        # Update basic user fields
+        # -------------------------------
+        for field in ["first_name", "last_name", "phone_number", "profile_image"]:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+
+        instance.save()
+
+        # -------------------------------
+        # Address handling logic
+        # -------------------------------
+        addr_fields = ["street", "city", "region", "postal_code", "latitude", "longitude"]
+        addr_data = {f: validated_data.get(f, None) for f in addr_fields}
+
+        # Check if frontend sent ANY address field
+        if any(v not in [None, ""] for v in addr_data.values()):
+            # If user already has an address → update it
+            if instance.address:
+                address = instance.address
+                for key, value in addr_data.items():
+                    if value not in [None, ""]:
+                        setattr(address, key, value)
+                address.save()
+            else:
+                # Create a new address
+                address = Addresses.objects.create(
+                    user=instance,
+                    **{k: v for k, v in addr_data.items() if v not in [None, ""]}
+                )
+                instance.address = address
+                instance.save()
+
+        return instance
 
 
 # =============================================================

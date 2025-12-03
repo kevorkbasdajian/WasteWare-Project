@@ -1,13 +1,17 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../Styles/Page/clientProfile.css";
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider.js";
+import EditProfileModal from "../Profile/EditProfileModal.js";
 
 const ProfilePage = () => {
   const { clearAuth, accessToken, userData, isLoadingUser, userError } =
     useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const links = [
     {
@@ -41,7 +45,16 @@ const ProfilePage = () => {
   }, [accessToken, navigate]);
 
   const handleEditProfile = () => {
-    navigate("/client/edit-profile");
+    setIsEditModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleModalSuccess = () => {
+    // Optional: Show success message or toast notification
+    console.log("Profile updated successfully!");
   };
 
   // Loading state
@@ -89,7 +102,11 @@ const ProfilePage = () => {
             <div className="profile-card">
               <div className="profile-avatar-wrapper">
                 <img
-                  src={`http://localhost:8000${userData.avatar}`}
+                  src={
+                    userData.avatar === ""
+                      ? "https://ui-avatars.com/api/?name=User&background=random"
+                      : `http://localhost:8000${userData.avatar}`
+                  }
                   alt="Profile"
                   className="profile-avatar"
                 />
@@ -240,6 +257,13 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+      />
     </>
   );
 };

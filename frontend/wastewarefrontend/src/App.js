@@ -13,7 +13,7 @@ import CompanyReports from "./Pages/Company/companyReports";
 import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
 import Chatbot from "./Components/chatbot";
-import EditProfilePage from "./Pages/Profile/EditProfilePage";
+// import EditProfilePage from "./Pages/Profile/EditProfilePage";
 import AdminUserManagement from "./Pages/Admin/adminUserManagement";
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/reports" element={<Reports />} />
           <Route path="/client/profile" element={<ClientProfile />} />
-          <Route path="/client/edit-profile" element={<EditProfilePage />} />
+          {/* <Route path="/client/edit-profile" element={<EditProfilePage />} /> */}
 
           {/* admin */}
           <Route path="/admin/users" element={<AdminUserManagement />} />
