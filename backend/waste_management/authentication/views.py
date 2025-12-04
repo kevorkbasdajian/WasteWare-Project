@@ -408,3 +408,301 @@ class UserDeleteView(APIView):
         #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
         #     )
         # ==============================================================
+
+
+
+
+
+# --------------------------
+# Company Management List View (GET all companies)
+# --------------------------
+class CompanyManagementListView(APIView):
+    """
+    GET: Return list of all companies for admin management table
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]  
+    
+    def get(self, request):
+        # ============ MOCK DATA (CURRENTLY ACTIVE) ============
+        mock_companies = [
+            {
+                'user_id': 1,
+                'company_name': 'Mahmoud Hajj',
+                'email': 'company@gmail.com',
+                'phone_number': '12345678',
+                'role': 'waste manager',
+                'account_status': 'Active',
+                'created_at': '2024-01-10T08:00:00Z',
+            },
+            {
+                'user_id': 2,
+                'company_name': 'Green Solutions Ltd',
+                'email': 'green@solutions.com',
+                'phone_number': '76543210',
+                'role': 'waste manager',
+                'account_status': 'Active',
+                'created_at': '2024-02-15T09:30:00Z',
+            },
+            {
+                'user_id': 3,
+                'company_name': 'EcoWaste Services',
+                'email': 'contact@ecowaste.com',
+                'phone_number': '71234567',
+                'role': 'waste manager',
+                'account_status': 'Suspended',
+                'created_at': '2024-03-20T11:15:00Z',
+            }
+        ]
+        
+        return Response(mock_companies, status=status.HTTP_200_OK)
+        # ======================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        # try:
+        #     # Fetch all companies from database (users with company role)
+        #     company_role = Roles.objects.get(role_name='Company')
+        #     companies = Users.objects.filter(role_id=company_role).order_by('-created_at')
+        #     
+        #     # Serialize the data
+        #     serializer = CompanyManagementSerializer(companies, many=True)
+        #     
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+        #     
+        # except Roles.DoesNotExist:
+        #     return Response(
+        #         {'error': 'Company role not found'},
+        #         status=status.HTTP_404_NOT_FOUND
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to fetch companies', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================
+
+
+# --------------------------
+# Company Update View (PUT - update company info)
+# --------------------------
+class CompanyUpdateView(APIView):
+    """
+    PUT: Update company information
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]  
+    
+    def put(self, request, company_id):
+        # ============ MOCK RESPONSE (CURRENTLY ACTIVE) ============
+        # Mock successful update
+        print(f"Mock: Updating company {company_id} with data:", request.data)
+        
+        return Response(
+            {
+                'message': 'Company updated successfully',
+                'company_id': company_id,
+                'updated_fields': request.data
+            },
+            status=status.HTTP_200_OK
+        )
+        # ==========================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        # try:
+        #     # Get company from database
+        #     company = Users.objects.get(user_id=company_id)
+        #     
+        #     # Update using serializer
+        #     serializer = CompanyUpdateSerializer(company, data=request.data, partial=True)
+        #     
+        #     if serializer.is_valid():
+        #         serializer.save()
+        #         return Response(
+        #             {
+        #                 'message': 'Company updated successfully',
+        #                 'company': CompanyManagementSerializer(company).data
+        #             },
+        #             status=status.HTTP_200_OK
+        #         )
+        #     
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #     
+        # except Users.DoesNotExist:
+        #     return Response(
+        #         {'error': 'Company not found'},
+        #         status=status.HTTP_404_NOT_FOUND
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to update company', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================
+
+
+# --------------------------
+# Company Delete View (DELETE)
+# --------------------------
+class CompanyDeleteView(APIView):
+    """
+    DELETE: Delete a company from the system
+    Admin only endpoint
+    """
+    # permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
+    
+    def delete(self, request, company_id):
+        # ============ MOCK RESPONSE (CURRENTLY ACTIVE) ============
+        # Mock successful deletion
+        print(f"Mock: Deleting company {company_id}")
+        
+        return Response(
+            {
+                'message': 'Company deleted successfully',
+                'company_id': company_id
+            },
+            status=status.HTTP_200_OK
+        )
+        # ==========================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        # try:
+        #     # Get company from database
+        #     company = Users.objects.get(user_id=company_id)
+        #     
+        #     # Delete company
+        #     company.delete()
+        #     
+        #     return Response(
+        #         {'message': 'Company deleted successfully'},
+        #         status=status.HTTP_200_OK
+        #     )
+        #     
+        # except Users.DoesNotExist:
+        #     return Response(
+        #         {'error': 'Company not found'},
+        #         status=status.HTTP_404_NOT_FOUND
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to delete company', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================
+
+
+
+
+# --------------------------
+# Company Profile View (GET and PUT)
+# --------------------------
+class CompanyProfileView(APIView):
+    """
+    GET: Return company profile data
+    PUT: Update company profile data
+    Company only endpoint
+    """
+    # permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
+    
+    def get(self, request):
+        # ============ MOCK DATA (CURRENTLY ACTIVE) ============
+        # Mock company profile data matching the screenshot
+        mock_profile = {
+            'user_id': 1,
+            'company_name': 'Company Name',
+            'contact_person_name': 'Mahmoud Khreij',
+            'role_name': 'Waste Manager',
+            'email': 'company@gmail.com',
+            'phone_number': '+961 12345678',
+            'address': 'Beirut, Zukaiq st, Bldg',
+            'avatar': 'https://via.placeholder.com/150/10B981/FFFFFF?text=C',
+            'account_status': 'Active',
+            'created_at': '2024-01-10T08:00:00Z',
+        }
+        
+        return Response(mock_profile, status=status.HTTP_200_OK)
+        # ======================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        # try:
+        #     # Get authenticated company user
+        #     user = request.user
+        #     
+        #     # Serialize the data
+        #     serializer = CompanyProfileSerializer(user)
+        #     
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+        #     
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to fetch profile', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================
+    
+    def put(self, request):
+        # ============ MOCK UPDATE (CURRENTLY ACTIVE) ============
+        # Mock successful update
+        print("Mock: Updating company profile with data:", request.data)
+        
+        # Return updated profile
+        mock_updated_profile = {
+            'user_id': 1,
+            'company_name': request.data.get('company_name', 'Company Name'),
+            'contact_person_name': request.data.get('contact_person_name', 'Mahmoud Khreij'),
+            'role_name': 'Waste Manager',
+            'email': request.data.get('email', 'company@gmail.com'),
+            'phone_number': request.data.get('phone_number', '+961 12345678'),
+            'address': request.data.get('address', 'Beirut, Zukaiq st, Bldg'),
+            'avatar': 'https://via.placeholder.com/150/10B981/FFFFFF?text=C',
+            'account_status': 'Active',
+            'created_at': '2024-01-10T08:00:00Z',
+        }
+        
+        return Response(
+            {
+                'message': 'Profile updated successfully',
+                'profile': mock_updated_profile
+            },
+            status=status.HTTP_200_OK
+        )
+        # ========================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        # try:
+        #     # Get authenticated company user
+        #     user = request.user
+        #     
+        #     # Update using serializer
+        #     serializer = CompanyProfileUpdateSerializer(user, data=request.data, partial=True)
+        #     
+        #     if serializer.is_valid():
+        #         serializer.save()
+        #         
+        #         # Return updated profile
+        #         profile_serializer = CompanyProfileSerializer(user)
+        #         return Response(
+        #             {
+        #                 'message': 'Profile updated successfully',
+        #                 'profile': profile_serializer.data
+        #             },
+        #             status=status.HTTP_200_OK
+        #         )
+        #     
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #     
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to update profile', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================        

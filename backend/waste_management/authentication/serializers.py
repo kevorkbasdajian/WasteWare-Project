@@ -221,3 +221,175 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+
+
+
+
+# --------------------------
+# Company Management Serializer (for Admin)
+# --------------------------
+class CompanyManagementSerializer(serializers.ModelSerializer):
+    """
+    Serializer for admin company management.
+    Returns all company data needed for the admin table.
+    """
+    
+    company_name = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Users
+        fields = [
+            'user_id',
+            'company_name',
+            'email',
+            'phone_number',
+            'role',
+            'account_status',
+            'created_at',
+        ]
+    
+    def get_company_name(self, obj):
+        """Return company name (first_name for companies)"""
+        return obj.first_name
+    
+    def get_role(self, obj):
+        """Return role description (e.g., 'waste manager')"""
+        if obj.role_id:
+            return obj.role_id.role_name.lower()
+        return "company"
+
+
+# --------------------------
+# Company Update Serializer (for Admin)
+# --------------------------
+class CompanyUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating company info.
+    Admin can change: company name, email, phone, role, status
+    """
+    company_name = serializers.CharField(write_only=True, required=False)
+    role_name = serializers.CharField(write_only=True, required=False)
+    
+    class Meta:
+        model = Users
+        fields = ['company_name', 'email', 'phone_number', 'role_name', 'account_status']
+    
+    def update(self, instance, validated_data):
+        # Update company name
+        if 'company_name' in validated_data:
+            instance.first_name = validated_data.pop('company_name')
+        
+        # Update email
+        if 'email' in validated_data:
+            instance.email = validated_data['email']
+        
+        # Update phone
+        if 'phone_number' in validated_data:
+            instance.phone_number = validated_data['phone_number']
+        
+        # Update account status
+        if 'account_status' in validated_data:
+            instance.account_status = validated_data['account_status']
+        
+        # Update role
+        if 'role_name' in validated_data:
+            role_name = validated_data.pop('role_name')
+            try:
+                role = Roles.objects.get(role_name=role_name)
+                instance.role_id = role
+            except Roles.DoesNotExist:
+                raise serializers.ValidationError(f"Role '{role_name}' does not exist")
+        
+        instance.save()
+        return instance
+
+
+
+# --------------------------
+# Company Profile Serializer
+# --------------------------
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for company profile page.
+    Returns company profile data and contact person information.
+    """
+    
+    company_name = serializers.SerializerMethodField()
+    contact_person_name = serializers.SerializerMethodField()
+    role_name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Users
+        fields = [
+            'user_id',
+            'company_name',
+            'contact_person_name',
+            'role_name',
+            'email',
+            'phone_number',
+            'address',
+            'avatar',
+            'account_status',
+            'created_at',
+        ]
+    
+    def get_company_name(self, obj):
+        """Return company name (stored in first_name for companies)"""
+        return obj.first_name
+    
+    def get_contact_person_name(self, obj):
+        """Return contact person name (stored in last_name for companies)"""
+        return obj.last_name if obj.last_name else "N/A"
+    
+    def get_role_name(self, obj):
+        """Return role name"""
+        if obj.role_id:
+            return obj.role_id.role_name
+        return "Company"
+    
+    def get_avatar(self, obj):
+        """Return avatar URL or default"""
+        if obj.profile_image:
+            return obj.profile_image.url
+        return None
+
+
+# --------------------------
+# Company Profile Update Serializer
+# --------------------------
+class CompanyProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating company profile information.
+    """
+    company_name = serializers.CharField(write_only=True, required=False)
+    contact_person_name = serializers.CharField(write_only=True, required=False)
+    
+    class Meta:
+        model = Users
+        fields = [
+            'company_name',
+            'contact_person_name',
+            'email',
+            'phone_number',
+            'address',
+            'profile_image'
+        ]
+    
+    def update(self, instance, validated_data):
+        # Update company name
+        if 'company_name' in validated_data:
+            instance.first_name = validated_data.pop('company_name')
+        
+        # Update contact person name
+        if 'contact_person_name' in validated_data:
+            instance.last_name = validated_data.pop('contact_person_name')
+        
+        # Update other fields
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        
+        instance.save()
+        return instance
