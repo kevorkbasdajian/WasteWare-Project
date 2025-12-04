@@ -70,7 +70,7 @@
 }
 
 /* Subtle shimmer effect on hover */
-@keyframes shimmer {
+@keyframes textShimmer {
   0% {
     background-position: 200% 0;
   }
@@ -80,8 +80,8 @@
 }
 
 .navbar-logo:hover .navbar-title {
-  animation: shimmer 2s ease-in-out infinite;
-  background-size: 300% 100%;
+  animation: textShimmer 2s ease-in-out infinite;
+  background-size: 200% 100%;
 }
 
 /* Underline glow effect */
@@ -192,7 +192,7 @@
     drop-shadow(0 0 15px rgba(239, 68, 68, 0.3));
   letter-spacing: 1px;
   transform: scale(1.1) translateY(-4px);
-  animation: shimmer 2s ease-in-out infinite;
+  animation: textShimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
 }
 
@@ -290,7 +290,7 @@
   background-position: 0% 0;
   filter: drop-shadow(0 0 8px var(--moon-color))
     drop-shadow(0 0 15px rgba(74, 92, 122, 0.4)); /* matches moon color */
-  animation: shimmer 2s ease-in-out infinite;
+  animation: textShimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
 }
 

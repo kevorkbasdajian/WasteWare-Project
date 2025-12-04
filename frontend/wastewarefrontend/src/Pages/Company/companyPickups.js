@@ -105,14 +105,14 @@ const CompanyPickups = () => {
       path: "/company/schedule",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
-      icon: <i className="fa-solid fa-camera fa-lg" />,
+      icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
       name: "Pickups",
       path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
-      icon: <i className="fa-solid fa-gift fa-lg" />,
+      icon: "fa-solid fa-truck-pickup fa-lg",
     },
     {
       name: "Reports",
@@ -121,7 +121,6 @@ const CompanyPickups = () => {
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-
     {
       name: "Notifications",
       path: "/company/notifications",
@@ -130,6 +129,7 @@ const CompanyPickups = () => {
       icon: "fa-solid fa-bell fa-lg",
     },
   ];
+
   useEffect(() => {
     const token = accessToken;
     if (!token) {

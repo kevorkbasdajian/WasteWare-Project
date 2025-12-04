@@ -178,12 +178,6 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    const token = accessToken;
-    if (!token) {
-      navigate("/Login", { replace: true });
-    }
-  }, [navigate]);
-  useEffect(() => {
     if (user_type && user_type !== "user") {
       navigate(-1);
     }

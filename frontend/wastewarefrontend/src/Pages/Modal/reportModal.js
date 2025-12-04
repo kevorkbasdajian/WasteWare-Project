@@ -7,6 +7,7 @@ const ReportModal = ({
   report,
   loading = false,
   error = null,
+  user,
 }) => {
   // Close on ESC key
   useEffect(() => {
@@ -237,7 +238,11 @@ const ReportModal = ({
                     <div className="user-avatar">
                       {report.user.profile_image ? (
                         <img
-                          src={report.user.profile_image}
+                          src={
+                            report.user.profile_image === ""
+                              ? "https://ui-avatars.com/api/?name=User&background=random"
+                              : `http://localhost:8000${report.user.profile_image}`
+                          }
                           alt={`${report.user.first_name} ${report.user.last_name}`}
                           className="user-avatar-image"
                         />

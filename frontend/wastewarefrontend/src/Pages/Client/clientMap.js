@@ -20,6 +20,7 @@ const ClientMap = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const links = [
     {
@@ -44,6 +45,34 @@ const ClientMap = () => {
       icon: "fa-solid fa-camera fa-lg",
     },
   ];
+
+  // Initialize dark mode from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+
+    // Remove preload class after initial render
+    setTimeout(() => {
+      document.body.classList.remove("preload");
+    }, 100);
+  }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+
+    if (newMode) {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "light");
+    }
+  };
 
   // Check authentication
   useEffect(() => {
@@ -259,13 +288,13 @@ const ClientMap = () => {
               </h3>
               <div className="details-grid">
                 <div className="detail-item">
-                  <span className="detail-label">Route:</span>
+                  <span className="detail-label">Route</span>
                   <span className="detail-value">
                     #{selectedPickup.route.route_id}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Waste Type:</span>
+                  <span className="detail-label">Waste Type</span>
                   <span
                     className="detail-value"
                     style={{ color: getWasteTypeColor() }}
@@ -274,27 +303,27 @@ const ClientMap = () => {
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Driver:</span>
+                  <span className="detail-label">Driver</span>
                   <span className="detail-value">
                     {selectedPickup.route.driver?.first_name}{" "}
                     {selectedPickup.route.driver?.last_name}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Truck:</span>
+                  <span className="detail-label">Truck</span>
                   <span className="detail-value">
                     #{selectedPickup.route.truck?.truck_id || "N/A"}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Schedule:</span>
+                  <span className="detail-label">Schedule</span>
                   <span className="detail-value">
                     {selectedPickup.schedule.start_time} -{" "}
                     {selectedPickup.schedule.end_time}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Status:</span>
+                  <span className="detail-label">Status</span>
                   <span
                     className="status-badge-inline"
                     style={{
@@ -310,13 +339,13 @@ const ClientMap = () => {
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Weight Collected:</span>
+                  <span className="detail-label">Weight Collected</span>
                   <span className="detail-value">
                     {selectedPickup.weight_collected || 0} kg
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Progress:</span>
+                  <span className="detail-label">Progress</span>
                   <span className="detail-value">
                     {selectedPickup.progress_percentage?.toFixed(1) || 0}%
                   </span>
@@ -337,6 +366,19 @@ const ClientMap = () => {
           )}
         </div>
       </div>
+
+      {/* Dark Mode Toggle Button */}
+      <button
+        className="dark-mode-toggle"
+        onClick={toggleDarkMode}
+        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      >
+        {darkMode ? (
+          <i className="fa-solid fa-sun"></i>
+        ) : (
+          <i className="fa-solid fa-moon"></i>
+        )}
+      </button>
     </div>
   );
 };

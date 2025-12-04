@@ -124,7 +124,7 @@ class ListReportsView(APIView):
     GET /api/reports/
     List all reports for the authenticated user
     """
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -154,7 +154,7 @@ class ListAllReportsView(APIView):
     GET /api/reports/all/
     List all reports (for admins)
     """
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -188,7 +188,7 @@ class ReportDetailView(APIView):
     GET /api/reports/<report_id>/
     Get a single report by ID
     """
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, report_id):
@@ -208,7 +208,7 @@ class UpdateReportStatusView(APIView):
     PATCH /api/reports/<report_id>/status/
     Update report status (for admins)
     """
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, report_id):
@@ -266,7 +266,7 @@ class DeleteReportView(APIView):
     DELETE /api/reports/<report_id>/
     Delete a report
     """
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, report_id):

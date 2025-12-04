@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
 import ReportModal from "../Modal/reportModal.js";
 import "../../Styles/Page/companyReports.css";
 import AlertSnackbar from "../../Components/Alert.js";
+import { AuthContext } from "../../Components/AuthProvider.js";
+import { useNavigate } from "react-router-dom";
+
 const CompanyReports = () => {
   const fetchWithAuth = useFetchWithAuth();
+  const { accessToken, userData } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -37,14 +42,14 @@ const CompanyReports = () => {
       path: "/company/schedule",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
-      icon: <i className="fa-solid fa-camera fa-lg" />,
+      icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
       name: "Pickups",
       path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
-      icon: <i className="fa-solid fa-gift fa-lg" />,
+      icon: "fa-solid fa-truck-pickup fa-lg",
     },
     {
       name: "Reports",
@@ -53,7 +58,6 @@ const CompanyReports = () => {
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-
     {
       name: "Notifications",
       path: "/company/notifications",
@@ -67,6 +71,12 @@ const CompanyReports = () => {
   useEffect(() => {
     fetchReports();
   }, []);
+
+  useEffect(() => {
+    if (!accessToken) {
+      navigate("/Login", { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   const fetchReports = async () => {
     try {
@@ -278,6 +288,7 @@ const CompanyReports = () => {
         report={selectedReport}
         loading={modalLoading}
         error={modalError}
+        user={userData}
       />
       <AlertSnackbar
         open={snackbar}
