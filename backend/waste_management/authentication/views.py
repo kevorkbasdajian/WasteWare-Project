@@ -1,17 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer,ProfileSerializer, UserManagementSerializer, UserUpdateSerializer
-from .models import Users, Companies, Roles,Addresses
+from rest_framework import status,viewsets
+from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer,ProfileSerializer, UserManagementSerializer, UserUpdateSerializer,NotificationSerializer, CreateNotificationSerializer,UserBasicSerializer
+from .models import Users, Companies, Roles,Addresses,Notifications
 from .utils import verify_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .jwt_auth import CustomJWTAuthentication
+from rest_framework.decorators import action
+from django.db.models import Q
+
 
 
 class LogoutView(APIView):
@@ -473,3 +472,199 @@ class UserDeleteView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         # ==============================================================
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Check if user is a Company
+        try:
+            company = Companies.objects.get(email=user.email) if hasattr(user, 'email') else None
+            if company:
+                return Notifications.objects.filter(company=company).select_related('user', 'company')
+        except Companies.DoesNotExist:
+            pass
+        
+        # Check if user is a regular User
+        try:
+            regular_user = Users.objects.get(email=user.email) if hasattr(user, 'email') else None
+            if regular_user:
+                return Notifications.objects.filter(user=regular_user).select_related('company')
+        except Users.DoesNotExist:
+            pass
+        
+        return Notifications.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        
+        # Filter by unread if requested
+        unread_only = request.query_params.get('unread_only')
+        if unread_only == 'true':
+            queryset = queryset.filter(is_read=False)
+        
+        # Filter by priority
+        priority = request.query_params.get('priority')
+        if priority:
+            queryset = queryset.filter(priority=priority)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def send_notification(self, request):
+        """
+        Company endpoint to send notifications to users
+        """
+        # DEBUG: Print what we're receiving
+        print("=" * 50)
+        print("REQUEST USER:", request.user)
+        print("USER TYPE:", type(request.user))
+        print("USER EMAIL:", getattr(request.user, 'email', 'NO EMAIL'))
+        print("HAS COMPANY_ID:", hasattr(request.user, 'company_id'))
+        print("HAS USER_ID:", hasattr(request.user, 'user_id'))
+        
+        # Try to find company
+        try:
+            company = Companies.objects.get(email=request.user.email)
+            print("COMPANY FOUND:", company)
+        except Companies.DoesNotExist:
+            print("COMPANY NOT FOUND")
+            return Response(
+                {'error': 'Only companies can send notifications'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception as e:
+            print("ERROR:", e)
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        print("=" * 50)
+        
+        serializer = CreateNotificationSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            result = serializer.save()
+            return Response(result, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['patch'])
+    def mark_as_read(self, request, pk=None):
+        """
+        Mark a notification as read
+        """
+        notification = self.get_object()
+        
+        # Ensure user can only mark their own notifications
+        try:
+            regular_user = Users.objects.get(email=request.user.email)
+            if notification.user != regular_user:
+                return Response(
+                    {'error': 'Cannot mark other users notifications'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Users.DoesNotExist:
+            return Response(
+                {'error': 'Only users can mark notifications as read'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        notification.is_read = True
+        notification.save()
+        
+        return Response(NotificationSerializer(notification).data)
+    
+    @action(detail=False, methods=['post'])
+    def mark_all_as_read(self, request):
+        """
+        Mark all user's notifications as read
+        """
+        try:
+            regular_user = Users.objects.get(email=request.user.email)
+            Notifications.objects.filter(user=regular_user, is_read=False).update(is_read=True)
+            return Response({'message': 'All notifications marked as read'})
+        except Users.DoesNotExist:
+            return Response(
+                {'error': 'Only users can mark notifications as read'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        """
+        Get count of unread notifications
+        """
+        try:
+            regular_user = Users.objects.get(email=request.user.email)
+            count = Notifications.objects.filter(user=regular_user, is_read=False).count()
+            return Response({'unread_count': count})
+        except Users.DoesNotExist:
+            return Response({'unread_count': 0})
+    
+    @action(detail=False, methods=['get'])
+    def recent_unread(self, request):
+        """
+        Get recent unread notifications (for polling)
+        """
+        try:
+            regular_user = Users.objects.get(email=request.user.email)
+            
+            # Get timestamp of last check (sent from frontend)
+            last_check = request.query_params.get('last_check')
+            
+            queryset = Notifications.objects.filter(user=regular_user, is_read=False)
+            
+            if last_check:
+                from django.utils import timezone
+                from datetime import datetime
+                last_check_time = datetime.fromisoformat(last_check.replace('Z', '+00:00'))
+                queryset = queryset.filter(created_at__gt=last_check_time)
+            
+            serializer = self.get_serializer(queryset[:5], many=True)  # Last 5 unread
+            return Response({
+                'notifications': serializer.data,
+                'has_new': queryset.exists()
+            })
+        except Users.DoesNotExist:
+            return Response({'notifications': [], 'has_new': False})
+
+class UserListViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for companies to view users for custom targeting
+    """
+    queryset = Users.objects.filter(account_status='active').order_by('first_name', 'last_name')
+    serializer_class = UserBasicSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        # Only companies can access this
+        try:
+            Companies.objects.get(email=self.request.user.email)
+        except Companies.DoesNotExist:
+            return Users.objects.none()
+        
+        queryset = super().get_queryset()
+        
+        # Filter by city if provided
+        city = self.request.query_params.get('city')
+        if city:
+            queryset = queryset.filter(address__city__icontains=city)
+        
+        # Search by name
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        return queryset.select_related('address')
+
+

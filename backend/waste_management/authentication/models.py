@@ -109,6 +109,41 @@ class Companies(models.Model):
         return False
 
 
+class Notifications(models.Model):
+    NOTIFICATION_TYPES = [
+        ('alert', 'Alert'),
+        ('reward', 'Reward'),
+        ('report', 'Report'),
+        ('system', 'System'),
+    ]
+    
+    PRIORITY_LEVELS = [
+        ('high', 'High'),
+        ('normal', 'Normal'),
+        ('low', 'Low'),
+    ]
+    
+    notification_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('Users', models.CASCADE, db_column='user_id', null=True, blank=True, related_name='notifications')
+    company = models.ForeignKey('Companies', models.CASCADE, db_column='company_id', null=True, blank=True, related_name='sent_notifications')
+    title = models.TextField()
+    message = models.TextField(null=True, blank=True)
+    type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='system')
+    priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='normal')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    # Target audience info (for company notifications)
+    target_audience = models.CharField(max_length=50, null=True, blank=True)  # 'all_users', 'custom'
+    target_user_ids = models.JSONField(null=True, blank=True)  # List of user IDs for custom targeting
+
+    class Meta:
+        db_table = 'Notifications'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.created_at}"
+
 class Permissions(models.Model):
     permission_id = models.AutoField(primary_key=True)
     role = models.ForeignKey(Roles, models.DO_NOTHING, db_column='role_id', default=1)

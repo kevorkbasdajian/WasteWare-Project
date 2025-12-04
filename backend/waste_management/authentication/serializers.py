@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies, Roles,Addresses
+from .models import Users, Companies, Roles,Addresses,Notifications
 from clientReports.models import Reports
 from .utils import hash_password, verify_password
 from django.utils import timezone
@@ -258,3 +258,119 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+
+class NotificationSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='company.company_name', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Notifications
+        fields = [
+            'notification_id',
+            'user',
+            'company',
+            'company_name',
+            'user_name',
+            'title',
+            'message',
+            'type',
+            'priority',
+            'is_read',
+            'created_at',
+            'target_audience',
+            'target_user_ids'
+        ]
+        read_only_fields = ['notification_id', 'created_at', 'company_name', 'user_name']
+    
+    def get_user_name(self, obj):
+        if obj.user:
+            return f"{obj.user.first_name} {obj.user.last_name}"
+        return None
+
+class CreateNotificationSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    message = serializers.CharField(allow_blank=True, required=False)
+    type = serializers.ChoiceField(choices=['alert', 'reward', 'report', 'system'], default='system')
+    priority = serializers.ChoiceField(choices=['high', 'normal', 'low'], default='normal')
+    target_audience = serializers.ChoiceField(choices=['all_users', 'custom'])
+    target_user_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        allow_empty=True
+    )
+    
+    def validate(self, data):
+        if data.get('target_audience') == 'custom' and not data.get('target_user_ids'):
+            raise serializers.ValidationError({
+                'target_user_ids': 'Must provide user IDs when target audience is custom'
+            })
+        return data
+    
+    def create(self, validated_data):
+        from django.db import transaction
+        
+        # Get company from request context
+        request = self.context['request']
+        try:
+            company = Companies.objects.get(email=request.user.email)
+        except Companies.DoesNotExist:
+            raise serializers.ValidationError("Only companies can send notifications")
+        
+        target_audience = validated_data['target_audience']
+        target_user_ids = validated_data.get('target_user_ids', [])
+        
+        notifications_to_create = []
+        
+        with transaction.atomic():
+            if target_audience == 'all_users':
+                # Get all active users
+                users = Users.objects.filter(account_status='active')
+                for user in users:
+                    notifications_to_create.append(
+                        Notifications(
+                            user=user,
+                            company=company,
+                            title=validated_data['title'],
+                            message=validated_data.get('message', ''),
+                            type=validated_data['type'],
+                            priority=validated_data['priority'],
+                            target_audience='all_users',
+                            is_read=False
+                        )
+                    )
+            else:  # custom
+                users = Users.objects.filter(user_id__in=target_user_ids, account_status='active')
+                for user in users:
+                    notifications_to_create.append(
+                        Notifications(
+                            user=user,
+                            company=company,
+                            title=validated_data['title'],
+                            message=validated_data.get('message', ''),
+                            type=validated_data['type'],
+                            priority=validated_data['priority'],
+                            target_audience='custom',
+                            target_user_ids=target_user_ids,
+                            is_read=False
+                        )
+                    )
+            
+            # Bulk create all notifications
+            created_notifications = Notifications.objects.bulk_create(notifications_to_create)
+            
+        return {
+            'count': len(created_notifications),
+            'target_audience': target_audience,
+            'message': f'Successfully sent notification to {len(created_notifications)} users'
+        }
+
+class UserBasicSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Users
+        fields = ['user_id', 'first_name', 'last_name', 'full_name', 'email', 'account_status']
+    
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
