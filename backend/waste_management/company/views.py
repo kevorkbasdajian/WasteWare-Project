@@ -137,6 +137,8 @@ class PickupViewSet(viewsets.ModelViewSet):
         status = self.request.query_params.get("status")
         route_id = self.request.query_params.get("route_id")
         schedule_id = self.request.query_params.get("schedule_id")
+        date = self.request.query_params.get("date")
+        active_only = self.request.query_params.get("active_only")
         
         if status:
             qs = qs.filter(status=status)
@@ -144,14 +146,36 @@ class PickupViewSet(viewsets.ModelViewSet):
             qs = qs.filter(route_id=route_id)
         if schedule_id:
             qs = qs.filter(schedule_id=schedule_id)
+        if date:
+            qs = qs.filter(schedule__pickup_date=date)
+        if active_only == 'true':
+            qs = qs.filter(status__in=['Not Started', 'In Progress'])
         
-        return qs
+        return qs.select_related('schedule', 'route', 'route__driver', 'route__truck', 'route__waste_type')
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         pickup = serializer.save()
         return Response(PickupSerializer(pickup).data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'])
+    def update_statuses(self, request):
+        """
+        Manually trigger status updates for all pickups
+        """
+        from .tasks import update_pickup_statuses
+        update_pickup_statuses()
+        return Response({"message": "Pickup statuses updated"})
+    
+    @action(detail=False, methods=['post'])
+    def simulate_movements(self, request):
+        """
+        Manually trigger truck movement simulation
+        """
+        from .tasks import simulate_truck_movements
+        simulate_truck_movements()
+        return Response({"message": "Truck movements simulated"})
     
     @action(detail=True, methods=['patch'])
     def update_location(self, request, pk=None):
@@ -192,5 +216,20 @@ class PickupViewSet(viewsets.ModelViewSet):
         pickup.save()
         
         return Response(PickupSerializer(pickup).data)
+    
+    @action(detail=True, methods=['get'])
+    def current_position(self, request, pk=None):
+        """
+        Get current simulated position of the truck
+        """
+        pickup = self.get_object()
+        
+        return Response({
+            'pickup_id': pickup.pickup_id,
+            'live_location': pickup.live_location,
+            'status': pickup.status,
+            'progress_percentage': pickup.calculate_progress_percentage(),
+            'weight_collected': pickup.weight_collected
+        })
 
 

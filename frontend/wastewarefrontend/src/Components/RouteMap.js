@@ -13,29 +13,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-const createTruckIcon = () => {
-  return L.divIcon({
-    className: "custom-truck-icon",
-    html: `
-      <div style="
-        background-color: #3b82f6;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      ">
-        <span style="font-size: 20px;">🚛</span>
-      </div>
-    `,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-  });
-};
-
 // Custom dumping location icon
 const createDumpingIcon = (index, color) => {
   return L.divIcon({

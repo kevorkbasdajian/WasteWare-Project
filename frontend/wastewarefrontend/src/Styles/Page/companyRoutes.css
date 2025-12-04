@@ -189,6 +189,8 @@
   flex-direction: row;
   justify-content: space-between;
   width: 90%;
+  margin-bottom: 50px;
+  margin-top: 35px;
 }
 .charttitle {
   text-align: center;

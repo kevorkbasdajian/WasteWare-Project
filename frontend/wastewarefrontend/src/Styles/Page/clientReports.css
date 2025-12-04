@@ -618,7 +618,7 @@
 }
 
 .photo-preview-container:hover .photo-actions {
-  opacity: 0.4;
+  opacity: 0.9;
 }
 
 .change-photo-btn,

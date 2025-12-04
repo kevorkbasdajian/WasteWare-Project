@@ -17,8 +17,7 @@ router.register(r'dumpings', DumpingViewSet, basename='dumping')
 router.register(r'routes', RouteViewSet, basename='route')
 router.register(r'waste-types', WasteTypeViewSet, basename='wastetype')
 router.register(r'schedules', ScheduleViewSet, basename='schedule') 
-router.register(r'pickups', PickupViewSet, basename='pickup')  
-
+router.register(r'pickups', PickupViewSet, basename='pickup')
 
 urlpatterns = [
     path('', include(router.urls)),

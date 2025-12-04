@@ -83,7 +83,7 @@ const Reports = () => {
     useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
   const navigate = useNavigate();
-  const [autoGPS, setAutoGPS] = useState(true);
+  const [autoGPS, setAutoGPS] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [snackbar, setsnackbar] = useState(false);
 
@@ -566,7 +566,7 @@ const Reports = () => {
                 <Field
                   name="title"
                   type="text"
-                  placeholder="Title"
+                  placeholder="Title *"
                   className="title-input"
                 />
                 <ErrorMessage
@@ -579,7 +579,7 @@ const Reports = () => {
                 <div className="category-section">
                   <div className="section-header-green">
                     <span className="section-number">1</span>
-                    <h3>What are you reporting?</h3>
+                    <h3>What are you reporting? *</h3>
                   </div>
 
                   <div className="category-grid">
@@ -609,7 +609,7 @@ const Reports = () => {
                 <div className="severity-section">
                   <div className="section-header-green">
                     <span className="section-number">2</span>
-                    <h3>Severity Level</h3>
+                    <h3>Severity Level *</h3>
                   </div>
 
                   <div className="severity-grid">
@@ -638,7 +638,7 @@ const Reports = () => {
                 <div className="priority-section">
                   <div className="section-header-green">
                     <span className="section-number">3</span>
-                    <h3>Response Priority</h3>
+                    <h3>Response Priority *</h3>
                   </div>
 
                   <div className="priority-grid">
@@ -667,7 +667,7 @@ const Reports = () => {
                 <Field
                   as="textarea"
                   name="details"
-                  placeholder="Details"
+                  placeholder="Details (optional)"
                   className="details-textarea"
                   rows={4}
                 />

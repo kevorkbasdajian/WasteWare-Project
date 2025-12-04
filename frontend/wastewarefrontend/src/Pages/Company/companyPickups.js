@@ -23,6 +23,7 @@ import { RightPopupModal } from "../../Components/RightModal.js";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import AlertSnackbar from "../../Components/Alert.js";
 
 // Fix for default marker icon in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -36,6 +37,8 @@ const CompanyPickups = () => {
   const { clearAuth, accessToken, user_type } = useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
   const navigate = useNavigate();
+  const [snackbar, setsnackbar] = useState(false);
+  const [message, setmessage] = useState("");
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [searchRoute, setSearchRoute] = useState("");
@@ -269,6 +272,8 @@ const CompanyPickups = () => {
       if (response.ok) {
         const pickup = await response.json();
         console.log("Pickup created:", pickup);
+        setmessage("Pickup created");
+        setsnackbar(true);
         setCurrentPickup(pickup);
 
         // Refresh routes to show updated status
@@ -282,6 +287,7 @@ const CompanyPickups = () => {
         if (updatedRoute) {
           setSelectedRoute(updatedRoute);
         }
+        navigate(0);
       } else {
         const errorData = await response.json();
         setError(errorData.detail || "Failed to create pickup");
@@ -392,7 +398,7 @@ const CompanyPickups = () => {
         const errorData = await addressResponse.json();
         throw new Error(errorData.detail || "Failed to update address");
       }
-
+      setmessage("Dumping location updated successfully");
       // Refresh the route data to show updated dumping info
       const updatedRoutes = await fetchRoutes();
       setRoutes(updatedRoutes);
@@ -409,6 +415,8 @@ const CompanyPickups = () => {
 
       // Close modal and reset
       setIsEditDumpingModalOpen(false);
+      setsnackbar(true);
+
       setEditingDumping(null);
       setEditDumpingData({
         street: "",
@@ -418,8 +426,6 @@ const CompanyPickups = () => {
         longitude: "",
         postal_code: "",
       });
-
-      alert("Dumping location updated successfully!");
     } catch (err) {
       console.error("Error updating dumping:", err);
       setEditError(`Failed to update location: ${err.message}`);
@@ -450,6 +456,10 @@ const CompanyPickups = () => {
         ]}
       />
     ) : null;
+  };
+  const closesnackbar = () => {
+    setsnackbar(false);
+    setmessage("");
   };
   return (
     <div className="skeleton">
@@ -1023,7 +1033,7 @@ const CompanyPickups = () => {
                             {isCompleted && (
                               <div className="dump-weight">
                                 <Weight className="weight-icon" />
-                                <span>{dump.collected_waste || 0} kg</span>
+                                <span>{dump.maximum_capacity || 0} kg</span>
                               </div>
                             )}
                           </div>
@@ -1372,6 +1382,13 @@ const CompanyPickups = () => {
           </form>
         </div>
       </RightPopupModal>
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closesnackbar}
+        message={message}
+        severity="success"
+        autoHideDuration={3000}
+      />
     </div>
   );
 };

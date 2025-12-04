@@ -221,6 +221,11 @@ export const SignUpPage = () => {
                   component="div"
                   className="error"
                 />
+                <ErrorMessage
+                  name="password2"
+                  component="div"
+                  className="error"
+                />
 
                 <div className="checkbox">
                   <Field type="checkbox" name="terms" />
