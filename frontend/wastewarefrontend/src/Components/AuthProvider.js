@@ -10,6 +10,19 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+  const [user_type, set_user_type] = useState(() => {
+    try {
+      return sessionStorage.getItem("user_type") || "";
+    } catch (e) {
+      return "";
+    }
+  });
+  const saveusertype = (type) => {
+    set_user_type(type);
+    try {
+      sessionStorage.setItem("user_type", type);
+    } catch (e) {}
+  };
 
   const [userData, setUserData] = useState(null);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
@@ -90,6 +103,8 @@ export function AuthProvider({ children }) {
     accessToken,
     saveAccessToken,
     clearAuth,
+    user_type,
+    saveusertype,
     userData,
     isLoadingUser,
     userError,

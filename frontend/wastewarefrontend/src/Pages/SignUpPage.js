@@ -13,13 +13,14 @@ import Loading from "../Content/Loading.json";
 import { Box, Slide, Alert, Snackbar } from "@mui/material";
 import Lottie from "lottie-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import AlertSnackbar from "../Components/Alert";
 export const SignUpPage = () => {
   const [backendError, setBackendError] = useState("");
   const { saveAccessToken, accessToken } = useContext(AuthContext);
   const [snackbar, setsnackbar] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
-  const [role, setrole] = useState("");
   const navigate = useNavigate();
+  const { user_type, set_user_type, saveusertype } = useContext(AuthContext);
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -41,7 +42,7 @@ export const SignUpPage = () => {
         }
       })();
     if (token) {
-      navigate("/client", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
@@ -52,9 +53,6 @@ export const SignUpPage = () => {
     phone_number: Yup.string()
       .matches(/^\d{11}$/, "Phone number must be 11 digits")
       .required("Phone number is required"),
-    role: Yup.string()
-      .oneOf(["User", "Admin"], "Please select a valid role")
-      .required("Please select a role"),
     password: Yup.string()
       .required("Password is required")
       .min(6, "Password must be at least 6 characters"),
@@ -72,18 +70,12 @@ export const SignUpPage = () => {
     password: "",
     password2: "",
     terms: false,
-    role: "", // Empty string to show placeholder
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    const { password2, terms, role, ...payload } = values;
+    const { password2, terms, ...payload } = values;
     set_is_loading(true);
-    setrole(values.role);
     let url = "http://localhost:8000/api/auth/signup/user/";
-    if (values.role === "Admin")
-      url = "http://localhost:8000/api/auth/signup/admin/";
-    if (values.role === "Company")
-      url = "http://localhost:8000/api/auth/signup/company/";
 
     try {
       const response = await fetch(url, {
@@ -119,9 +111,8 @@ export const SignUpPage = () => {
   };
   const closesnackbar = () => {
     setsnackbar(false);
-    if (role === "Admin") navigate("/admin/dashboard", { replace: true });
-    else if (role === "User") navigate("/client", { replace: true });
-    else navigate("/company", { replace: true });
+    saveusertype("user");
+    navigate("/", { replace: true });
   };
 
   return (
@@ -206,20 +197,6 @@ export const SignUpPage = () => {
                   className="error_pn"
                 />
                 <br />
-                <Field
-                  as="select"
-                  name="role"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.role}
-                  className="role-select"
-                >
-                  <option value="">Select your role</option>
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                </Field>
-                <ErrorMessage name="role" component="div" className="error" />
-                <br />
 
                 <div className="passwords">
                   <Field
@@ -275,27 +252,12 @@ export const SignUpPage = () => {
           </Formik>
         </div>
       </div>
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+
+      <AlertSnackbar
         open={snackbar}
         onClose={closesnackbar}
-        autoHideDuration={2000}
-        slots={{ transition: Slide }}
-      >
-        <Alert
-          onClose={closesnackbar}
-          severity="success"
-          variant="filled"
-          sx={{
-            width: 400,
-            fontSize: 17,
-            fontWeight: "bold",
-            borderRadius: 5,
-          }}
-        >
-          <Box sx={{ marginLeft: 11 }}>Signup Successful</Box>
-        </Alert>
-      </Snackbar>
+        message="Signup Successful"
+      />
       {is_loading && (
         <div
           style={{

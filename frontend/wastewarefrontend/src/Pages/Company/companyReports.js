@@ -33,19 +33,27 @@ const CompanyReports = () => {
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
+      name: "Schedule",
+      path: "/company/schedule",
+      color: "var(--gradient-purple)",
+      glowColor: "#A855F7",
+      icon: <i className="fa-solid fa-camera fa-lg" />,
+    },
+    {
+      name: "Pickups",
+      path: "/company/pickups",
+      color: "var(--gradient-orange)",
+      glowColor: "#F97316",
+      icon: <i className="fa-solid fa-gift fa-lg" />,
+    },
+    {
       name: "Reports",
       path: "/company/reports",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-    {
-      name: "Schedule",
-      path: "/company/schedule",
-      color: "var(--gradient-orange)",
-      glowColor: "#F97316",
-      icon: "fa-solid fa-clock fa-lg",
-    },
+
     {
       name: "Notifications",
       path: "/company/notifications",

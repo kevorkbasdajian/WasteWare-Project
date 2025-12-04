@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Navbar from "../../Components/navbar.js";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
@@ -6,6 +6,7 @@ import "../../Styles/Page/companyRoutes.css";
 import "../../Styles/Base/glass.css";
 import { RightPopupModal } from "../../Components/RightModal.js";
 import { DumpingSelector } from "../../Components/DumpingSelector.js";
+import RouteTable from "../../Components/RouteTable.js";
 import {
   PieChart,
   Pie,
@@ -19,6 +20,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth";
+import { AuthContext } from "../../Components/AuthProvider.js";
+import AlertSnackbar from "../../Components/Alert.js";
+import Modalwindow from "../../Components/Modal.js";
 
 const TruckRoutes = () => {
   const navigate = useNavigate();
@@ -26,6 +30,8 @@ const TruckRoutes = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [snackbar, setsnackbar] = useState(false);
+  const [message, setmessage] = useState("");
   const [errors, seterrors] = useState("");
   //Drivers
   const [drivers, setDrivers] = useState([]);
@@ -63,14 +69,14 @@ const TruckRoutes = () => {
   const [routes, setRoutes] = useState([]);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routesError, setRoutesError] = useState(null);
-
+  const { accessToken, user_type } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     truckId: "",
     wasteCategory: "",
     driverName: "",
     status: "",
   });
-
+  const [viewallmodal, setviewallmodal] = useState(false);
   const COLORS = ["#ff9800", "#4caf50", "#2196f3", "#f44336"];
   // Colors for bars
   const BAR_COLORS = ["#4caf50", "#3b82f6", "#f44336", "#ff9800"];
@@ -79,7 +85,7 @@ const TruckRoutes = () => {
       name: "Home",
       path: "/company",
       color: "var(--gradient-red)",
-      glowColor: "#EF4444", // Solid color for LED glow
+      glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
     },
     {
@@ -90,19 +96,27 @@ const TruckRoutes = () => {
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
+      name: "Schedule",
+      path: "/company/schedule",
+      color: "var(--gradient-purple)",
+      glowColor: "#A855F7",
+      icon: <i className="fa-solid fa-camera fa-lg" />,
+    },
+    {
+      name: "Pickups",
+      path: "/company/pickups",
+      color: "var(--gradient-orange)",
+      glowColor: "#F97316",
+      icon: <i className="fa-solid fa-gift fa-lg" />,
+    },
+    {
       name: "Reports",
       path: "/company/reports",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-    {
-      name: "Schedule",
-      path: "/company/schedule",
-      color: "var(--gradient-orange)",
-      glowColor: "#F97316",
-      icon: "fa-solid fa-clock fa-lg",
-    },
+
     {
       name: "Notifications",
       path: "/company/notifications",
@@ -111,6 +125,20 @@ const TruckRoutes = () => {
       icon: "fa-solid fa-bell fa-lg",
     },
   ];
+  useEffect(() => {
+    const token = accessToken;
+    if (!token) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     console.log("should redirect to ...");
+  //     navigate(-1);
+  //   }
+  //   console.log("user type is", user_type);
+  // }, [navigate]);
   useEffect(() => {
     const fetchRoutes = async () => {
       setLoadingRoutes(true);
@@ -180,9 +208,8 @@ const TruckRoutes = () => {
       // Build the route payload
       const routePayload = {
         driver_id: parseInt(selectedDriver),
-        waste_type: parseInt(selectedWasteType),
+        waste_type_id: parseInt(selectedWasteType),
         status: formData.status || "scheduled",
-
         dumpings: selectedDumpings.map((d) => ({ dumping_id: d.dumping_id })),
       };
 
@@ -191,7 +218,7 @@ const TruckRoutes = () => {
         routePayload.truck_id = parseInt(selectedTruck);
       }
 
-      console.log("Submitting route payload:", routePayload);
+      console.log("Payload being sent:", routePayload); // FIXED - was 'payload'
 
       const response = await fetchWithAuth(
         "http://localhost:8000/api/company/routes/",
@@ -202,17 +229,29 @@ const TruckRoutes = () => {
         }
       );
 
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(errorData.detail || "Failed to create route");
+        // Try to parse as JSON
+        try {
+          const errorData = JSON.parse(responseText);
+          console.error("Error response:", errorData);
+          throw new Error(errorData.detail || JSON.stringify(errorData));
+        } catch (parseError) {
+          // Not JSON, show text error
+          console.error("Server error (text):", responseText);
+          throw new Error("Server error: " + responseText.substring(0, 200));
+        }
       }
 
-      const createdRoute = await response.json();
+      const createdRoute = JSON.parse(responseText);
       console.log("Route created successfully:", createdRoute);
 
-      alert("Route created successfully!");
-      // Add new route to state for immediate chart update
+      setsnackbar(true);
+      setmessage("Route Created Successfully");
+
+      // Add new route to state
       setRoutes((prev) => [createdRoute, ...prev]);
 
       // Reset form
@@ -229,12 +268,9 @@ const TruckRoutes = () => {
         status: "",
       });
       seterrors("");
-
-      // Optionally: Navigate to routes list or refresh the page
-      // navigate("/Company/Routes/List");
     } catch (err) {
       console.error("Error creating route:", err);
-      alert(`Failed to create route: ${err.message}`);
+      seterrors(`Failed to create route: ${err.message}`);
     } finally {
       setSubmittingRoute(false);
     }
@@ -334,6 +370,11 @@ const TruckRoutes = () => {
     }
   };
 
+  const closesnackbar = () => {
+    setsnackbar(false);
+    setmessage("");
+  };
+
   //handle truck change
   const handleTruckChange = (e) => {
     const truckId = e.target.value;
@@ -384,8 +425,8 @@ const TruckRoutes = () => {
       // Close modal and reset form
       setIsAddDriverModalOpen(false);
       setNewDriverData({ first_name: "", last_name: "", phone: "" });
-
-      alert("Driver added successfully!");
+      setsnackbar(true);
+      setmessage("Driver added successfully");
 
       // Trigger truck loading for new driver (will have no truck)
       handleDriverChange({ target: { value: newDriver.driver_id.toString() } });
@@ -434,8 +475,8 @@ const TruckRoutes = () => {
       // Close modal and reset form
       setIsAddTruckModalOpen(false);
       setNewTruckData({ available: true });
-
-      alert("Truck added successfully!");
+      setsnackbar(true);
+      setmessage("Truck added successfully");
     } catch (err) {
       console.error("Error adding truck:", err);
       alert(`Failed to add truck: ${err.message}`);
@@ -490,10 +531,10 @@ const TruckRoutes = () => {
   const getRouteStatusData = () => {
     if (!routes || routes.length === 0) {
       return [
-        { name: "Scheduled", value: 0 },
+        // { name: "Scheduled", value: 0 },
         { name: "Active", value: 0 },
-        { name: "Completed", value: 0 },
-        { name: "Cancelled", value: 0 },
+        { name: "Inactive", value: 0 },
+        // { name: "Cancelled", value: 0 },
       ];
     }
 
@@ -508,8 +549,8 @@ const TruckRoutes = () => {
     return [
       { name: "Scheduled", value: statusCounts.Scheduled || 0 },
       { name: "Active", value: statusCounts.Active || 0 },
-      { name: "Completed", value: statusCounts.Completed || 0 },
-      { name: "Cancelled", value: statusCounts.Cancelled || 0 },
+      { name: "Inactive", value: statusCounts.Inactive || 0 },
+      // { name: "Cancelled", value: statusCounts.Cancelled || 0 },
     ];
   };
 
@@ -529,7 +570,7 @@ const TruckRoutes = () => {
 
     // Count routes by waste type
     const wasteTypeCounts = routes.reduce((acc, route) => {
-      const wasteTypeId = route.waste_type;
+      const wasteTypeId = route.waste_type.waste_type_id;
       acc[wasteTypeId] = (acc[wasteTypeId] || 0) + 1;
       return acc;
     }, {});
@@ -539,6 +580,10 @@ const TruckRoutes = () => {
       wasteType: type.name,
       count: wasteTypeCounts[type.waste_type_id] || 0,
     }));
+  };
+  const modifyviewallmodal = (value) => {
+    console.log("Modal view is:", value);
+    setviewallmodal(value);
   };
 
   return (
@@ -856,10 +901,10 @@ const TruckRoutes = () => {
               onChange={handleInputChange}
             >
               <option value="">Status *</option>
-              <option value="scheduled">Scheduled</option>
+              {/* <option value="scheduled">Scheduled</option> */}
               <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="inactive">Inactive</option>
+              {/* <option value="cancelled">Cancelled</option> */}
             </select>
             <select
               name="wasteCategory"
@@ -1068,13 +1113,33 @@ const TruckRoutes = () => {
               }
               onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
             >
-              <span style={{ fontSize: "1.5rem" }}>+</span> Add Route
+              <i
+                className="fa-solid fa-plus"
+                style={{ marginRight: "0.5rem" }}
+              />{" "}
+              Add Route
             </button>
             {errors && (
               <p style={{ fontSize: 17, color: "red", textAlign: "center" }}>
                 {errors}
               </p>
             )}
+            <button
+              className="actualButton"
+              onClick={() => modifyviewallmodal(true)}
+              style={{
+                backgroundColor: "#009688",
+                fontSize: "25px",
+                marginTop: 15,
+              }}
+              onMouseEnter={(e) =>
+                (e.target.style.transform = "translateY(-2px)")
+              }
+              onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+            >
+              <i className="fa  fa-eye" style={{ marginRight: "0.5rem" }} />
+              View All Routes
+            </button>
           </div>
         </div>
 
@@ -1136,10 +1201,10 @@ const TruckRoutes = () => {
                     Waste Type Distribution
                   </div>
                   <BarChart
-                    width={380}
+                    width={520}
                     height={400}
                     data={getWasteTypeData()}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    margin={{ top: 20, right: 60, left: -20, bottom: 20 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="wasteType" />
@@ -1161,6 +1226,55 @@ const TruckRoutes = () => {
           </div>
         </div>
       </div>
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closesnackbar}
+        message={message}
+        autoHideDuration={4000}
+      />
+
+      <Modalwindow
+        open={viewallmodal}
+        onClose={() => modifyviewallmodal(false)}
+      >
+        <div
+          className="modal"
+          style={{ width: "95%", maxWidth: "1400px", overflowY: "scroll" }}
+        >
+          <div
+            style={{
+              right: 20,
+              top: 30,
+              position: "absolute",
+              height: 50,
+              width: 50,
+            }}
+          >
+            <button
+              onClick={() => modifyviewallmodal(false)}
+              className="closebtn"
+            >
+              <i className="fa-solid fa-x fa-lg" />
+            </button>
+          </div>
+          <p className="modaltitle"> All Truck Routes</p>
+
+          {/* Add the table here */}
+          <div style={{ marginTop: "20px", padding: "20px" }}>
+            {loadingRoutes ? (
+              <p style={{ textAlign: "center", color: "#666" }}>
+                Loading routes...
+              </p>
+            ) : routesError ? (
+              <p style={{ textAlign: "center", color: "#f44336" }}>
+                Error loading routes
+              </p>
+            ) : (
+              <RouteTable routes={routes} />
+            )}
+          </div>
+        </div>
+      </Modalwindow>
     </div>
   );
 };

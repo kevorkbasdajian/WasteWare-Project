@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const Dashboard = () => {
-  const { clearAuth, accessToken, userData, isLoadingUser } =
+  const { clearAuth, accessToken, user_type, userData, isLoadingUser } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState("week");
@@ -14,7 +14,7 @@ const Dashboard = () => {
   const links = [
     {
       name: "Home",
-      path: "/client",
+      path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -132,17 +132,30 @@ const Dashboard = () => {
     },
   ];
 
+  // ALL HOOKS MUST COME BEFORE ANY CONDITIONAL RETURNS
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
     }
   }, [accessToken, navigate]);
 
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
+    }
+  }, [user_type, navigate]);
+
   const handleLogout = () => {
     clearAuth();
     navigate("/login");
   };
 
+  // Calculate maxReports - safe to do after hooks
+  const maxReports = Math.max(
+    ...activityData[selectedPeriod].map((d) => d.reports)
+  );
+
+  // NOW you can have conditional returns
   if (isLoadingUser) {
     return (
       <div className="loading">
@@ -160,10 +173,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const maxReports = Math.max(
-    ...activityData[selectedPeriod].map((d) => d.reports)
-  );
 
   return (
     <div className="page">

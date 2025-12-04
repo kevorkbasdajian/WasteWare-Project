@@ -6,14 +6,15 @@ import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const ClientMap = () => {
-  const { clearAuth, accessToken, userData, isLoadingUser } =
+  const { clearAuth, accessToken, user_type, userData, isLoadingUser } =
     useContext(AuthContext);
+
   const navigate = useNavigate();
 
   const links = [
     {
       name: "Home",
-      path: "/client",
+      path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -34,19 +35,25 @@ const ClientMap = () => {
     },
   ];
 
-  // Check authentication
+  // ALL HOOKS MUST COME BEFORE CONDITIONAL RETURNS
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
     }
   }, [accessToken, navigate]);
 
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
+    }
+  }, [user_type, navigate]);
+
   const handleLogout = () => {
     clearAuth();
     navigate("/login");
   };
 
-  // Loading state
+  // NOW conditional returns are safe
   if (isLoadingUser) {
     return (
       <div className="loading">
@@ -56,7 +63,6 @@ const ClientMap = () => {
     );
   }
 
-  // No user data
   if (!userData) {
     return (
       <div className="error-page">

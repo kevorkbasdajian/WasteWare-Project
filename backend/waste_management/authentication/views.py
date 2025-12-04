@@ -1,11 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer, ProfileSerializer, UserManagementSerializer, UserUpdateSerializer
-from .models import Users, Companies, Roles, Addresses
+from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer,ProfileSerializer, UserManagementSerializer, UserUpdateSerializer
+from .models import Users, Companies, Roles,Addresses
 from .utils import verify_password
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .jwt_auth import CustomJWTAuthentication
 
@@ -141,6 +145,20 @@ class LoginView(APIView):
             pass
 
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+class AddressViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing addresses
+    """
+    queryset = Addresses.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Optionally restricts the returned addresses
+        """
+        return Addresses.objects.all()
 
 
 

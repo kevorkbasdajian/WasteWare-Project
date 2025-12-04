@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import "../../Styles/Page/clientReports.css";
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
+import AlertSnackbar from "../../Components/Alert.js";
 
 // Validation Schema
 const reportValidationSchema = Yup.object().shape({
@@ -78,12 +79,13 @@ const reportValidationSchema = Yup.object().shape({
 
 const Reports = () => {
   // ✅ FIXED: Correct destructuring from useContext (object, not array)
-  const { clearAuth, accessToken, userData, isLoadingUser } =
+  const { clearAuth, accessToken, userData, isLoadingUser, user_type } =
     useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
   const navigate = useNavigate();
   const [autoGPS, setAutoGPS] = useState(true);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [snackbar, setsnackbar] = useState(false);
 
   const categories = [
     {
@@ -141,7 +143,7 @@ const Reports = () => {
   const links = [
     {
       name: "Home",
-      path: "/client",
+      path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -174,6 +176,24 @@ const Reports = () => {
     details: "",
     photo: null,
   };
+
+  useEffect(() => {
+    const token = accessToken;
+    if (!token) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      navigate("/login", { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   const handlePhotoUpload = (e, setFieldValue) => {
     const file = e.target.files[0];
@@ -253,7 +273,9 @@ const Reports = () => {
       }
 
       if (response.ok) {
-        alert("Report submitted successfully! 🎉");
+        setsnackbar(true);
+        // alert("Report submitted successfully! 🎉");
+
         setStatus({ success: true, message: "Report submitted successfully!" });
         resetForm();
         setPhotoPreview(null);
@@ -281,12 +303,9 @@ const Reports = () => {
       alert("Error processing server response");
     }
   };
-
-  useEffect(() => {
-    if (!accessToken) {
-      navigate("/login", { replace: true });
-    }
-  }, [accessToken, navigate]);
+  const closesnackbar = () => {
+    setsnackbar(false);
+  };
 
   // Show loading state while user data is being fetched
   if (isLoadingUser) {
@@ -662,6 +681,12 @@ const Reports = () => {
           )}
         </Formik>
       </div>
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closesnackbar}
+        message="Report submitted successfully! 🎉"
+        autoHideDuration={4000}
+      />
     </div>
   );
 };

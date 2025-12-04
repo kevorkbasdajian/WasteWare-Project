@@ -71,6 +71,11 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Addresses
+        fields = ['address_id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
+        read_only_fields = ['address_id']
 
 # --------------------------
 # Profile Serializer

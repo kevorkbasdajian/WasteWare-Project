@@ -6,8 +6,14 @@ import { AuthContext } from "../../Components/AuthProvider.js";
 import EditProfileModal from "../Profile/EditProfileModal.js";
 
 const ProfilePage = () => {
-  const { clearAuth, accessToken, userData, isLoadingUser, userError } =
-    useContext(AuthContext);
+  const {
+    clearAuth,
+    accessToken,
+    userData,
+    isLoadingUser,
+    userError,
+    user_type,
+  } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Modal state
@@ -16,7 +22,7 @@ const ProfilePage = () => {
   const links = [
     {
       name: "Home",
-      path: "/client",
+      path: "/",
       color: "var(--gradient-red)",
       glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
@@ -56,7 +62,11 @@ const ProfilePage = () => {
     // Optional: Show success message or toast notification
     console.log("Profile updated successfully!");
   };
-
+  useEffect(() => {
+    if (user_type && user_type !== "user") {
+      navigate(-1);
+    }
+  }, [navigate]);
   // Loading state
   if (isLoadingUser) {
     return (

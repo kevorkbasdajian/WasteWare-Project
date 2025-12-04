@@ -12,6 +12,7 @@ import CompanySchedule from "./Pages/Company/companySchedule";
 import CompanyReports from "./Pages/Company/companyReports";
 import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
+import CompanyPickups from "./Pages/Company/companyPickups";
 import Chatbot from "./Components/chatbot";
 // import EditProfilePage from "./Pages/Profile/EditProfilePage";
 import AdminUserManagement from "./Pages/Admin/adminUserManagement";
@@ -25,7 +26,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* client */}
-          <Route path="/client" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/reports" element={<Reports />} />
           <Route path="/client/profile" element={<ClientProfile />} />
@@ -38,6 +39,7 @@ function App() {
           <Route path="/company" element={<CompanyDashboard />} />
           <Route path="/company/schedule" element={<CompanySchedule />} />
           <Route path="/company/routes" element={<TruckRoutes />} />
+          <Route path="/company/pickups" element={<CompanyPickups />} />
           <Route path="/company/reports" element={<CompanyReports />} />
         </Routes>
         <Chatbot />

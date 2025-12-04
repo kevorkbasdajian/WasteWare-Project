@@ -13,14 +13,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Components/AuthProvider";
 import Loading from "../Content/Loading.json";
 import "@fontsource/montserrat/700.css";
+import AlertSnackbar from "../Components/Alert";
 
 export const LoginPage = () => {
   // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState("");
-  const { saveAccessToken, accessToken } = useContext(AuthContext);
+  const { saveAccessToken, accessToken, saveusertype, user_type } =
+    useContext(AuthContext);
   const navigate = useNavigate();
   const [snackbar, setsnackbar] = useState(false);
-  const [user_type, set_user_type] = useState("");
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -42,7 +43,7 @@ export const LoginPage = () => {
         }
       })();
     if (token) {
-      navigate("/client", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
@@ -84,7 +85,8 @@ export const LoginPage = () => {
         if (accessToken) saveAccessToken(accessToken);
         setsnackbar(true);
         // alert(JSON.stringify(data, null, 2));
-        set_user_type(data.user_type);
+        console.log(user_type);
+        saveusertype(data.user_type);
         setErrorMessage("");
       }
     } catch (error) {
@@ -99,7 +101,7 @@ export const LoginPage = () => {
     if (user_type === "company") {
       navigate("/company", { replace: true });
     }
-    if (user_type === "user") navigate("/client", { replace: true });
+    if (user_type === "user") navigate("/", { replace: true });
     else if (user_type === "admin")
       navigate("/admin/dashboard", { replace: true });
   };
@@ -181,27 +183,12 @@ export const LoginPage = () => {
           </Formik>
         </div>
       </div>
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      <AlertSnackbar
         open={snackbar}
         onClose={closesnackbar}
-        autoHideDuration={2000}
-        slots={{ transition: Slide }}
-      >
-        <Alert
-          onClose={closesnackbar}
-          severity="success"
-          variant="filled"
-          sx={{
-            width: 400,
-            fontSize: 17,
-            fontWeight: "bold",
-            borderRadius: 5,
-          }}
-        >
-          <Box sx={{ marginLeft: 11 }}>Login Successful</Box>
-        </Alert>
-      </Snackbar>
+        message="Login Successful"
+        severity="success"
+      />
       {is_loading && (
         <div
           style={{

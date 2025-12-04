@@ -173,6 +173,7 @@
   color: #2e7d32;
   margin-bottom: 0.25rem;
   font-size: 1rem;
+  margin-bottom: 20px;
 }
 
 .dumping-card-style .subtitle {
@@ -194,4 +195,36 @@
   font-size: 1.7rem;
   font-weight: bold;
   color: #55a476ff;
+}
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  background-color: #dff1df;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  padding: 20px;
+}
+.closebtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  transition: background 0.5s ease, border-radius 0.5s ease, color 0.3s ease;
+  border-radius: 50%;
+  color: #2e7d32;
+}
+.closebtn:hover {
+  background: #4caf50;
+  color: white;
+}
+.modaltitle {
+  font-size: 25px;
+  color: #55a476ff;
+  font-weight: bold;
+  margin-left: 10px;
+  margin-top: 19px;
 }
