@@ -4,13 +4,13 @@ import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
 import ReportModal from "../Modal/reportModal.js";
 import "../../Styles/Page/companyReports.css";
-
+import AlertSnackbar from "../../Components/Alert.js";
 const CompanyReports = () => {
   const fetchWithAuth = useFetchWithAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-
+  const [snackbar, setsnackbar] = useState(false);
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -101,7 +101,8 @@ const CompanyReports = () => {
       );
 
       if (response.ok) {
-        alert("Status updated successfully!");
+        setsnackbar(true);
+        // alert("Status updated successfully!");
         fetchReports();
         // Refresh modal if it's open and showing the same report
         if (isModalOpen && selectedReport?.report_id === reportId) {
@@ -166,6 +167,9 @@ const CompanyReports = () => {
     return report.status === filter;
   });
 
+  const closesnackbar = () => {
+    setsnackbar(false);
+  };
   return (
     <div className="page">
       <Navbar links={links} />
@@ -274,6 +278,13 @@ const CompanyReports = () => {
         report={selectedReport}
         loading={modalLoading}
         error={modalError}
+      />
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closesnackbar}
+        message="Status updated successfully!"
+        severity="success"
+        autoHideDuration={3000}
       />
     </div>
   );

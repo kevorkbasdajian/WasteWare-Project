@@ -1,15 +1,25 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "../../Styles/Page/clientMap.css";
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
+import TimelineSchedule from "../../Components/TimelineSchedule.js";
+import ClientRouteMap from "../../Components/ClientRouteMap.js";
+import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
 
 const ClientMap = () => {
   const { clearAuth, accessToken, user_type, userData, isLoadingUser } =
     useContext(AuthContext);
-
   const navigate = useNavigate();
+  const fetchWithAuth = useFetchWithAuth();
+
+  // State management
+  const [pickups, setPickups] = useState([]);
+  const [selectedPickup, setSelectedPickup] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const links = [
     {
@@ -35,7 +45,7 @@ const ClientMap = () => {
     },
   ];
 
-  // ALL HOOKS MUST COME BEFORE CONDITIONAL RETURNS
+  // Check authentication
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
@@ -48,13 +58,93 @@ const ClientMap = () => {
     }
   }, [user_type, navigate]);
 
+  // Fetch pickups on mount and when date changes
+  useEffect(() => {
+    if (accessToken) {
+      fetchPickups();
+    }
+  }, [accessToken, selectedDate]);
+
+  // Poll for updates every 10 seconds
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const interval = setInterval(() => {
+      fetchPickups(true); // Silent refresh
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [accessToken, selectedDate]);
+
+  const fetchPickups = async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
+
+    try {
+      const dateStr = selectedDate.toISOString().split("T")[0];
+      const response = await fetchWithAuth(
+        `http://localhost:8000/api/company/pickups/?date=${dateStr}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setPickups(data);
+
+        // If a pickup was selected, update it with fresh data
+        if (selectedPickup) {
+          const updatedPickup = data.find(
+            (p) => p.pickup_id === selectedPickup.pickup_id
+          );
+          if (updatedPickup) {
+            setSelectedPickup(updatedPickup);
+          }
+        } else if (data.length > 0) {
+          // Auto-select first pickup if none selected
+          setSelectedPickup(data[0]);
+        }
+      } else {
+        throw new Error("Failed to fetch pickups");
+      }
+    } catch (err) {
+      console.error("Error fetching pickups:", err);
+      if (!silent) setError("Failed to load pickups. Please try again.");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     clearAuth();
     navigate("/login");
   };
 
-  // NOW conditional returns are safe
-  if (isLoadingUser) {
+  const changeDate = (days) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    setSelectedDate(newDate);
+    setSelectedPickup(null); // Reset selection when date changes
+  };
+
+  const handleSelectPickup = (pickup) => {
+    setSelectedPickup(pickup);
+  };
+
+  // Get waste type color
+  const wasteTypeColors = {
+    Chemical: "#10b981",
+    Hazardous: "#ef4444",
+    Organic: "#f59e0b",
+    Industrial: "#8b5cf6",
+    Liquid: "#3b82f6",
+  };
+
+  const getWasteTypeColor = () => {
+    if (!selectedPickup?.route?.waste_type?.name) return "#94a3b8";
+    return wasteTypeColors[selectedPickup.route.waste_type.name] || "#94a3b8";
+  };
+
+  // Loading state
+  if (isLoadingUser || loading) {
     return (
       <div className="loading">
         <i className="fa-solid fa-spinner fa-spin"></i>
@@ -63,6 +153,7 @@ const ClientMap = () => {
     );
   }
 
+  // Error state
   if (!userData) {
     return (
       <div className="error-page">
@@ -82,55 +173,168 @@ const ClientMap = () => {
       />
 
       <HeaderBox
-        text="Interactive Map"
+        text="Live Pickup Tracking"
         gradientColors={["#0288D1", "#26C6DA"]}
       />
 
-      <div className="map-container">
-        {/* User info panel on map */}
-        <div className="map-user-info">
-          <img
-            src={userData.avatar}
-            alt={userData.name}
-            className="map-avatar"
+      <div className="client-map-container">
+        {/* Error message */}
+        {error && (
+          <div className="error-banner">
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>✕</button>
+          </div>
+        )}
+
+        {/* Left Side - Timeline Schedule */}
+        <div className="left-panel">
+          <div className="schedule-header">
+            <h2 className="schedule-title">
+              <i className="fa-solid fa-calendar-days"></i>
+              Daily Pickups
+            </h2>
+
+            {/* Date Navigation */}
+            <div className="date-navigation">
+              <button onClick={() => changeDate(-1)} className="date-nav-btn">
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+              <span className="current-date">
+                {selectedDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+              <button onClick={() => changeDate(1)} className="date-nav-btn">
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          {pickups.length === 0 ? (
+            <div className="no-data">
+              <i className="fa-solid fa-calendar-xmark fa-3x"></i>
+              <p>No pickups scheduled for this date</p>
+            </div>
+          ) : (
+            <TimelineSchedule
+              pickups={pickups}
+              selectedPickupId={selectedPickup?.pickup_id}
+              onSelectPickup={handleSelectPickup}
+              currentDate={selectedDate.toISOString().split("T")[0]}
+            />
+          )}
+        </div>
+
+        {/* Right Side - Map */}
+        <div className="right-panel">
+          {/* Map Header */}
+          <div className="map-header">
+            <div className="map-header-icon">
+              <span>🗺️</span>
+            </div>
+            <div>
+              <h2 className="map-title">Live Route Tracking</h2>
+              <p className="map-subtitle">
+                {selectedPickup
+                  ? `Tracking Route #${selectedPickup.route.route_id}`
+                  : "Select a pickup to view route"}
+              </p>
+            </div>
+          </div>
+
+          {/* Map Component */}
+          <ClientRouteMap
+            pickup={selectedPickup}
+            wasteTypeColor={getWasteTypeColor()}
           />
-          <div className="map-user-details">
-            <h3>{userData.name}</h3>
-            <p>{userData.stats?.reportsSubmitted || 0} reports submitted</p>
-          </div>
-        </div>
 
-        {/* Your map implementation here */}
-        <div className="map-view">
-          {/* Add your map component (Google Maps, Leaflet, etc.) */}
-          <div className="map-placeholder">
-            <i className="fa-solid fa-map-location-dot fa-3x"></i>
-            <p>Map view will be displayed here</p>
-            <p className="map-subtitle">
-              Showing reports from {userData.city || "your area"}
-            </p>
-          </div>
-        </div>
+          {/* Pickup Details Panel */}
+          {selectedPickup && (
+            <div className="pickup-details-panel">
+              <h3 className="details-title">
+                <i className="fa-solid fa-circle-info"></i>
+                Pickup Details
+              </h3>
+              <div className="details-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Route:</span>
+                  <span className="detail-value">
+                    #{selectedPickup.route.route_id}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Waste Type:</span>
+                  <span
+                    className="detail-value"
+                    style={{ color: getWasteTypeColor() }}
+                  >
+                    {selectedPickup.route.waste_type?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Driver:</span>
+                  <span className="detail-value">
+                    {selectedPickup.route.driver?.first_name}{" "}
+                    {selectedPickup.route.driver?.last_name}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Truck:</span>
+                  <span className="detail-value">
+                    #{selectedPickup.route.truck?.truck_id || "N/A"}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Schedule:</span>
+                  <span className="detail-value">
+                    {selectedPickup.schedule.start_time} -{" "}
+                    {selectedPickup.schedule.end_time}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Status:</span>
+                  <span
+                    className="status-badge-inline"
+                    style={{
+                      backgroundColor:
+                        selectedPickup.status === "completed"
+                          ? "#10B981"
+                          : selectedPickup.status === "In Progress"
+                          ? "#F59E0B"
+                          : "#EF4444",
+                    }}
+                  >
+                    {selectedPickup.status}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Weight Collected:</span>
+                  <span className="detail-value">
+                    {selectedPickup.weight_collected || 0} kg
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Progress:</span>
+                  <span className="detail-value">
+                    {selectedPickup.progress_percentage?.toFixed(1) || 0}%
+                  </span>
+                </div>
+              </div>
 
-        {/* Map legend or controls */}
-        <div className="map-legend">
-          <h4>Legend</h4>
-          <div className="legend-item">
-            <span className="legend-marker red"></span>
-            <span>Critical Issues</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-marker orange"></span>
-            <span>High Priority</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-marker yellow"></span>
-            <span>Medium Priority</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-marker green"></span>
-            <span>Low Priority</span>
-          </div>
+              {/* Progress Bar */}
+              <div className="progress-bar-container">
+                <div
+                  className="progress-bar"
+                  style={{
+                    width: `${selectedPickup.progress_percentage || 0}%`,
+                    backgroundColor: getWasteTypeColor(),
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

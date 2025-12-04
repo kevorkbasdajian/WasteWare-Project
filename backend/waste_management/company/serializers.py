@@ -323,6 +323,10 @@ class PickupSerializer(serializers.ModelSerializer):
         required=True
     )
     
+    # Add computed fields
+    progress_percentage = serializers.SerializerMethodField()
+    waypoints = serializers.SerializerMethodField()
+    
     class Meta:
         model = Pickup
         fields = [
@@ -335,9 +339,19 @@ class PickupSerializer(serializers.ModelSerializer):
             'live_location', 
             'status',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'progress_percentage',
+            'waypoints'
         ]
         read_only_fields = ['pickup_id', 'created_at', 'updated_at']
+    
+    def get_progress_percentage(self, obj):
+        """Get progress percentage based on time"""
+        return obj.calculate_progress_percentage()
+    
+    def get_waypoints(self, obj):
+        """Get all waypoints for the route"""
+        return obj.get_route_waypoints()
     
     def validate(self, data):
         """
@@ -380,6 +394,9 @@ class PickupSerializer(serializers.ModelSerializer):
         """
         pickup = Pickup.objects.create(**validated_data)
         
+        # Initialize live location at company
+        pickup.update_live_location(33.8938, 35.5018)
+        
         # Update route status to active
         route = pickup.route
         route.status = 'active'
@@ -387,7 +404,7 @@ class PickupSerializer(serializers.ModelSerializer):
         
         # Update schedule status to 'In Progress'
         schedule = pickup.schedule
-        schedule.status = 'In Progress'
+        schedule.status = 'inProgress'
         schedule.save()
         
         return pickup
@@ -401,8 +418,16 @@ class PickupSerializer(serializers.ModelSerializer):
         
         if new_status == 'completed' and instance.status != 'completed':
             route = instance.route
-            route.status = 'inactive'
-            route.save()
+            
+            # Check if route is used by other active/future pickups
+            other_active_pickups = Pickup.objects.filter(
+                route=route,
+                status__in=['Not Started', 'In Progress']
+            ).exclude(pickup_id=instance.pickup_id)
+            
+            if not other_active_pickups.exists():
+                route.status = 'inactive'
+                route.save()
             
             schedule = instance.schedule
             schedule.status = 'completed'

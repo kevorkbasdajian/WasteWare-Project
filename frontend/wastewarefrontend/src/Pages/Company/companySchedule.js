@@ -176,8 +176,8 @@ const CompanySchedule = () => {
       } else {
         const errorData = await response.json();
         setErrors(errorData);
-        console.error("Schedule creation failed:", errorData); // Add this
-        alert(`Error: ${JSON.stringify(errorData)}`); // Add this to see the error
+        // console.error("Schedule creation failed:", errorData); // Add this
+        // alert(`Error: ${JSON.stringify(errorData)}`); // Add this to see the error
       }
     } catch (error) {
       console.error("Error creating schedule:", error);
@@ -278,7 +278,19 @@ const CompanySchedule = () => {
                   }}
                 />
                 {errors.pickup_date && (
-                  <span style={{ color: "#b00404ff", fontSize: "1.0rem" }}>
+                  <span
+                    style={{
+                      color: " rgba(207, 43, 43, 1)",
+                      fontSize: "1.0rem",
+                      fontWeight: "bold",
+                      backgroundColor: "#ffffffff",
+                      borderRadius: 5,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: 10,
+                    }}
+                  >
                     {errors.pickup_date}
                   </span>
                 )}
@@ -318,7 +330,19 @@ const CompanySchedule = () => {
                   }}
                 />
                 {errors.start_time && (
-                  <span style={{ color: "#b00404ff", fontSize: "1.0 rem" }}>
+                  <span
+                    style={{
+                      color: " rgba(207, 43, 43, 1)",
+                      fontSize: "1.0rem",
+                      fontWeight: "bold",
+                      backgroundColor: "#ffffffff",
+                      borderRadius: 5,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: 10,
+                    }}
+                  >
                     {errors.start_time}
                   </span>
                 )}
@@ -338,7 +362,19 @@ const CompanySchedule = () => {
                   }}
                 />
                 {errors.end_time && (
-                  <span style={{ color: "#b00404ff", fontSize: "1.0rem" }}>
+                  <span
+                    style={{
+                      color: " rgba(207, 43, 43, 1)",
+                      fontSize: "1.0rem",
+                      fontWeight: "bold",
+                      backgroundColor: "#ffffffff",
+                      borderRadius: 5,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: 10,
+                    }}
+                  >
                     {errors.end_time}
                   </span>
                 )}
