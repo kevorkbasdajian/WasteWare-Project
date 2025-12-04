@@ -37,7 +37,7 @@ const CompanySchedule = () => {
       name: "Home",
       path: "/company",
       color: "var(--gradient-red)",
-      glowColor: "#EF4444", // Solid color for LED glow
+      glowColor: "#EF4444",
       icon: "fa-solid fa-house fa-lg",
     },
     {
@@ -45,21 +45,21 @@ const CompanySchedule = () => {
       path: "/company/routes",
       color: "var(--gradient-clean-blue)",
       glowColor: "#3B82F6",
-      icon: <i className="fa-solid fa-map-location-dot fa-lg" />,
+      icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Schedule",
       path: "/company/schedule",
       color: "var(--gradient-purple)",
       glowColor: "#A855F7",
-      icon: <i className="fa-solid fa-camera fa-lg" />,
+      icon: "fa-solid fa-calendar fa-lg",
     },
     {
       name: "Pickups",
       path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
-      icon: <i className="fa-solid fa-gift fa-lg" />,
+      icon: "fa-solid fa-gift fa-lg",
     },
     {
       name: "Reports",
@@ -68,7 +68,6 @@ const CompanySchedule = () => {
       glowColor: "#A855F7",
       icon: "fa-solid fa-camera fa-lg",
     },
-
     {
       name: "Notifications",
       path: "/company/notifications",

@@ -4,12 +4,18 @@ import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider.js";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
+import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
 
 const Dashboard = () => {
   const { clearAuth, accessToken, user_type, userData, isLoadingUser } =
     useContext(AuthContext);
   const navigate = useNavigate();
+  const fetchWithAuth = useFetchWithAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("week");
+
+  // Real notifications from backend
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
 
   const links = [
     {
@@ -61,33 +67,6 @@ const Dashboard = () => {
       { day: "Jun", reports: 65 },
     ],
   };
-
-  const notifications = [
-    {
-      id: 1,
-      type: "success",
-      title: "Report Approved",
-      message: "Your waste report #2845 has been verified",
-      time: "2 hours ago",
-      icon: "fa-check-circle",
-    },
-    {
-      id: 2,
-      type: "info",
-      title: "New Collection Schedule",
-      message: "Recycling pickup scheduled for tomorrow",
-      time: "5 hours ago",
-      icon: "fa-calendar",
-    },
-    {
-      id: 3,
-      type: "warning",
-      title: "EcoPoints Expiring",
-      message: "500 points will expire in 7 days",
-      time: "1 day ago",
-      icon: "fa-exclamation-triangle",
-    },
-  ];
 
   const nearbyCenters = [
     {
@@ -145,9 +124,96 @@ const Dashboard = () => {
     }
   }, [user_type, navigate]);
 
+  // Fetch real notifications
+  useEffect(() => {
+    if (accessToken && user_type === "user") {
+      fetchNotifications();
+    }
+  }, [accessToken, user_type]);
+
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/auth/notifications/"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        // Get last 3 notifications for dashboard
+        setNotifications(data.slice(0, 3));
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
   const handleLogout = () => {
     clearAuth();
     navigate("/login");
+  };
+
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getNotificationIcon = (type, priority) => {
+    if (priority === "high") return "fa-exclamation-circle";
+    switch (type) {
+      case "alert":
+        return "fa-bell";
+      case "reward":
+        return "fa-gift";
+      case "report":
+        return "fa-file-lines";
+      default:
+        return "fa-info-circle";
+    }
+  };
+
+  const getNotificationType = (priority) => {
+    switch (priority) {
+      case "high":
+        return "warning";
+      case "low":
+        return "success";
+      default:
+        return "info";
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:8000/api/auth/notifications/${notificationId}/mark_as_read/`,
+        {
+          method: "PATCH",
+        }
+      );
+      if (response.ok) {
+        // Refresh notifications
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
 
   // Calculate maxReports - safe to do after hooks
@@ -273,35 +339,79 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Notifications */}
+          {/* Notifications - NOW WITH REAL DATA */}
           <div className="notifications-section">
             <div className="section-header">
               <h2>Notifications</h2>
-              <button
-                className="view-all-btn"
-                onClick={() => navigate("/company/notifications")}
-              >
-                View All
-              </button>
+              {notifications.length > 0 && (
+                <button
+                  className="view-all-btn"
+                  onClick={() => {
+                    // You can create a full notifications page later
+                    console.log("View all notifications");
+                  }}
+                >
+                  View All
+                </button>
+              )}
             </div>
             <div className="notifications-list">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${notification.type}`}
-                >
-                  <div className="notification-icon">
-                    <i className={`fa-solid ${notification.icon}`}></i>
-                  </div>
-                  <div className="notification-content">
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    <span className="notification-time">
-                      {notification.time}
-                    </span>
-                  </div>
+              {loadingNotifications ? (
+                <div className="notification-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading notifications...</p>
                 </div>
-              ))}
+              ) : notifications.length === 0 ? (
+                <div className="notification-empty">
+                  <i className="fa-solid fa-bell-slash"></i>
+                  <p>No notifications yet</p>
+                </div>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.notification_id}
+                    className={`notification-item ${getNotificationType(
+                      notification.priority
+                    )} ${notification.is_read ? "read" : "unread"}`}
+                    onClick={() => {
+                      if (!notification.is_read) {
+                        handleMarkAsRead(notification.notification_id);
+                      }
+                    }}
+                    style={{
+                      cursor: notification.is_read ? "default" : "pointer",
+                    }}
+                  >
+                    <div className="notification-icon">
+                      <i
+                        className={`fa-solid ${getNotificationIcon(
+                          notification.type,
+                          notification.priority
+                        )}`}
+                      ></i>
+                    </div>
+                    <div className="notification-content">
+                      <h4>
+                        {notification.title}
+                        {!notification.is_read && (
+                          <span className="unread-dot"></span>
+                        )}
+                      </h4>
+                      {notification.message && <p>{notification.message}</p>}
+                      <div className="notification-footer-info">
+                        <span className="notification-time">
+                          {formatNotificationTime(notification.created_at)}
+                        </span>
+                        {notification.company_name && (
+                          <span className="notification-company">
+                            • {notification.company_name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

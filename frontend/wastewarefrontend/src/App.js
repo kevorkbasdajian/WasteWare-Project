@@ -16,6 +16,7 @@ import CompanyPickups from "./Pages/Company/companyPickups";
 import Chatbot from "./Components/chatbot";
 import EditProfilePage from "./Pages/Profile/EditProfilePage";
 import AdminUserManagement from "./Pages/Admin/AdminUserManagement";
+import CompanyNotifications from "./Pages/Company/companyNotifications";
 function App() {
   return (
     <div className="App">
@@ -41,6 +42,10 @@ function App() {
           <Route path="/company/routes" element={<TruckRoutes />} />
           <Route path="/company/pickups" element={<CompanyPickups />} />
           <Route path="/company/reports" element={<CompanyReports />} />
+          <Route
+            path="/company/notifications"
+            element={<CompanyNotifications />}
+          />
         </Routes>
         <Chatbot />
       </AuthProvider>
