@@ -1,10 +1,3 @@
-/* ===============================================
-   File: colors.css
-   Purpose: Define global color variables for light and dark themes.
-            Includes primary brand colors, accents, and neutrals.
-   Used by: All components and pages
-   =============================================== */
-
 :root {
   /* --- Brand Colors --- */
   --eco-green: #2e7d32;
@@ -32,6 +25,30 @@
 
   /* --- Effects --- */
   --shadow: rgba(0, 0, 0, 0.1);
+
+  /* --- Theme tokens used by components (new) --- */
+  --bg-start: #ffffff;
+  --bg-end: #f8fafc;
+  --navbar-bg: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  --navbar-title-gradient: linear-gradient(
+    120deg,
+    #1b5e20 0%,
+    #2e7d32 25%,
+    #388e3c 50%,
+    #4caf50 75%,
+    #66bb6a 100%
+  );
+  --logout-gradient: linear-gradient(
+    120deg,
+    #7f1d1d 0%,
+    #991b1b 25%,
+    #dc2626 50%,
+    #ef4444 75%,
+    #f87171 100%
+  );
+  --profile-border: #2e7d32;
+  --text-shimmer-speed: 2s;
+  --text-shimmer-ease: linear;
 }
 
 /* --- Dark Theme Overrides --- */
@@ -39,5 +56,25 @@
   --white: #121212;
   --light-gray: #1e1e1e;
   --text-dark: #e0e0e0;
-  --shadow: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(255, 255, 255, 0.06);
+
+  /* theme-specific tokens */
+  --bg-start: #1f2937;
+  --bg-end: #111827;
+  --navbar-bg: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  --navbar-title-gradient: linear-gradient(
+    120deg,
+    #4caf50 0%,
+    #66bb6a 25%,
+    #81c784 50%,
+    #a5d6a7 75%,
+    #c8e6c9 100%
+  );
+  --logout-gradient: linear-gradient(120deg, #dc2626 0%, #b91c1c 100%);
+  --profile-border: #66bb6a;
+  --moon-color: #b0c4de;
+
+  /* shimmer timing (optional tweak in dark) */
+  --text-shimmer-speed: 2s;
+  --text-shimmer-ease: linear;
 }

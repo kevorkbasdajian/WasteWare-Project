@@ -331,7 +331,7 @@ const Reports = () => {
 
       <HeaderBox
         text="Report Environmental Issue"
-        gradientColors={["#3949AB", "#5C6BC0"]}
+        gradientColors={"--gradient-purple"}
       />
 
       <div className="report-container">

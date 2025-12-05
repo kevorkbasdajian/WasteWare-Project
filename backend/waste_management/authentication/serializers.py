@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies, Roles, Addresses
+from .models import Users, Companies, Roles,Addresses,Notifications
 from clientReports.models import Reports
 from .utils import hash_password, verify_password
 from django.utils import timezone
@@ -78,7 +78,7 @@ class AddressSerializer(serializers.ModelSerializer):
         read_only_fields = ['address_id']
 
 # --------------------------
-# Profile Serializer
+# User Profile Serializer
 # --------------------------
 class ProfileSerializer(serializers.ModelSerializer):
     # Custom fields (not directly from model)
@@ -87,6 +87,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()  # Calculates all stats
     badge = serializers.CharField()  # Returns user badge text
     address = AddressSerializer(read_only=True)
+    
+    # NEW: Add report history for dashboard chart
+    report_history = serializers.SerializerMethodField()
     
     class Meta:
         model = Users
@@ -100,6 +103,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'address',
             'account_status',
             'stats',
+            'report_history',  # NEW FIELD
         ]
     
     def get_name(self, obj):
@@ -133,16 +137,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         co2_reduced = waste_recycled * 0.08  # Example: 0.08 tons CO2 per kg waste
         trees_saved = int(co2_reduced * 3.77)  # Example: 1 ton CO2 = ~3.77 trees
         
-        # ============ FOR FUTURE: Real waste calculation ============
-        # Uncomment this when Reports model has 'waste_amount' field
-        # waste_data = Reports.objects.filter(user=obj).aggregate(
-        #     total_waste=Sum('waste_amount')
-        # )
-        # waste_recycled = waste_data['total_waste'] or 0
-        # co2_reduced = round(waste_recycled * 0.08, 1)
-        # trees_saved = int(co2_reduced * 3.77)
-        # ================================================================
-        
         return {
             "co2_reduced": round(co2_reduced, 1),
             "trees_saved": trees_saved,
@@ -151,7 +145,38 @@ class ProfileSerializer(serializers.ModelSerializer):
             "eco_points": eco_points,
             "days_active": days_active
         }
-
+    
+    def get_report_history(self, obj):
+        """
+        Get report counts grouped by date for dashboard charts.
+        Returns reports from the last 6 months with daily counts.
+        """
+        from datetime import timedelta
+        from django.db.models import Count
+        from django.db.models.functions import TruncDate
+        
+        # Get reports from last 6 months
+        six_months_ago = timezone.now() - timedelta(days=180)
+        
+        reports = Reports.objects.filter(
+            user=obj,
+            created_at__gte=six_months_ago
+        ).annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(
+            count=Count('report_id')
+        ).order_by('date')
+        
+        # Convert to list of {date, count} objects
+        return [
+            {
+                'date': report['date'].isoformat(),
+                'count': report['count']
+            }
+            for report in reports
+        ]
+    
+    
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     # Address input fields
     street = serializers.CharField(required=False, allow_blank=True)
@@ -213,7 +238,6 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
                 instance.save()
 
         return instance
-
 
 # =============================================================
 # USER MANAGEMENT SERIALIZER FOR ADMIN
@@ -331,3 +355,119 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+
+class NotificationSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='company.company_name', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Notifications
+        fields = [
+            'notification_id',
+            'user',
+            'company',
+            'company_name',
+            'user_name',
+            'title',
+            'message',
+            'type',
+            'priority',
+            'is_read',
+            'created_at',
+            'target_audience',
+            'target_user_ids'
+        ]
+        read_only_fields = ['notification_id', 'created_at', 'company_name', 'user_name']
+    
+    def get_user_name(self, obj):
+        if obj.user:
+            return f"{obj.user.first_name} {obj.user.last_name}"
+        return None
+
+class CreateNotificationSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    message = serializers.CharField(allow_blank=True, required=False)
+    type = serializers.ChoiceField(choices=['alert', 'reward', 'report', 'system'], default='system')
+    priority = serializers.ChoiceField(choices=['high', 'normal', 'low'], default='normal')
+    target_audience = serializers.ChoiceField(choices=['all_users', 'custom'])
+    target_user_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        allow_empty=True
+    )
+    
+    def validate(self, data):
+        if data.get('target_audience') == 'custom' and not data.get('target_user_ids'):
+            raise serializers.ValidationError({
+                'target_user_ids': 'Must provide user IDs when target audience is custom'
+            })
+        return data
+    
+    def create(self, validated_data):
+        from django.db import transaction
+        
+        # Get company from request context
+        request = self.context['request']
+        try:
+            company = Companies.objects.get(email=request.user.email)
+        except Companies.DoesNotExist:
+            raise serializers.ValidationError("Only companies can send notifications")
+        
+        target_audience = validated_data['target_audience']
+        target_user_ids = validated_data.get('target_user_ids', [])
+        
+        notifications_to_create = []
+        
+        with transaction.atomic():
+            if target_audience == 'all_users':
+                # Get all active users
+                users = Users.objects.filter(account_status='active')
+                for user in users:
+                    notifications_to_create.append(
+                        Notifications(
+                            user=user,
+                            company=company,
+                            title=validated_data['title'],
+                            message=validated_data.get('message', ''),
+                            type=validated_data['type'],
+                            priority=validated_data['priority'],
+                            target_audience='all_users',
+                            is_read=False
+                        )
+                    )
+            else:  # custom
+                users = Users.objects.filter(user_id__in=target_user_ids, account_status='active')
+                for user in users:
+                    notifications_to_create.append(
+                        Notifications(
+                            user=user,
+                            company=company,
+                            title=validated_data['title'],
+                            message=validated_data.get('message', ''),
+                            type=validated_data['type'],
+                            priority=validated_data['priority'],
+                            target_audience='custom',
+                            target_user_ids=target_user_ids,
+                            is_read=False
+                        )
+                    )
+            
+            # Bulk create all notifications
+            created_notifications = Notifications.objects.bulk_create(notifications_to_create)
+            
+        return {
+            'count': len(created_notifications),
+            'target_audience': target_audience,
+            'message': f'Successfully sent notification to {len(created_notifications)} users'
+        }
+
+class UserBasicSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Users
+        fields = ['user_id', 'first_name', 'last_name', 'full_name', 'email', 'account_status']
+    
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"

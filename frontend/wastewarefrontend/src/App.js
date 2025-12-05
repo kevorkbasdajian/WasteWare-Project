@@ -1,5 +1,6 @@
 // import './App.css';
 import React from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Pages/Client/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
@@ -14,8 +15,9 @@ import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
 import CompanyPickups from "./Pages/Company/companyPickups";
 import Chatbot from "./Components/chatbot";
-// import EditProfilePage from "./Pages/Profile/EditProfilePage";
 import AdminUserManagement from "./Pages/Admin/adminUserManagement";
+import CompanyNotifications from "./Pages/Company/companyNotifications";
+
 function App() {
   return (
     <div className="App">
@@ -41,6 +43,10 @@ function App() {
           <Route path="/company/routes" element={<TruckRoutes />} />
           <Route path="/company/pickups" element={<CompanyPickups />} />
           <Route path="/company/reports" element={<CompanyReports />} />
+          <Route
+            path="/company/notifications"
+            element={<CompanyNotifications />}
+          />
         </Routes>
         <Chatbot />
       </AuthProvider>

@@ -256,7 +256,7 @@
 }
 
 .schedule-title i {
-  color: #3b82f6;
+  color: var(--clean-blue);
   font-size: 1.5rem;
 }
 
@@ -287,7 +287,7 @@
 }
 
 .date-nav-btn:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: var(--gradient-clean-blue);
   color: white;
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
@@ -336,7 +336,7 @@
 }
 
 .map-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-clean-blue);
   padding: 2rem;
   border-radius: 1.25rem;
   display: flex;

@@ -20,7 +20,6 @@ const ClientMap = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
 
   const links = [
     {
@@ -45,34 +44,6 @@ const ClientMap = () => {
       icon: "fa-solid fa-camera fa-lg",
     },
   ];
-
-  // Initialize dark mode from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      setDarkMode(true);
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
-
-    // Remove preload class after initial render
-    setTimeout(() => {
-      document.body.classList.remove("preload");
-    }, 100);
-  }, []);
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-
-    if (newMode) {
-      document.documentElement.setAttribute("data-theme", "dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-      localStorage.setItem("theme", "light");
-    }
-  };
 
   // Check authentication
   useEffect(() => {
@@ -142,11 +113,6 @@ const ClientMap = () => {
     }
   };
 
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/login");
-  };
-
   const changeDate = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + days);
@@ -198,12 +164,11 @@ const ClientMap = () => {
         links={links}
         profilePath="/client/profile"
         profileImage={`http://localhost:8000${userData.avatar}`}
-        onLogout={handleLogout}
       />
 
       <HeaderBox
         text="Live Pickup Tracking"
-        gradientColors={["#0288D1", "#26C6DA"]}
+        gradientColors={"--gradient-clean-blue"}
       />
 
       <div className="client-map-container">
@@ -366,19 +331,6 @@ const ClientMap = () => {
           )}
         </div>
       </div>
-
-      {/* Dark Mode Toggle Button */}
-      <button
-        className="dark-mode-toggle"
-        onClick={toggleDarkMode}
-        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      >
-        {darkMode ? (
-          <i className="fa-solid fa-sun"></i>
-        ) : (
-          <i className="fa-solid fa-moon"></i>
-        )}
-      </button>
     </div>
   );
 };

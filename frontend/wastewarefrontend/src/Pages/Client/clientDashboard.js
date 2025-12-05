@@ -4,12 +4,39 @@ import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider.js";
 import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
+import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
+import NearbyCentersMap from "../../Components/nearbyCenters.js";
 
 const Dashboard = () => {
   const { clearAuth, accessToken, user_type, userData, isLoadingUser } =
     useContext(AuthContext);
   const navigate = useNavigate();
+  const fetchWithAuth = useFetchWithAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("week");
+  const [selectedCenter, setSelectedCenter] = useState(null);
+  const [liveLocation, setLiveLocation] = useState(null);
+  const [locationPermissionDenied, setlocationPermissionDenied] =
+    useState(false);
+
+  // Real notifications from backend
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+
+  // Real activity data from backend
+  const [activityData, setActivityData] = useState({
+    week: [],
+    month: [],
+    year: [],
+  });
+  const [loadingActivity, setLoadingActivity] = useState(true);
+
+  // Real schedule data from backend
+  const [weeklySchedule, setWeeklySchedule] = useState([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(true);
+
+  // Real nearby centers from backend
+  const [nearbyCenters, setNearbyCenters] = useState([]);
+  const [loadingCenters, setLoadingCenters] = useState(true);
 
   const links = [
     {
@@ -35,103 +62,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Sample data for charts - replace with real data from your API
-  const activityData = {
-    week: [
-      { day: "Mon", reports: 3 },
-      { day: "Tue", reports: 5 },
-      { day: "Wed", reports: 2 },
-      { day: "Thu", reports: 7 },
-      { day: "Fri", reports: 4 },
-      { day: "Sat", reports: 6 },
-      { day: "Sun", reports: 3 },
-    ],
-    month: [
-      { day: "Week 1", reports: 15 },
-      { day: "Week 2", reports: 22 },
-      { day: "Week 3", reports: 18 },
-      { day: "Week 4", reports: 25 },
-    ],
-    year: [
-      { day: "Jan", reports: 45 },
-      { day: "Feb", reports: 52 },
-      { day: "Mar", reports: 61 },
-      { day: "Apr", reports: 48 },
-      { day: "May", reports: 70 },
-      { day: "Jun", reports: 65 },
-    ],
-  };
-
-  const notifications = [
-    {
-      id: 1,
-      type: "success",
-      title: "Report Approved",
-      message: "Your waste report #2845 has been verified",
-      time: "2 hours ago",
-      icon: "fa-check-circle",
-    },
-    {
-      id: 2,
-      type: "info",
-      title: "New Collection Schedule",
-      message: "Recycling pickup scheduled for tomorrow",
-      time: "5 hours ago",
-      icon: "fa-calendar",
-    },
-    {
-      id: 3,
-      type: "warning",
-      title: "EcoPoints Expiring",
-      message: "500 points will expire in 7 days",
-      time: "1 day ago",
-      icon: "fa-exclamation-triangle",
-    },
-  ];
-
-  const nearbyCenters = [
-    {
-      id: 1,
-      name: "Green Recycling Hub",
-      distance: "0.8 km",
-      type: "Recycling",
-    },
-    {
-      id: 2,
-      name: "EcoCenter Downtown",
-      distance: "1.2 km",
-      type: "Mixed Waste",
-    },
-    { id: 3, name: "CompostPro Station", distance: "2.1 km", type: "Organic" },
-  ];
-
-  const weeklySchedule = [
-    {
-      day: "Monday",
-      task: "Recycling Collection",
-      time: "8:00 AM",
-      status: "completed",
-    },
-    {
-      day: "Tuesday",
-      task: "Community Clean-up",
-      time: "3:00 PM",
-      status: "upcoming",
-    },
-    {
-      day: "Wednesday",
-      task: "Organic Waste",
-      time: "7:00 AM",
-      status: "upcoming",
-    },
-    {
-      day: "Friday",
-      task: "E-Waste Drop-off",
-      time: "10:00 AM",
-      status: "upcoming",
-    },
-  ];
-
   // ALL HOOKS MUST COME BEFORE ANY CONDITIONAL RETURNS
   useEffect(() => {
     if (!accessToken) {
@@ -145,17 +75,529 @@ const Dashboard = () => {
     }
   }, [user_type, navigate]);
 
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/login");
+  // Request live location on component mount (one-time)
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      console.warn("Geolocation not available in this browser");
+      return;
+    }
+
+    // You can use getCurrentPosition (one-shot) or watchPosition (continuous)
+    const geoSuccess = (pos) => {
+      const { latitude, longitude } = pos.coords;
+      setLiveLocation([latitude, longitude]);
+    };
+
+    const geoError = (err) => {
+      console.warn("Geolocation error:", err);
+      if (err.code === err.PERMISSION_DENIED) setLocationPermissionDenied(true);
+      setLiveLocation(null);
+    };
+
+    // One-shot:
+    navigator.geolocation.getCurrentPosition(geoSuccess, geoError, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+    });
+
+    // If you want continuous updates instead, replace above with:
+    // const watcher = navigator.geolocation.watchPosition(geoSuccess, geoError, { enableHighAccuracy: true });
+    // return () => navigator.geolocation.clearWatch(watcher);
+
+    // no cleanup needed for getCurrentPosition
+  }, []);
+
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/auth/notifications/"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.slice(0, 3));
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
   };
 
-  // Calculate maxReports - safe to do after hooks
+  const fetchActivityData = async () => {
+    setLoadingActivity(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/reports/"
+      );
+
+      if (response.ok) {
+        const reports = await response.json();
+        const processedData = processReportsData(reports);
+        setActivityData(processedData);
+      }
+    } catch (error) {
+      console.error("Error fetching activity data:", error);
+      setActivityData({
+        week: generateEmptyWeekData(),
+        month: generateEmptyMonthData(),
+        year: generateEmptyYearData(),
+      });
+    } finally {
+      setLoadingActivity(false);
+    }
+  };
+
+  // Fetch all data when component mounts
+  useEffect(() => {
+    if (accessToken && user_type === "user") {
+      fetchNotifications();
+      // fetchActivityData();
+      fetchWeeklySchedule();
+      fetchNearbyCenters();
+    }
+  }, [accessToken, user_type, liveLocation]);
+
+  // Process activity data from userData whenever it changes
+  useEffect(() => {
+    if (userData?.report_history) {
+      const processedData = processReportsData(userData.report_history);
+      setActivityData(processedData);
+      setLoadingActivity(false);
+    } else if (userData) {
+      // No report history, set empty data
+      setActivityData({
+        week: generateEmptyWeekData(),
+        month: generateEmptyMonthData(),
+        year: generateEmptyYearData(),
+      });
+      setLoadingActivity(false);
+    }
+  }, [userData]);
+
+  const fetchWeeklySchedule = async () => {
+    setLoadingSchedule(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/company/pickups/?active_only=true"
+      );
+
+      if (response.ok) {
+        const pickups = await response.json();
+        const processedSchedule = processScheduleData(pickups);
+        setWeeklySchedule(processedSchedule);
+      }
+    } catch (error) {
+      console.error("Error fetching schedule:", error);
+      setWeeklySchedule([]);
+    } finally {
+      setLoadingSchedule(false);
+    }
+  };
+
+  const fetchNearbyCenters = async () => {
+    setLoadingCenters(true);
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/company/dumpings/"
+      );
+
+      if (!response.ok) {
+        console.error("Nearby centers response not OK", response.status);
+        setNearbyCenters([]);
+        return;
+      }
+
+      const dumpings = await response.json();
+
+      // Prefer liveLocation if available, otherwise fallback to profile address
+      let userLat = null;
+      let userLon = null;
+
+      if (liveLocation && liveLocation.length === 2) {
+        userLat = Number(liveLocation[0]);
+        userLon = Number(liveLocation[1]);
+      } else if (userData?.address?.latitude && userData?.address?.longitude) {
+        // normalize comma decimal separators if any
+        userLat = parseFloat(
+          String(userData.address.latitude).replace(",", ".")
+        );
+        userLon = parseFloat(
+          String(userData.address.longitude).replace(",", ".")
+        );
+      } else {
+      }
+
+      if (userLat == null || userLon == null) {
+        setNearbyCenters([]);
+        setLoadingCenters(false);
+        return;
+      }
+
+      const centersWithDistance = dumpings
+        .filter(
+          (dumping) =>
+            dumping.address_detail?.latitude &&
+            dumping.address_detail?.longitude
+        )
+        .map((dumping) => {
+          const dumpingLat = parseFloat(
+            String(dumping.address_detail.latitude).replace(",", ".")
+          );
+          const dumpingLon = parseFloat(
+            String(dumping.address_detail.longitude).replace(",", ".")
+          );
+
+          if (Number.isNaN(dumpingLat) || Number.isNaN(dumpingLon)) {
+            console.warn(
+              "[DEBUG] invalid dumping coords for id:",
+              dumping.dumping_id,
+              dumping.address_detail
+            );
+          }
+
+          const distance = calculateDistance(
+            userLat,
+            userLon,
+            dumpingLat,
+            dumpingLon
+          );
+
+          return {
+            id: dumping.dumping_id,
+            name: dumping.Title,
+            distance: `${distance.toFixed(1)} km`,
+            distanceValue: distance,
+            type: dumping.waste_type?.name || "Waste Collection",
+            address: formatAddress(dumping.address_detail),
+            capacity: dumping.maximum_capacity,
+            collected: dumping.collected_waste,
+            latitude: dumpingLat,
+            longitude: dumpingLon,
+          };
+        })
+        // enforce 10 km filter:
+        .filter((center) => center.distanceValue <= 10)
+        .sort((a, b) => a.distanceValue - b.distanceValue);
+
+      setNearbyCenters(centersWithDistance);
+    } catch (error) {
+      console.error("Error fetching nearby centers:", error);
+      setNearbyCenters([]);
+    } finally {
+      setLoadingCenters(false);
+    }
+  };
+
+  // Haversine formula to calculate distance between two coordinates
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of Earth in kilometers
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const toRad = (value) => {
+    return (value * Math.PI) / 180;
+  };
+
+  const formatAddress = (address) => {
+    if (!address) return "Address not available";
+    const parts = [address.street, address.city, address.region].filter(
+      Boolean
+    );
+    return parts.join(", ");
+  };
+
+  const handleGetDirections = (center) => {
+    if (center.latitude && center.longitude) {
+      // Open Google Maps with directions
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${center.latitude},${center.longitude}`;
+      window.open(url, "_blank");
+    }
+  };
+
+  const handleSelectCenter = (center) => {
+    setSelectedCenter(center);
+  };
+
+  const processScheduleData = (pickups) => {
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const today = new Date();
+    const scheduleMap = new Map();
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayName = daysOfWeek[date.getDay()];
+      const dateStr = date.toISOString().split("T")[0];
+      scheduleMap.set(dateStr, { day: dayName, items: [] });
+    }
+
+    pickups.forEach((pickup) => {
+      const pickupDate = pickup.schedule.pickup_date;
+
+      if (scheduleMap.has(pickupDate)) {
+        const schedule = scheduleMap.get(pickupDate);
+        schedule.items.push({
+          task: getTaskName(pickup),
+          time: formatTime(pickup.schedule.start_time),
+          status: getScheduleStatus(pickup),
+          wasteType: pickup.route.waste_type?.name || "Waste Collection",
+          pickup_id: pickup.pickup_id,
+        });
+      }
+    });
+
+    const scheduleArray = [];
+    scheduleMap.forEach((value, key) => {
+      if (value.items.length > 0) {
+        value.items.forEach((item) => {
+          scheduleArray.push({
+            day: value.day,
+            task: item.task,
+            time: item.time,
+            status: item.status,
+            wasteType: item.wasteType,
+            pickup_id: item.pickup_id,
+          });
+        });
+      }
+    });
+
+    return scheduleArray.slice(0, 4);
+  };
+
+  const getTaskName = (pickup) => {
+    const wasteType = pickup.route.waste_type?.name || "Waste";
+    return `${wasteType} Collection`;
+  };
+
+  const formatTime = (timeStr) => {
+    const [hours, minutes] = timeStr.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const getScheduleStatus = (pickup) => {
+    const now = new Date();
+    const scheduleDate = new Date(pickup.schedule.pickup_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    scheduleDate.setHours(0, 0, 0, 0);
+
+    if (pickup.status === "completed") {
+      return "completed";
+    }
+
+    if (pickup.status === "In Progress") {
+      return "in-progress";
+    }
+
+    if (scheduleDate < today) {
+      return "missed";
+    }
+
+    return "upcoming";
+  };
+
+  const processReportsData = (reportHistory) => {
+    const now = new Date();
+    const weekData = generateEmptyWeekData();
+    const monthData = generateEmptyMonthData();
+    const yearData = generateEmptyYearData();
+
+    // reportHistory is an array of {date: "YYYY-MM-DD", count: number}
+    reportHistory.forEach((report) => {
+      const reportDate = new Date(report.date);
+      const daysDiff = Math.floor((now - reportDate) / (1000 * 60 * 60 * 24));
+
+      // Add to week data (last 7 days)
+      if (daysDiff >= 0 && daysDiff < 7) {
+        const dayIndex = (7 - daysDiff - 1 + now.getDay()) % 7;
+        if (weekData[dayIndex]) {
+          weekData[dayIndex].reports += report.count;
+        }
+      }
+
+      // Add to month data (last 4 weeks)
+      if (daysDiff >= 0 && daysDiff < 28) {
+        const weekIndex = Math.floor(daysDiff / 7);
+        if (monthData[weekIndex]) {
+          monthData[weekIndex].reports += report.count;
+        }
+      }
+
+      // Add to year data (last 6 months)
+      const monthsDiff =
+        (now.getFullYear() - reportDate.getFullYear()) * 12 +
+        (now.getMonth() - reportDate.getMonth());
+      if (monthsDiff >= 0 && monthsDiff < 6) {
+        const monthIndex = 5 - monthsDiff;
+        if (yearData[monthIndex]) {
+          yearData[monthIndex].reports += report.count;
+        }
+      }
+    });
+
+    return { week: weekData, month: monthData, year: yearData };
+  };
+
+  const generateEmptyWeekData = () => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date().getDay();
+    const weekData = [];
+
+    for (let i = 0; i < 7; i++) {
+      const dayIndex = (today - 6 + i + 7) % 7;
+      weekData.push({ day: days[dayIndex], reports: 0 });
+    }
+
+    return weekData;
+  };
+
+  const generateEmptyMonthData = () => {
+    return [
+      { day: "Week 1", reports: 0 },
+      { day: "Week 2", reports: 0 },
+      { day: "Week 3", reports: 0 },
+      { day: "Week 4", reports: 0 },
+    ];
+  };
+
+  const generateEmptyYearData = () => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const currentMonth = new Date().getMonth();
+    const yearData = [];
+
+    for (let i = 0; i < 6; i++) {
+      const monthIndex = (currentMonth - 5 + i + 12) % 12;
+      yearData.push({ day: months[monthIndex], reports: 0 });
+    }
+
+    return yearData;
+  };
+
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getNotificationIcon = (type, priority) => {
+    if (priority === "high") return "fa-exclamation-circle";
+    switch (type) {
+      case "alert":
+        return "fa-bell";
+      case "reward":
+        return "fa-gift";
+      case "report":
+        return "fa-file-lines";
+      default:
+        return "fa-info-circle";
+    }
+  };
+
+  const getNotificationType = (priority) => {
+    switch (priority) {
+      case "high":
+        return "warning";
+      case "low":
+        return "success";
+      default:
+        return "info";
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:8000/api/auth/notifications/${notificationId}/mark_as_read/`,
+        { method: "PATCH" }
+      );
+      if (response.ok) {
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "completed":
+        return "fa-check";
+      case "in-progress":
+        return "fa-spinner fa-spin";
+      case "missed":
+        return "fa-exclamation-triangle";
+      default:
+        return "fa-clock";
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "in-progress":
+        return "In Progress";
+      case "missed":
+        return "Missed";
+      default:
+        return "Upcoming";
+    }
+  };
+
   const maxReports = Math.max(
-    ...activityData[selectedPeriod].map((d) => d.reports)
+    ...activityData[selectedPeriod].map((d) => d.reports),
+    1
   );
 
-  // NOW you can have conditional returns
   if (isLoadingUser) {
     return (
       <div className="loading">
@@ -179,17 +621,18 @@ const Dashboard = () => {
       <Navbar
         links={links}
         profilePath="/client/profile"
-        profileImage={`http://localhost:8000${userData.avatar}`}
-        onLogout={handleLogout}
+        profileImage={
+          userData.avatar ? `http://localhost:8000${userData.avatar}` : ""
+        }
       />
 
       <HeaderBox
         text={`Welcome Back, ${userData.name}!`}
-        gradientColors={["#E53935", "#FF7043"]}
+        gradientColors={"--gradient-red"}
       />
 
       <div className="dashboard-container">
-        {/* Stats Overview - Environmental Impact Style */}
+        {/* <h2 className="greetings">Welcome Back, {userData.name}!</h2> */}
         <div className="impact-section stats-section">
           <h2>Your Statistics Overview</h2>
           <div className="stats-grid">
@@ -197,7 +640,7 @@ const Dashboard = () => {
               <div className="stat-icon-large">
                 <i className="fa-solid fa-chart-simple"></i>
               </div>
-              <h3>{userData.stats?.reportsSubmitted || 0}</h3>
+              <h3>{userData.stats?.reports_submitted || 0}</h3>
               <p>Reports Submitted</p>
             </div>
 
@@ -205,7 +648,7 @@ const Dashboard = () => {
               <div className="stat-icon-large">
                 <i className="fa-solid fa-leaf"></i>
               </div>
-              <h3>{userData.stats?.ecoPoints || 0}</h3>
+              <h3>{userData.stats?.eco_points || 0}</h3>
               <p>EcoPoints</p>
             </div>
 
@@ -213,7 +656,7 @@ const Dashboard = () => {
               <div className="stat-icon-large">
                 <i className="fa-solid fa-earth-americas"></i>
               </div>
-              <h3>{userData.stats?.co2Reduced || 0}</h3>
+              <h3>{userData.stats?.co2_reduced || 0}</h3>
               <p>Tons CO2 Reduced</p>
             </div>
 
@@ -221,15 +664,13 @@ const Dashboard = () => {
               <div className="stat-icon-large">
                 <i className="fa-solid fa-calendar-days"></i>
               </div>
-              <h3>{userData.stats?.daysActive || 0}</h3>
+              <h3>{userData.stats?.days_active || 0}</h3>
               <p>Days Active</p>
             </div>
           </div>
         </div>
 
-        {/* Main Content Grid */}
         <div className="main-content-grid">
-          {/* Activity Chart */}
           <div className="chart-section">
             <div className="section-header">
               <h2>Activity Overview</h2>
@@ -254,129 +695,315 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="chart-container">
-              {activityData[selectedPeriod].map((data, index) => (
-                <div key={index} className="bar-wrapper">
-                  <div className="bar-container">
-                    <div
-                      className="bar"
-                      style={{
-                        height: `${(data.reports / maxReports) * 100}%`,
-                      }}
-                    >
-                      <span className="bar-value">{data.reports}</span>
-                    </div>
+
+            {loadingActivity ? (
+              <div className="chart-loading">
+                <i className="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading activity data...</p>
+              </div>
+            ) : (
+              <div className="chart-container">
+                {activityData[selectedPeriod].length === 0 ? (
+                  <div className="chart-empty">
+                    <i className="fa-solid fa-chart-simple"></i>
+                    <p>No activity data available</p>
                   </div>
-                  <span className="bar-label">{data.day}</span>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  activityData[selectedPeriod].map((data, index) => (
+                    <div key={index} className="bar-wrapper">
+                      <div className="bar-container">
+                        <div
+                          className="bar"
+                          style={{
+                            height: `${(data.reports / maxReports) * 100}%`,
+                          }}
+                        >
+                          <span className="bar-value">{data.reports}</span>
+                        </div>
+                      </div>
+                      <span className="bar-label">{data.day}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Notifications */}
           <div className="notifications-section">
             <div className="section-header">
               <h2>Notifications</h2>
-              <button
-                className="view-all-btn"
-                onClick={() => navigate("/company/notifications")}
-              >
-                View All
-              </button>
             </div>
             <div className="notifications-list">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${notification.type}`}
-                >
-                  <div className="notification-icon">
-                    <i className={`fa-solid ${notification.icon}`}></i>
-                  </div>
-                  <div className="notification-content">
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    <span className="notification-time">
-                      {notification.time}
-                    </span>
-                  </div>
+              {loadingNotifications ? (
+                <div className="notification-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading notifications...</p>
                 </div>
-              ))}
+              ) : notifications.length === 0 ? (
+                <div className="notification-empty">
+                  <i className="fa-solid fa-bell-slash"></i>
+                  <p>No notifications yet</p>
+                </div>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.notification_id}
+                    className={`notification-item ${getNotificationType(
+                      notification.priority
+                    )} ${notification.is_read ? "read" : "unread"}`}
+                    onClick={() => {
+                      if (!notification.is_read) {
+                        handleMarkAsRead(notification.notification_id);
+                      }
+                    }}
+                    style={{
+                      cursor: notification.is_read ? "default" : "pointer",
+                    }}
+                  >
+                    <div className="notification-icon">
+                      <i
+                        className={`fa-solid ${getNotificationIcon(
+                          notification.type,
+                          notification.priority
+                        )}`}
+                      ></i>
+                    </div>
+                    <div className="notification-content">
+                      <h4>
+                        {notification.title}
+                        {!notification.is_read && (
+                          <span className="unread-dot"></span>
+                        )}
+                      </h4>
+                      {notification.message && <p>{notification.message}</p>}
+                      <div className="notification-footer-info">
+                        <span className="notification-time">
+                          {formatNotificationTime(notification.created_at)}
+                        </span>
+                        {notification.company_name && (
+                          <span className="notification-company">
+                            • {notification.company_name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
 
-        {/* Secondary Content Grid */}
         <div className="secondary-content-grid">
-          {/* Nearby Centers Map */}
-          <div className="nearby-centers-section">
-            <div className="section-header">
-              <h2>Nearby Centers</h2>
-              <button
-                className="view-map-btn"
-                onClick={() => navigate("/client/map")}
-              >
-                <i className="fa-solid fa-map"></i> View Map
-              </button>
-            </div>
-            <div className="map-placeholder">
-              <i className="fa-solid fa-map-location-dot"></i>
-              <p>Interactive map will load here</p>
-            </div>
-            <div className="centers-list">
-              {nearbyCenters.map((center) => (
-                <div key={center.id} className="center-item">
-                  <div className="center-icon">
-                    <i className="fa-solid fa-location-dot"></i>
+          {/* Nearby Centers — only show if we have user location */}
+          {(liveLocation && liveLocation.length === 2) ||
+          (userData?.address?.latitude && userData?.address?.longitude) ? (
+            <div className="nearby-centers-section">
+              <div className="section-header">
+                <h2>Nearby Centers (Within 10km)</h2>
+                <div className="user-location-info">
+                  <i
+                    className={`fa-solid ${
+                      liveLocation
+                        ? "fa-location-dot"
+                        : "fa-location-crosshairs"
+                    }`}
+                  ></i>
+                  <strong>Your Location:</strong>
+                  {liveLocation
+                    ? `${liveLocation[0].toFixed(5)}, ${liveLocation[1].toFixed(
+                        5
+                      )} (live)`
+                    : userData?.address?.latitude
+                    ? `${parseFloat(userData.address.latitude).toFixed(
+                        5
+                      )}, ${parseFloat(userData.address.longitude).toFixed(
+                        5
+                      )} (profile)`
+                    : "Please add location"}
+                </div>
+                <button
+                  className="view-map-btn"
+                  onClick={() => navigate("/client/map")}
+                >
+                  <i className="fa-solid fa-map"></i> Full Map
+                </button>
+              </div>
+
+              {/* Show the client's location */}
+              <div className="user-location-info">
+                <i className="fa-solid fa-location-dot"></i>
+                <strong>Your Location:</strong>{" "}
+                {userData.address.street ||
+                userData.address.city ||
+                userData.address.region
+                  ? [
+                      userData.address.street,
+                      userData.address.city,
+                      userData.address.region,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+                  : `${parseFloat(userData.address.latitude).toFixed(
+                      5
+                    )}, ${parseFloat(userData.address.longitude).toFixed(5)}`}
+              </div>
+
+              {loadingCenters ? (
+                <div className="centers-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading nearby centers...</p>
+                </div>
+              ) : nearbyCenters.length > 0 ? (
+                <>
+                  {/* Map */}
+                  <div className="map-container">
+                    <NearbyCentersMap
+                      centers={nearbyCenters}
+                      userLocation={
+                        liveLocation && liveLocation.length === 2
+                          ? liveLocation
+                          : userData?.address?.latitude &&
+                            userData?.address?.longitude
+                          ? [
+                              parseFloat(userData.address.latitude),
+                              parseFloat(userData.address.longitude),
+                            ]
+                          : null
+                      }
+                      onCenterSelect={handleSelectCenter}
+                      selectedCenter={selectedCenter}
+                    />
                   </div>
-                  <div className="center-info">
-                    <h4>{center.name}</h4>
-                    <p>
-                      <span className="center-type">{center.type}</span>
-                      <span className="center-distance">
-                        • {center.distance}
-                      </span>
-                    </p>
+
+                  {/* Centers List */}
+                  <div className="centers-list">
+                    {nearbyCenters.map((center) => (
+                      <div
+                        key={center.id}
+                        className={`center-item ${
+                          selectedCenter?.id === center.id ? "selected" : ""
+                        }`}
+                        onClick={() => handleSelectCenter(center)}
+                      >
+                        <div className="center-icon">
+                          <i className="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div className="center-info">
+                          <h4>{center.name}</h4>
+                          <p className="center-address">{center.address}</p>
+                          <p>
+                            <span className="center-type">{center.type}</span>
+                            <span className="center-distance">
+                              • {center.distance}
+                            </span>
+                          </p>
+                          {center.capacity && (
+                            <div className="capacity-bar">
+                              <div
+                                className="capacity-fill"
+                                style={{
+                                  width: `${
+                                    (center.collected / center.capacity) * 100
+                                  }%`,
+                                }}
+                              />
+                              <span className="capacity-text">
+                                {center.collected}/{center.capacity} tons
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          className="directions-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGetDirections(center);
+                          }}
+                          title="Get Directions"
+                        >
+                          <i className="fa-solid fa-directions"></i>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <button className="directions-btn">
-                    <i className="fa-solid fa-directions"></i>
+                </>
+              ) : (
+                <div className="centers-empty">
+                  <i className="fa-solid fa-map-location-dot"></i>
+                  <p>No waste centers found within 10km of your location</p>
+                  <button
+                    className="view-all-centers-btn"
+                    onClick={() => navigate("/client/map")}
+                  >
+                    View All Centers
                   </button>
                 </div>
-              ))}
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="nearby-centers-section">
+              <div className="section-header">
+                <h2>Nearby Centers</h2>
+              </div>
+              <div className="centers-empty">
+                <i className="fa-solid fa-location-crosshairs"></i>
+                <p>
+                  Please add your location in profile settings to see nearby
+                  centers
+                </p>
+                <button
+                  className="view-all-centers-btn"
+                  onClick={() => navigate("/client/profile")}
+                >
+                  Update Location
+                </button>
+              </div>
+            </div>
+          )}
 
-          {/* Weekly Schedule */}
           <div className="schedule-section">
             <div className="section-header">
-              <h2>Weekly Schedule</h2>
-              <button className="add-event-btn">
-                <i className="fa-solid fa-plus"></i>
-              </button>
+              <h2>Upcoming Pickups</h2>
+              {weeklySchedule.length > 0 && (
+                <button
+                  className="add-event-btn"
+                  onClick={() => navigate("/client/map")}
+                >
+                  <i className="fa-solid fa-calendar"></i>
+                </button>
+              )}
             </div>
             <div className="schedule-list">
-              {weeklySchedule.map((item, index) => (
-                <div key={index} className={`schedule-item ${item.status}`}>
-                  <div className="schedule-day">
-                    <span className="day-name">{item.day}</span>
-                    <span className="day-time">{item.time}</span>
-                  </div>
-                  <div className="schedule-task">
-                    <h4>{item.task}</h4>
-                    <span className={`status-badge ${item.status}`}>
-                      {item.status === "completed" ? (
-                        <>
-                          <i className="fa-solid fa-check"></i> Completed
-                        </>
-                      ) : (
-                        <>
-                          <i className="fa-solid fa-clock"></i> Upcoming
-                        </>
-                      )}
-                    </span>
-                  </div>
+              {loadingSchedule ? (
+                <div className="schedule-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading schedule...</p>
                 </div>
-              ))}
+              ) : weeklySchedule.length === 0 ? (
+                <div className="schedule-empty">
+                  <i className="fa-solid fa-calendar-xmark"></i>
+                  <p>No upcoming pickups scheduled</p>
+                </div>
+              ) : (
+                weeklySchedule.map((item, index) => (
+                  <div key={index} className={`schedule-item ${item.status}`}>
+                    <div className="schedule-day">
+                      <span className="day-name">{item.day}</span>
+                      <span className="day-time">{item.time}</span>
+                    </div>
+                    <div className="schedule-task">
+                      <h4>{item.task}</h4>
+                      <span className={`status-badge ${item.status}`}>
+                        <i
+                          className={`fa-solid ${getStatusIcon(item.status)}`}
+                        ></i>
+                        {getStatusText(item.status)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

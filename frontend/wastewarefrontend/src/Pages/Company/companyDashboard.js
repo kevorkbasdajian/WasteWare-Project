@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const CompanyDashboard = () => {
-  const { clearAuth, accessToken, userData, isLoadingUser } =
+  const { clearAuth, accessToken, isLoadingUser, user_type, companyData } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
@@ -35,6 +35,12 @@ const CompanyDashboard = () => {
     year: [],
   });
 
+  useEffect(() => {
+    if (user_type && user_type !== "company") {
+      navigate(-1);
+    }
+  }, [navigate]);
+
   const links = [
     {
       name: "Home",
@@ -53,8 +59,8 @@ const CompanyDashboard = () => {
     {
       name: "Schedule",
       path: "/company/schedule",
-      color: "var(--gradient-purple)",
-      glowColor: "#A855F7",
+      color: "var(--gradient-clean-blue)",
+      glowColor: "#3B82F6",
       icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
@@ -323,22 +329,6 @@ const CompanyDashboard = () => {
     fetchDashboardData();
   }, [accessToken]);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (err) {
-      console.error("Logout request failed", err);
-    } finally {
-      clearAuth();
-      navigate("/login");
-    }
-  };
-
   if (isLoadingUser || dashboardData.loading) {
     return (
       <div className="loading">
@@ -359,14 +349,15 @@ const CompanyDashboard = () => {
         links={links}
         profilePath="/company/profile"
         profileImage={
-          userData?.avatar ? `http://localhost:8000${userData.avatar}` : null
+          companyData?.avatar
+            ? `http://localhost:8000${companyData.avatar}`
+            : null
         }
-        onLogout={handleLogout}
       />
 
       <HeaderBox
-        text={`Welcome Back, ${userData?.name || "Admin"}!`}
-        gradientColors={["#E53935", "#FF7043"]}
+        text={`Welcome Back, ${companyData?.name || "Admin"}!`}
+        gradientColors={"--gradient-red"}
       />
 
       <div className="company-dashboard-container">

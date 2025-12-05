@@ -1,21 +1,23 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useFetchWithAuth } from "../../Components/fetchWithAuth.js";
+import { AuthContext } from "../../Components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/navbar.js";
 import HeaderBox from "../../Components/HeaderBox.js";
 import ReportModal from "../Modal/reportModal.js";
 import "../../Styles/Page/companyReports.css";
 import AlertSnackbar from "../../Components/Alert.js";
-import { AuthContext } from "../../Components/AuthProvider.js";
-import { useNavigate } from "react-router-dom";
 
 const CompanyReports = () => {
+  const { clearAuth, accessToken, user_type, userData } =
+    useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
-  const { accessToken, userData } = useContext(AuthContext);
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [snackbar, setsnackbar] = useState(false);
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -67,10 +69,41 @@ const CompanyReports = () => {
     },
   ];
 
-  // Fetch all reports
+  // Check authentication on mount
   useEffect(() => {
-    fetchReports();
-  }, []);
+    if (!accessToken) {
+      navigate("/Login", { replace: true });
+    }
+  }, [navigate, accessToken]);
+
+  // useEffect(() => {
+  //   if (user_type && user_type !== "company") {
+  //     navigate(-1);
+  //   }
+  // }, [navigate]);
+
+  // Fetch reports when authenticated
+  useEffect(() => {
+    if (accessToken) {
+      fetchReports();
+    }
+  }, [accessToken]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/auth/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (err) {
+      console.error("Logout request failed", err);
+    } finally {
+      clearAuth();
+      navigate("/Login");
+    }
+  };
 
   useEffect(() => {
     if (!accessToken) {
@@ -112,7 +145,6 @@ const CompanyReports = () => {
 
       if (response.ok) {
         setsnackbar(true);
-        // alert("Status updated successfully!");
         fetchReports();
         // Refresh modal if it's open and showing the same report
         if (isModalOpen && selectedReport?.report_id === reportId) {
@@ -180,9 +212,10 @@ const CompanyReports = () => {
   const closesnackbar = () => {
     setsnackbar(false);
   };
+
   return (
     <div className="page">
-      <Navbar links={links} />
+      <Navbar links={links} onLogout={handleLogout} />
 
       <HeaderBox text="Report Dashboard" gradientColors={"--gradient-purple"} />
 
