@@ -15,24 +15,24 @@ RUN apt-get update && apt-get install -y \
 # Set work directory
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies (requirements.txt is in /backend)
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
-COPY . /app/
+# Copy the entire waste_management folder into /app
+COPY ./waste_management /app/
 
-# Make sure manage.py is executable and in the right place
+# Verify structure
 RUN ls -la /app/ && \
-    test -f /app/manage.py || (echo "manage.py not found!" && exit 1)
+    test -f /app/manage.py || (echo "ERROR: manage.py not found in /app/" && exit 1)
 
-# Collect static files (will use environment variables at runtime)
+# Collect static files
 RUN python manage.py collectstatic --noinput || echo "Collectstatic will run after env vars are set"
 
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn - use shell form to expand $PORT variable
+# Run gunicorn from /app where manage.py is located
 WORKDIR /app
 CMD gunicorn waste_management.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
