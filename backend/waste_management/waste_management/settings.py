@@ -104,15 +104,16 @@ SIMPLE_JWT = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← ADD THIS LINE (position 2)
-    # 'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware', # Enable CORS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'waste_management.urls'
@@ -213,36 +214,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 
-
-
-
-
-
-
-
-
-
-# Database configuration for Docker/Railway
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('PGDATABASE'),
-        'USER': os.environ.get('PGUSER'),
-        'PASSWORD': os.environ.get('PGPASSWORD'),
-        'HOST': os.environ.get('PGHOST'),
-        'PORT': os.environ.get('PGPORT', 5432),
-    }
-}
-
-
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-# Allowed hosts
-# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
-# CORS
-# CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
-
+# For Profile Image Update
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
