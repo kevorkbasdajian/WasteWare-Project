@@ -16,12 +16,16 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
-COPY . .
+COPY . /app/
+
+# Make sure manage.py is executable and in the right place
+RUN ls -la /app/ && \
+    test -f /app/manage.py || (echo "manage.py not found!" && exit 1)
 
 # Collect static files (will use environment variables at runtime)
 RUN python manage.py collectstatic --noinput || echo "Collectstatic will run after env vars are set"
@@ -29,5 +33,6 @@ RUN python manage.py collectstatic --noinput || echo "Collectstatic will run aft
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn
+# Run gunicorn - use shell form to expand $PORT variable
+WORKDIR /app
 CMD gunicorn waste_management.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
