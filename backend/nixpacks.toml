@@ -9,11 +9,3 @@ cmds = ['python manage.py collectstatic --noinput']
 
 [start]
 cmd = 'gunicorn waste_management.wsgi:application --bind 0.0.0.0:$PORT'
-```
-
-## Step 2: Add `gunicorn` to your `requirements.txt`
-
-Add this line to your `/backend/requirements.txt`:
-```
-gunicorn
-django-environ
