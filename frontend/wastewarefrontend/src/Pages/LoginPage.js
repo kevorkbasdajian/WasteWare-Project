@@ -70,6 +70,7 @@ export const LoginPage = () => {
   }
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     set_is_loading(true);
+    console.log(JSON.stringify(values));
     try {
       const response = await fetch("http://localhost:8000/api/auth/login/", {
         method: "POST",
