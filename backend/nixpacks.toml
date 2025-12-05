@@ -1,8 +1,5 @@
-[providers]
-python = "3.11"
-
 [phases.setup]
-aptPkgs = ['postgresql-client']
+nixPkgs = ['...', 'postgresql']
 
 [start]
 cmd = 'gunicorn waste_management.wsgi:application --bind 0.0.0.0:$PORT'
