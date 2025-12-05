@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -25,27 +25,28 @@ const NearbyCentersMap = ({
 
     // Initialize map only once
     if (!mapInstanceRef.current) {
-      // Default center (Beirut if no user location)
-      const defaultCenter = userLocation || [33.8938, 35.5018];
+      // Default center (Beirut) if no live location yet
+      const defaultCenter =
+        userLocation && userLocation.length === 2
+          ? userLocation
+          : [33.8938, 35.5018];
 
       mapInstanceRef.current = L.map(mapRef.current, {
         center: defaultCenter,
-        zoom: 13,
+        zoom: userLocation ? 13 : 11,
         zoomControl: true,
       });
 
-      // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors",
         maxZoom: 19,
       }).addTo(mapInstanceRef.current);
-    } else {
-      // If map already exists and user location is now available, recenter
+    } else if (userLocation && userLocation.length === 2) {
+      // Recenter when live location becomes available
       mapInstanceRef.current.setView(userLocation, 13);
     }
 
     return () => {
-      // Cleanup markers when component unmounts
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
     };
@@ -58,8 +59,13 @@ const NearbyCentersMap = ({
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Add user location marker if available
-    if (userLocation) {
+    // Add user location marker (live location only)
+    if (
+      userLocation &&
+      userLocation.length === 2 &&
+      !isNaN(userLocation[0]) &&
+      !isNaN(userLocation[1])
+    ) {
       const userIcon = L.divIcon({
         className: "user-location-marker",
         html: `
@@ -69,7 +75,6 @@ const NearbyCentersMap = ({
             align-items: center;
             justify-content: center;
           ">
-            <!-- Outer glow ring -->
             <div style="
               position: absolute;
               width: 40px;
@@ -78,7 +83,6 @@ const NearbyCentersMap = ({
               background-color: rgba(59, 130, 246, 0.2);
               animation: pulse-ring 2s infinite;
             "></div>
-            <!-- Marker pin -->
             <div style="
               width: 28px;
               height: 28px;
@@ -114,7 +118,7 @@ const NearbyCentersMap = ({
         .addTo(mapInstanceRef.current)
         .bindPopup(
           `<div style="text-align: center;">
-            <strong style="color: #3b82f6;">📍 Your Location</strong>
+            <strong style="color: #3b82f6;">📍 Your Live Location</strong>
             <p style="margin: 4px 0; font-size: 12px; color: #666;">
               ${userLocation[0].toFixed(5)}, ${userLocation[1].toFixed(5)}
             </p>
@@ -124,9 +128,9 @@ const NearbyCentersMap = ({
 
       markersRef.current.push(userMarker);
 
-      // Add 5km radius circle
+      // 10km radius circle
       const radiusCircle = L.circle(userLocation, {
-        radius: 10000, // 10km in meters
+        radius: 10000,
         color: "#3b82f6",
         fillColor: "#3b82f6",
         fillOpacity: 0.1,
@@ -138,10 +142,16 @@ const NearbyCentersMap = ({
     }
 
     // Add center markers
-    centers.forEach((center, index) => {
-      if (!center.latitude || !center.longitude) return;
+    centers.forEach((center) => {
+      if (
+        !center.latitude ||
+        !center.longitude ||
+        isNaN(center.latitude) ||
+        isNaN(center.longitude)
+      ) {
+        return;
+      }
 
-      // Create custom icon based on waste type
       const markerColor = getWasteTypeColor(center.type);
       const icon = L.divIcon({
         className: "center-marker",
@@ -214,7 +224,6 @@ const NearbyCentersMap = ({
           { maxWidth: 250 }
         );
 
-      // Add click event to select center
       marker.on("click", () => {
         if (onCenterSelect) {
           onCenterSelect(center);
@@ -228,7 +237,7 @@ const NearbyCentersMap = ({
     if (markersRef.current.length > 0) {
       const group = L.featureGroup(markersRef.current);
       mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1));
-    } else if (userLocation) {
+    } else if (userLocation && userLocation.length === 2) {
       mapInstanceRef.current.setView(userLocation, 13);
     }
   }, [centers, userLocation, selectedCenter, onCenterSelect]);
@@ -237,8 +246,9 @@ const NearbyCentersMap = ({
   useEffect(() => {
     if (!selectedCenter || !mapInstanceRef.current) return;
 
-    // Find and open popup for selected center
     markersRef.current.forEach((marker) => {
+      if (!marker.getLatLng) return;
+
       const markerLatLng = marker.getLatLng();
       if (
         selectedCenter.latitude === markerLatLng.lat &&
@@ -248,9 +258,7 @@ const NearbyCentersMap = ({
         mapInstanceRef.current.setView(
           [selectedCenter.latitude, selectedCenter.longitude],
           15,
-          {
-            animate: true,
-          }
+          { animate: true }
         );
       }
     });

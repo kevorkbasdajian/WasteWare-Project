@@ -14,17 +14,27 @@ class ChatView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # Check if user is a company - block access
+        user = request.user
+        if hasattr(user, 'user_type') and user.user_type == 'company':
+            return Response(
+                {'error': 'Chatbot is not available for company accounts.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Alternative check if you use is_company boolean field
+        if hasattr(user, 'is_company') and user.is_company:
+            return Response(
+                {'error': 'Chatbot is not available for company accounts.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         serializer = ChatMessageSerializer(data=request.data)
         
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         user_message = serializer.validated_data['message']
-        
-        # Get user if authenticated
-        user = None
-        if hasattr(request, 'user') and hasattr(request.user, 'user_id'):
-            user = request.user
         
         # Get chatbot response
         bot_response = chatbot.get_response(
@@ -44,7 +54,6 @@ class ChatView(APIView):
             'timestamp': timezone.now()
         }, status=status.HTTP_200_OK)
 
-
 class ChatHistoryView(APIView):
     """GET /api/chatbot/history/ - Get user's chat history"""
     authentication_classes = [CustomJWTAuthentication]
@@ -52,6 +61,14 @@ class ChatHistoryView(APIView):
 
     def get(self, request):
         user = request.user
+        
+        # Block company users from accessing chat history
+        if hasattr(user, 'user_type') and user.user_type == 'company':
+            return Response(
+                {'error': 'Chat history is not available for company accounts.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         logs = ChatbotLogs.objects.filter(user=user).order_by('-timestamp')[:50]
         serializer = ChatLogSerializer(logs, many=True)
         return Response({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import AlertSnackbar from "../../Components/Alert.js";
 import { AuthContext } from "../../Components/AuthProvider";
 import * as Yup from "yup";
 import "../../Styles/Page/editProfile.css";
@@ -39,6 +40,7 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
   const [fetchImage, setFetchImage] = useState(false);
   const [removeImage, setRemoveImage] = useState(false);
   const [autoGPS, setAutoGPS] = useState(false);
+  const [snackbar, setSnackbar] = useState(false);
   const fileInputRef = useRef(null);
 
   const [initialValues, setInitialValues] = useState({
@@ -159,7 +161,7 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
         },
         (error) => {
           console.error("GPS error:", error);
-          setError("Unable to get you location. Please enter manually.");
+          setError("Unable to get your location. Please enter manually.");
         }
       );
     }
@@ -168,6 +170,7 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
   // Submit handler
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      setError(""); // Clear previous errors
       const formData = new FormData();
 
       // Split full name into first + last
@@ -221,361 +224,410 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
 
       const data = await response.json();
 
-      if (data.success) {
+      console.log("Response status:", response.ok);
+      console.log("Response data:", data);
+
+      if (response.ok && data.success) {
+        console.log("Update successful, showing snackbar");
+
         // Refresh user data if function exists
         if (refreshUserData) {
           await refreshUserData();
         }
-        if (onSuccess) {
-          onSuccess();
-        }
-        onClose();
+
+        setSnackbar(true);
+
+        // Call success callback and close modal after short delay
+        setTimeout(() => {
+          if (onSuccess) {
+            onSuccess();
+          }
+          onClose();
+        }, 1500);
       } else {
-        setError("Failed to update profile: " + JSON.stringify(data.error));
+        setError(data.error || "Failed to update profile. Please try again.");
       }
     } catch (error) {
-      setError("Server error: " + error.message);
+      setError("Failed to update profile. Please try again.");
+      console.error("Update error:", error);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleClose = () => {
+    // Reset form state
+    setError("");
+    setAvatarFile(null);
+    setRemoveImage(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  const closeSnackbar = () => {
+    setSnackbar(false);
   };
 
   // Don't render if not open
   if (!isOpen) return null;
 
   return (
-    <div className="edit-modal-overlay" onClick={onClose}>
-      <div className="edit-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="edit-modal-close" onClick={onClose}>
-          <i className="fas fa-times"></i>
-        </button>
-
-        <div className="edit-modal-header">
-          <h2>Edit Profile</h2>
-          <p>Update your personal information and preferences</p>
-        </div>
-
-        <Formik
-          initialValues={initialValues}
-          validationSchema={profileValidationSchema}
-          onSubmit={handleSubmit}
-          enableReinitialize
+    <>
+      <div className="edit-modal-overlay" onClick={onClose}>
+        <div
+          className="edit-modal-content"
+          onClick={(e) => e.stopPropagation()}
         >
-          {({ values, errors, touched, isSubmitting, setFieldValue }) => (
-            <div className="edit-modal-body">
-              {/* LEFT SIDE */}
-              <div className="edit-modal-sidebar">
-                <div className="edit-modal-avatar-wrapper">
-                  <img
-                    src={
-                      !fetchImage && !removeImage
-                        ? userData.avatar === "" || !userData.avatar
-                          ? "https://ui-avatars.com/api/?name=User&background=random"
-                          : `http://localhost:8000${userData.avatar}`
-                        : avatarPreview
-                    }
-                    alt="Profile"
-                    className="edit-modal-avatar"
-                  />
-                  <div className="avatar-actions">
-                    <button
-                      className="avatar-edit-icon"
-                      type="button"
-                      onClick={handleAvatarClick}
-                      title="Change profile photo"
-                    >
-                      <i className="fas fa-camera"></i>
-                    </button>
-                    {(userData.avatar || avatarFile) && !removeImage && (
+          <button className="edit-modal-close" onClick={onClose}>
+            <i className="fas fa-times"></i>
+          </button>
+
+          <div className="edit-modal-header">
+            <h2>Edit Profile</h2>
+            <p>Update your personal information and preferences</p>
+          </div>
+
+          <Formik
+            initialValues={initialValues}
+            validationSchema={profileValidationSchema}
+            onSubmit={handleSubmit}
+            enableReinitialize
+          >
+            {({ values, errors, touched, isSubmitting, setFieldValue }) => (
+              <div className="edit-modal-body">
+                {/* LEFT SIDE */}
+                <div className="edit-modal-sidebar">
+                  <div className="edit-modal-avatar-wrapper">
+                    <img
+                      src={
+                        !fetchImage && !removeImage
+                          ? userData.avatar === "" || !userData.avatar
+                            ? "https://ui-avatars.com/api/?name=User&background=random"
+                            : `http://localhost:8000${userData.avatar}`
+                          : avatarPreview
+                      }
+                      alt="Profile"
+                      className="edit-modal-avatar"
+                    />
+                    <div className="avatar-actions">
                       <button
-                        className="avatar-remove-icon"
+                        className="avatar-edit-icon"
                         type="button"
-                        onClick={handleRemoveImage}
-                        title="Remove profile photo"
+                        onClick={handleAvatarClick}
+                        title="Change profile photo"
                       >
-                        <i className="fas fa-trash-alt"></i>
+                        <i className="fas fa-camera"></i>
                       </button>
-                    )}
+                      {(userData.avatar || avatarFile) && !removeImage && (
+                        <button
+                          className="avatar-remove-icon"
+                          type="button"
+                          onClick={handleRemoveImage}
+                          title="Remove profile photo"
+                        >
+                          <i className="fas fa-trash-alt"></i>
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
+
+                  <h3 className="modal-profile-name">{values.fullName}</h3>
+                  <p className="modal-profile-email">{values.email}</p>
+
+                  <div className="modal-profile-bio">
+                    <p>{values.badge || "No bio yet"}</p>
+                    <span className="bio-char-count">
+                      {values.badge.length}/100
+                    </span>
+                  </div>
                 </div>
 
-                <h3 className="modal-profile-name">{values.fullName}</h3>
-                <p className="modal-profile-email">{values.email}</p>
+                {/* RIGHT SIDE */}
+                <div className="modal-form-wrapper">
+                  {error && <div className="error-message">{error}</div>}
 
-                <div className="modal-profile-bio">
-                  <p>{values.badge || "No bio yet"}</p>
-                  <span className="bio-char-count">
-                    {values.badge.length}/100
-                  </span>
-                </div>
-              </div>
-
-              {/* RIGHT SIDE */}
-              <div className="modal-form-wrapper">
-                {error && <div className="error-message">{error}</div>}
-
-                <Form className="modal-form">
-                  {/* Full Name */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Full Name</label>
-                    <div className="form-input-col">
-                      <Field
-                        type="text"
-                        name="fullName"
-                        placeholder="Enter your full name"
-                        className={
-                          errors.fullName && touched.fullName ? "error" : ""
-                        }
-                      />
-                      <ErrorMessage
-                        name="fullName"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Email</label>
-                    <div className="form-input-col">
-                      <Field
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        className={errors.email && touched.email ? "error" : ""}
-                      />
-                      <ErrorMessage
-                        name="email"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Phone Number</label>
-                    <div className="form-input-col">
-                      <Field
-                        type="tel"
-                        name="phone"
-                        placeholder="Enter your phone number"
-                        className={errors.phone && touched.phone ? "error" : ""}
-                      />
-                      <ErrorMessage
-                        name="phone"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* ADDRESS SECTION */}
-                  <div className="form-section-divider">
-                    <i className="fas fa-map-marker-alt"></i>
-                    <span>Location Information (Optional)</span>
-                  </div>
-
-                  {/* GPS Toggle */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Auto GPS</label>
-                    <div className="form-input-col">
-                      <label className="toggle-container-modal">
-                        <input
-                          type="checkbox"
-                          checked={autoGPS}
-                          onChange={(e) => handleAutoGPS(e, setFieldValue)}
-                        />
-                        <span className="toggle-slider-modal"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Coordinates */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Coordinates</label>
-                    <div className="form-input-col">
-                      <div className="input-with-icon">
-                        <i className="fas fa-location-dot input-icon"></i>
+                  <Form className="modal-form">
+                    {/* Full Name */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Full Name</label>
+                      <div className="form-input-col">
                         <Field
                           type="text"
-                          name="coordinates"
-                          placeholder="latitude, longitude"
-                          disabled={autoGPS}
+                          name="fullName"
+                          placeholder="Enter your full name"
                           className={
-                            errors.coordinates && touched.coordinates
+                            errors.fullName && touched.fullName ? "error" : ""
+                          }
+                        />
+                        <ErrorMessage
+                          name="fullName"
+                          component="div"
+                          className="field-error"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Email</label>
+                      <div className="form-input-col">
+                        <Field
+                          type="email"
+                          name="email"
+                          placeholder="Enter your email"
+                          className={
+                            errors.email && touched.email ? "error" : ""
+                          }
+                        />
+                        <ErrorMessage
+                          name="email"
+                          component="div"
+                          className="field-error"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Phone Number</label>
+                      <div className="form-input-col">
+                        <Field
+                          type="tel"
+                          name="phone"
+                          placeholder="Enter your phone number"
+                          className={
+                            errors.phone && touched.phone ? "error" : ""
+                          }
+                        />
+                        <ErrorMessage
+                          name="phone"
+                          component="div"
+                          className="field-error"
+                        />
+                      </div>
+                    </div>
+
+                    {/* ADDRESS SECTION */}
+                    <div className="form-section-divider">
+                      <i className="fas fa-map-marker-alt"></i>
+                      <span>Location Information (Optional)</span>
+                    </div>
+
+                    {/* GPS Toggle */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Auto GPS</label>
+                      <div className="form-input-col">
+                        <label className="toggle-container-modal">
+                          <input
+                            type="checkbox"
+                            checked={autoGPS}
+                            onChange={(e) => handleAutoGPS(e, setFieldValue)}
+                          />
+                          <span className="toggle-slider-modal"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Coordinates */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Coordinates</label>
+                      <div className="form-input-col">
+                        <div className="input-with-icon">
+                          <i className="fas fa-location-dot input-icon"></i>
+                          <Field
+                            type="text"
+                            name="coordinates"
+                            placeholder="latitude, longitude"
+                            disabled={autoGPS}
+                            className={
+                              errors.coordinates && touched.coordinates
+                                ? "error"
+                                : ""
+                            }
+                          />
+                        </div>
+                        <ErrorMessage
+                          name="coordinates"
+                          component="div"
+                          className="field-error"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Street Address */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Street Address</label>
+                      <div className="form-input-col">
+                        <Field
+                          type="text"
+                          name="street"
+                          placeholder="Enter your street address"
+                          className={
+                            errors.street && touched.street ? "error" : ""
+                          }
+                        />
+                        <ErrorMessage
+                          name="street"
+                          component="div"
+                          className="field-error"
+                        />
+                      </div>
+                    </div>
+
+                    {/* City and Region */}
+                    <div className="form-field-row-group">
+                      <div className="form-field-row">
+                        <label className="form-label-col">City</label>
+                        <div className="form-input-col">
+                          <Field
+                            as="select"
+                            name="city"
+                            className={
+                              errors.city && touched.city ? "error" : ""
+                            }
+                          >
+                            <option value="">Select City</option>
+                            <option value="Beirut">Beirut</option>
+                            <option value="Tripoli">Tripoli</option>
+                            <option value="Sidon">Sidon</option>
+                            <option value="Metn">Metn</option>
+                            <option value="Tyre">Tyre</option>
+                            <option value="Zahle">Zahle</option>
+                          </Field>
+                          <ErrorMessage
+                            name="city"
+                            component="div"
+                            className="field-error"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-field-row">
+                        <label className="form-label-col">Governorate</label>
+                        <div className="form-input-col">
+                          <Field
+                            as="select"
+                            name="region"
+                            className={
+                              errors.region && touched.region ? "error" : ""
+                            }
+                          >
+                            <option value="">Select Governorate</option>
+                            <option value="Beirut">Beirut</option>
+                            <option value="North">North Lebanon</option>
+                            <option value="South">South Lebanon</option>
+                            <option value="Mount Lebanon">Mount Lebanon</option>
+                            <option value="Bekaa">Bekaa</option>
+                            <option value="Nabatieh">Nabatieh</option>
+                          </Field>
+                          <ErrorMessage
+                            name="region"
+                            component="div"
+                            className="field-error"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Postal Code */}
+                    <div className="form-field-row">
+                      <label className="form-label-col">Postal Code</label>
+                      <div className="form-input-col">
+                        <Field
+                          type="text"
+                          name="postalCode"
+                          placeholder="Enter postal code"
+                          className={
+                            errors.postalCode && touched.postalCode
                               ? "error"
                               : ""
                           }
                         />
-                      </div>
-                      <ErrorMessage
-                        name="coordinates"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Street Address */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Street Address</label>
-                    <div className="form-input-col">
-                      <Field
-                        type="text"
-                        name="street"
-                        placeholder="Enter your street address"
-                        className={
-                          errors.street && touched.street ? "error" : ""
-                        }
-                      />
-                      <ErrorMessage
-                        name="street"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* City and Region */}
-                  <div className="form-field-row-group">
-                    <div className="form-field-row">
-                      <label className="form-label-col">City</label>
-                      <div className="form-input-col">
-                        <Field
-                          as="select"
-                          name="city"
-                          className={errors.city && touched.city ? "error" : ""}
-                        >
-                          <option value="">Select City</option>
-                          <option value="Beirut">Beirut</option>
-                          <option value="Tripoli">Tripoli</option>
-                          <option value="Sidon">Sidon</option>
-                          <option value="Metn">Metn</option>
-                          <option value="Tyre">Tyre</option>
-                          <option value="Zahle">Zahle</option>
-                        </Field>
                         <ErrorMessage
-                          name="city"
+                          name="postalCode"
                           component="div"
                           className="field-error"
                         />
                       </div>
                     </div>
 
+                    {/* Bio */}
                     <div className="form-field-row">
-                      <label className="form-label-col">Governorate</label>
+                      <label className="form-label-col">About Me</label>
                       <div className="form-input-col">
                         <Field
-                          as="select"
-                          name="region"
+                          as="textarea"
+                          name="badge"
+                          placeholder="Tell us about yourself"
+                          rows={3}
                           className={
-                            errors.region && touched.region ? "error" : ""
+                            errors.badge && touched.badge ? "error" : ""
                           }
-                        >
-                          <option value="">Select Governorate</option>
-                          <option value="Beirut">Beirut</option>
-                          <option value="North">North Lebanon</option>
-                          <option value="South">South Lebanon</option>
-                          <option value="Mount Lebanon">Mount Lebanon</option>
-                          <option value="Bekaa">Bekaa</option>
-                          <option value="Nabatieh">Nabatieh</option>
-                        </Field>
+                        />
+                        <span className="char-count-inline">
+                          {values.badge.length}/100
+                        </span>
                         <ErrorMessage
-                          name="region"
+                          name="badge"
                           component="div"
                           className="field-error"
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Postal Code */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">Postal Code</label>
-                    <div className="form-input-col">
-                      <Field
-                        type="text"
-                        name="postalCode"
-                        placeholder="Enter postal code"
-                        className={
-                          errors.postalCode && touched.postalCode ? "error" : ""
-                        }
-                      />
-                      <ErrorMessage
-                        name="postalCode"
-                        component="div"
-                        className="field-error"
-                      />
+                    {/* Buttons */}
+                    <div className="form-actions">
+                      <button
+                        type="submit"
+                        className="btn-submit"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <i className="fas fa-spinner fa-spin"></i>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-save"></i>
+                            Save Changes
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-cancel-gray"
+                        onClick={handleClose}
+                        disabled={isSubmitting}
+                      >
+                        <i className="fas fa-times"></i>
+                        Cancel
+                      </button>
                     </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div className="form-field-row">
-                    <label className="form-label-col">About Me</label>
-                    <div className="form-input-col">
-                      <Field
-                        as="textarea"
-                        name="badge"
-                        placeholder="Tell us about yourself"
-                        rows={3}
-                        className={errors.badge && touched.badge ? "error" : ""}
-                      />
-                      <span className="char-count-inline">
-                        {values.badge.length}/100
-                      </span>
-                      <ErrorMessage
-                        name="badge"
-                        component="div"
-                        className="field-error"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="form-actions">
-                    <button
-                      type="submit"
-                      className="btn-submit"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <i className="fas fa-spinner fa-spin"></i>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-save"></i>
-                          Save Changes
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-cancel-gray"
-                      onClick={onClose}
-                      disabled={isSubmitting}
-                    >
-                      <i className="fas fa-times"></i>
-                      Cancel
-                    </button>
-                  </div>
-                </Form>
+                  </Form>
+                </div>
               </div>
-            </div>
-          )}
-        </Formik>
+            )}
+          </Formik>
+        </div>
       </div>
-    </div>
+
+      <AlertSnackbar
+        open={snackbar}
+        onClose={closeSnackbar}
+        message="Your profile updated successfully!"
+        severity="success"
+        autoHideDuration={3000}
+      />
+    </>
   );
 };
 

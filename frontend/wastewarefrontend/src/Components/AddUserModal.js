@@ -1,112 +1,74 @@
-import React, { useState } from 'react';
-import '../Styles/Page/Admin/UserModal.css';
+import React, { useState } from "react";
+import "../Styles/Page/Admin/addUserModal.css";
+import { useFetchWithAuth } from "../Components/fetchWithAuth";
 
 const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
+  const fetchWithAuth = useFetchWithAuth();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    role: 'user',
-    password: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
-    // ============ MOCK ADD USER (CURRENTLY ACTIVE) ============
-    console.log('Mock: Adding new user', formData);
-    
-    // Create mock user object
-    const newUser = {
-      user_id: Date.now(), // Use timestamp as ID
-      full_name: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      phone_number: formData.phoneNumber,
-      role: formData.role,
-      account_status: 'Active',
-      created_at: new Date().toISOString(),
-      points_balance: 0
-    };
+    try {
+      const response = await fetchWithAuth(
+        "http://localhost:8000/api/auth/admin/users/create/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone_number: formData.phoneNumber,
+            role_name: formData.role,
+            password: formData.password,
+          }),
+        }
+      );
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error("Failed to add user");
+      }
 
-    // Call parent function to add user to list
-    onUserAdded(newUser);
-    
-    // Reset form and close modal
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      role: 'user',
-      password: ''
-    });
-    setLoading(false);
-    onClose();
-    alert('User added successfully!');
-    // ==========================================================
+      const data = await response.json();
+      onUserAdded(data.user); // Add new user to list
 
-    // ============ REAL API ADD (COMMENTED OUT - USE LATER) ============
-    // try {
-    //   const token = localStorage.getItem('access_token');
-    //   
-    //   const response = await fetch('http://localhost:8000/api/auth/admin/users/create/', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       first_name: formData.firstName,
-    //       last_name: formData.lastName,
-    //       email: formData.email,
-    //       phone_number: formData.phoneNumber,
-    //       role_name: formData.role,
-    //       password: formData.password
-    //     })
-    //   });
-    //   
-    //   if (!response.ok) {
-    //     throw new Error('Failed to add user');
-    //   }
-    //   
-    //   const data = await response.json();
-    //   onUserAdded(data); // Add new user to list
-    //   
-    //   // Reset form and close
-    //   setFormData({
-    //     firstName: '',
-    //     lastName: '',
-    //     email: '',
-    //     phoneNumber: '',
-    //     role: 'user',
-    //     password: ''
-    //   });
-    //   setLoading(false);
-    //   onClose();
-    //   alert('User added successfully!');
-    //   
-    // } catch (err) {
-    //   console.error('Error adding user:', err);
-    //   setError('Failed to add user. Please try again.');
-    //   setLoading(false);
-    // }
-    // ===================================================================
+      // Reset form and close
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        role: "user",
+        password: "",
+      });
+      setLoading(false);
+      onClose();
+    } catch (err) {
+      console.error("Error adding user:", err);
+      setError("Failed to add user. Please try again.");
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -149,7 +111,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="form-groupw">
             <label>Email *</label>
             <input
               type="email"
@@ -161,7 +123,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-groupw">
             <label>Phone Number</label>
             <input
               type="tel"
@@ -172,20 +134,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Role *</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div className="form-group">
+          <div className="form-groupw">
             <label>Password *</label>
             <input
               type="password"
@@ -198,11 +147,24 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
             />
           </div>
 
-          <div className="modal-actions">
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? 'Adding...' : 'Add User'}
+          <div
+            className="modal-actions"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <button type="submit" className="btn-submits" disabled={loading}>
+              {loading ? "Adding..." : "Add User"}
             </button>
-            <button type="button" className="btn-cancel" onClick={onClose} disabled={loading}>
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </button>
           </div>

@@ -6,13 +6,14 @@
   width: 250px;
   min-height: 100vh;
   background: white;
-  border-right: 1px solid #E5E7EB;
+  border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  transition: width 0.3s ease;
 }
 
 /* ===== HEADER (Logo) ===== */
@@ -21,12 +22,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .hamburger-menu {
   font-size: 1.25rem;
-  color: #1F2937;
+  color: #1f2937;
   cursor: pointer;
 }
 
@@ -57,11 +58,11 @@
   transition: all 0.2s;
   font-size: 1rem;
   font-weight: 500;
-  color: #4B5563;
+  color: #4b5563;
 }
 
 .nav-item:hover {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .nav-item.active {
@@ -84,7 +85,7 @@
 /* ===== FOOTER (Logout) ===== */
 .sidebar-footer {
   padding: 1.5rem 1.25rem;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
 }
 
 .btn-logout {
@@ -92,7 +93,7 @@
   padding: 0.75rem;
   background: transparent;
   border: none;
-  color: #DC2626;
+  color: #dc2626;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -102,7 +103,7 @@
 }
 
 .btn-logout:hover {
-  background: #FEF2F2;
+  background: #fef2f2;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -120,4 +121,51 @@
     justify-content: center;
     padding: 1rem;
   }
+}
+.admin-sidebar.collapsed {
+  width: 80px;
+  overflow: hidden;
+}
+
+.admin-sidebar.collapsed .sidebar-logo {
+  display: none;
+}
+
+.admin-sidebar.collapsed .nav-text {
+  display: none;
+}
+
+.admin-sidebar.collapsed .btn-logout {
+  padding: 12px;
+
+  font-size: 18px;
+}
+.admin-sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 15px;
+  width: 100%;
+}
+
+.admin-sidebar.collapsed .nav-icon {
+  margin: 0;
+}
+.admin-sidebar.collapsed .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+  width: 60px;
+  margin: 0;
+}
+.admin-sidebar.collapsed .sidebar-header {
+  justify-content: center;
+}
+
+.admin-sidebar.collapsed .hamburger-menu {
+  margin: 0;
 }

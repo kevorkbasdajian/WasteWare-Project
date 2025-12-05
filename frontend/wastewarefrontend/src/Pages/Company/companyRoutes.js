@@ -69,7 +69,7 @@ const TruckRoutes = () => {
   const [routes, setRoutes] = useState([]);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routesError, setRoutesError] = useState(null);
-  const { accessToken, user_type } = useContext(AuthContext);
+  const { accessToken, user_type, userData } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     truckId: "",
     wasteCategory: "",
@@ -92,15 +92,15 @@ const TruckRoutes = () => {
     {
       name: "Routes",
       path: "/company/routes",
-      color: "var(--gradient-clean-blue)",
-      glowColor: "#3B82F6",
+      color: "var(--gradient-light-green)",
+      glowColor: "var(--light-green)",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Schedule",
       path: "/company/schedule",
-      color: "var(--gradient-purple)",
-      glowColor: "#A855F7",
+      color: "var(--gradient-clean-blue)",
+      glowColor: "#3B82F6",
       icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
@@ -133,13 +133,11 @@ const TruckRoutes = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     console.log("should redirect to ...");
-  //     navigate(-1);
-  //   }
-  //   console.log("user type is", user_type);
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
   useEffect(() => {
     const fetchRoutes = async () => {
       setLoadingRoutes(true);
@@ -594,11 +592,20 @@ const TruckRoutes = () => {
         padding: "2rem",
       }}
     >
-      <Navbar links={links} />
+      <Navbar
+        o
+        links={links}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+        }
+        profilePath="/company/profile"
+      />
       <div style={{ marginTop: 80 }}>
         <HeaderBox
           text="Truck Routes"
-          gradientColors={["#7df083ff", "#43a047"]}
+          gradientColors={"--gradient-light-green"}
         />
       </div>
 

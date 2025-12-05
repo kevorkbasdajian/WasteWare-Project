@@ -53,7 +53,7 @@ const ClientMap = () => {
   }, [accessToken, navigate]);
 
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
   }, [user_type, navigate]);
@@ -163,7 +163,11 @@ const ClientMap = () => {
       <Navbar
         links={links}
         profilePath="/client/profile"
-        profileImage={`http://localhost:8000${userData.avatar}`}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
+        }
       />
 
       <HeaderBox

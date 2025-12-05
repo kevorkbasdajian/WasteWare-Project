@@ -16,6 +16,7 @@
   --gradient-orange: linear-gradient(135deg, var(--energy-orange), #ff6f00);
   --gradient-purple: linear-gradient(135deg, var(--purple), #5623be);
   --gradient-red: linear-gradient(135deg, var(--red), #ff7043);
+  --gradient-light-green: linear-gradient(135deg, #7df083ff, #43a047);
 
   /* --- Neutrals --- */
   --white: #ffffff;

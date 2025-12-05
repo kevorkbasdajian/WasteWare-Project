@@ -34,7 +34,8 @@ L.Icon.Default.mergeOptions({
 });
 const CompanyPickups = () => {
   //   const fetchWithAuth = useFetchWithAuth();
-  const { clearAuth, accessToken, user_type } = useContext(AuthContext);
+  const { clearAuth, accessToken, user_type, userData } =
+    useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
   const navigate = useNavigate();
   const [snackbar, setsnackbar] = useState(false);
@@ -96,15 +97,15 @@ const CompanyPickups = () => {
     {
       name: "Routes",
       path: "/company/routes",
-      color: "var(--gradient-clean-blue)",
-      glowColor: "#3B82F6",
+      color: "var(--gradient-light-green)",
+      glowColor: "var(--light-green)",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Schedule",
       path: "/company/schedule",
-      color: "var(--gradient-purple)",
-      glowColor: "#A855F7",
+      color: "var(--gradient-clean-blue)",
+      glowColor: "#3B82F6",
       icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
@@ -137,11 +138,11 @@ const CompanyPickups = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     navigate(-1);
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -463,7 +464,15 @@ const CompanyPickups = () => {
   };
   return (
     <div className="skeleton">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+        }
+        profilePath="/company/profile"
+      />
       <HeaderBox
         text="Create Pickup & Track"
         gradientColors={["#F97316 30%", "#F59E0B 100%"]}

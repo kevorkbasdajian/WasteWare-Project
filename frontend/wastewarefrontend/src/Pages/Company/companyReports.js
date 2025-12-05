@@ -35,15 +35,15 @@ const CompanyReports = () => {
     {
       name: "Routes",
       path: "/company/routes",
-      color: "var(--gradient-clean-blue)",
-      glowColor: "#3B82F6",
+      color: "var(--gradient-light-green)",
+      glowColor: "var(--light-green)",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Schedule",
       path: "/company/schedule",
-      color: "var(--gradient-purple)",
-      glowColor: "#A855F7",
+      color: "var(--gradient-clean-blue)",
+      glowColor: "#3B82F6",
       icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
@@ -68,7 +68,6 @@ const CompanyReports = () => {
       icon: "fa-solid fa-bell fa-lg",
     },
   ];
-
   // Check authentication on mount
   useEffect(() => {
     if (!accessToken) {
@@ -76,11 +75,11 @@ const CompanyReports = () => {
     }
   }, [navigate, accessToken]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     navigate(-1);
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   // Fetch reports when authenticated
   useEffect(() => {
@@ -215,7 +214,15 @@ const CompanyReports = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+        }
+        profilePath="/company/profile"
+      />
 
       <HeaderBox text="Report Dashboard" gradientColors={"--gradient-purple"} />
 

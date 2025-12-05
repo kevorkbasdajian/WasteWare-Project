@@ -6,7 +6,7 @@
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .admin-main-content {
@@ -80,15 +80,15 @@
 
 /* Table Header */
 .users-table thead {
-  background: #F9FAFB;
-  border-bottom: 2px solid #E5E7EB;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .users-table thead th {
   padding: 1rem 1.5rem;
   text-align: left;
   font-size: 1.25rem;
-  color: #1F2937;
+  color: #1f2937;
 }
 
 .users-table thead th.col-checkbox {
@@ -110,18 +110,18 @@
 
 /* Table Body */
 .users-table tbody tr {
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
   transition: background 0.2s;
 }
 
 .users-table tbody tr:hover {
-  background: #F9FAFB;
+  background: #f9fafb;
 }
 
 .users-table tbody td {
   padding: 1.25rem 1.5rem;
   font-size: 1rem;
-  color: #1F2937;
+  color: #1f2937;
 }
 
 .users-table tbody td.col-checkbox {
@@ -134,7 +134,7 @@
 
 .users-table tbody td.col-email,
 .users-table tbody td.col-phone {
-  color: #6B7280;
+  color: #6b7280;
 }
 
 /* Role Badge */
@@ -148,12 +148,12 @@
 }
 
 .role-badge.admin {
-  background: #DBEAFE;
-  color: #1E40AF;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .role-badge.user {
-  background: #E5E7EB;
+  background: #e5e7eb;
   color: #374151;
 }
 
@@ -184,15 +184,15 @@
 }
 
 .btn-action.btn-edit:hover {
-  background: #F0FDF4;
+  background: #f0fdf4;
 }
 
 .btn-action.btn-delete {
-  color: #DC2626;
+  color: #dc2626;
 }
 
 .btn-action.btn-delete:hover {
-  background: #FEF2F2;
+  background: #fef2f2;
 }
 
 /* Loading & Error States */
@@ -211,7 +211,7 @@
   align-items: center;
   height: 100vh;
   font-size: 1.25rem;
-  color: #DC2626;
+  color: #dc2626;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -246,5 +246,6 @@
   .users-table thead th.col-icon,
   .users-table tbody td.col-phone {
     display: none;
+    text-align: center;
   }
 }

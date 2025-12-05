@@ -13,6 +13,7 @@ const ProfilePage = () => {
     isLoadingUser,
     userError,
     user_type,
+    refreshUserData,
   } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -63,10 +64,10 @@ const ProfilePage = () => {
     console.log("Profile updated successfully!");
   };
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
-  }, [navigate]);
+  }, [user_type, navigate]);
   // Loading state
   if (isLoadingUser) {
     return (
@@ -102,7 +103,12 @@ const ProfilePage = () => {
     <>
       <Navbar
         links={links}
-        profileImage={`http://localhost:8000${userData.avatar}`}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
+        }
+        profilePath="/client/profile"
       />
       <div className="profile-page" style={{ marginTop: "80px" }}>
         <div className="profile-container">

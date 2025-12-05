@@ -15,9 +15,11 @@ import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
 import CompanyPickups from "./Pages/Company/companyPickups";
 import Chatbot from "./Components/chatbot";
-import AdminUserManagement from "./Pages/Admin/adminUserManagement";
+import AdminUserManagement from "./Pages/Admin/AdminUserManagement";
 import CompanyNotifications from "./Pages/Company/companyNotifications";
-
+import AdminCompanyManagement from "./Pages/Admin/AdminCompanyManagement";
+import CompanyProfilePage from "./Pages/Company/CompanyProfilePage";
+import EditCompanyProfile from "./Pages/Company/EditCompanyProfile";
 function App() {
   return (
     <div className="App">
@@ -32,10 +34,10 @@ function App() {
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/reports" element={<Reports />} />
           <Route path="/client/profile" element={<ClientProfile />} />
-          {/* <Route path="/client/edit-profile" element={<EditProfilePage />} /> */}
 
           {/* admin */}
           <Route path="/admin/users" element={<AdminUserManagement />} />
+          <Route path="/admin/company" element={<AdminCompanyManagement />} />
 
           {/* company */}
           <Route path="/company" element={<CompanyDashboard />} />
@@ -43,6 +45,11 @@ function App() {
           <Route path="/company/routes" element={<TruckRoutes />} />
           <Route path="/company/pickups" element={<CompanyPickups />} />
           <Route path="/company/reports" element={<CompanyReports />} />
+          <Route path="/company/profile" element={<CompanyProfilePage />} />
+          <Route
+            path="/company/edit-profile"
+            element={<EditCompanyProfile />}
+          />
           <Route
             path="/company/notifications"
             element={<CompanyNotifications />}

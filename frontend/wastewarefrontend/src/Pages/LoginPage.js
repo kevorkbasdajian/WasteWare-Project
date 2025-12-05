@@ -102,8 +102,7 @@ export const LoginPage = () => {
       navigate("/company", { replace: true });
     }
     if (user_type === "user") navigate("/", { replace: true });
-    else if (user_type === "admin")
-      navigate("/admin/dashboard", { replace: true });
+    else if (user_type === "admin") navigate("/admin/users", { replace: true });
   };
 
   return (

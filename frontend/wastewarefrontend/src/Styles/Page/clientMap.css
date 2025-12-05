@@ -230,7 +230,7 @@
   gap: 1.5rem;
 }
 
-.schedule-header {
+.left-panel .schedule-header {
   background: var(--card-bg);
   padding: 2rem;
   border-radius: 1.25rem;
@@ -239,7 +239,7 @@
   transition: all 0.3s ease;
 }
 
-.schedule-header:hover {
+.left-panel .schedule-header:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }

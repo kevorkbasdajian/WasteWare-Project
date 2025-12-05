@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBox from "../../Components/HeaderBox.js";
 
 const CompanyDashboard = () => {
-  const { clearAuth, accessToken, isLoadingUser, user_type, companyData } =
+  const { clearAuth, accessToken, isLoadingUser, user_type, userData } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
@@ -36,7 +36,7 @@ const CompanyDashboard = () => {
   });
 
   useEffect(() => {
-    if (user_type && user_type !== "company") {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
       navigate(-1);
     }
   }, [navigate]);
@@ -52,8 +52,8 @@ const CompanyDashboard = () => {
     {
       name: "Routes",
       path: "/company/routes",
-      color: "var(--gradient-clean-blue)",
-      glowColor: "#3B82F6",
+      color: "var(--gradient-light-green)",
+      glowColor: "var(--light-green)",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
@@ -85,7 +85,6 @@ const CompanyDashboard = () => {
       icon: "fa-solid fa-bell fa-lg",
     },
   ];
-
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
@@ -349,14 +348,14 @@ const CompanyDashboard = () => {
         links={links}
         profilePath="/company/profile"
         profileImage={
-          companyData?.avatar
-            ? `http://localhost:8000${companyData.avatar}`
-            : null
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
       />
 
       <HeaderBox
-        text={`Welcome Back, ${companyData?.name || "Admin"}!`}
+        text={`Welcome Back, ${userData?.company_name || "Admin"}!`}
         gradientColors={"--gradient-red"}
       />
 

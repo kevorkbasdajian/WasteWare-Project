@@ -15,8 +15,9 @@ const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("week");
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [liveLocation, setLiveLocation] = useState(null);
-  const [locationPermissionDenied, setlocationPermissionDenied] =
+  const [locationPermissionDenied, setLocationPermissionDenied] =
     useState(false);
+  const [locationLoading, setLocationLoading] = useState(true);
 
   // Real notifications from backend
   const [notifications, setNotifications] = useState([]);
@@ -70,7 +71,7 @@ const Dashboard = () => {
   }, [accessToken, navigate]);
 
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
   }, [user_type, navigate]);
@@ -79,32 +80,29 @@ const Dashboard = () => {
   useEffect(() => {
     if (!("geolocation" in navigator)) {
       console.warn("Geolocation not available in this browser");
+      setLocationLoading(false);
       return;
     }
 
-    // You can use getCurrentPosition (one-shot) or watchPosition (continuous)
     const geoSuccess = (pos) => {
       const { latitude, longitude } = pos.coords;
       setLiveLocation([latitude, longitude]);
+      setLocationLoading(false);
     };
 
     const geoError = (err) => {
       console.warn("Geolocation error:", err);
-      if (err.code === err.PERMISSION_DENIED) setLocationPermissionDenied(true);
+      if (err.code === err.PERMISSION_DENIED) {
+        setLocationPermissionDenied(true);
+      }
       setLiveLocation(null);
+      setLocationLoading(false);
     };
 
-    // One-shot:
     navigator.geolocation.getCurrentPosition(geoSuccess, geoError, {
       enableHighAccuracy: true,
       timeout: 10000,
     });
-
-    // If you want continuous updates instead, replace above with:
-    // const watcher = navigator.geolocation.watchPosition(geoSuccess, geoError, { enableHighAccuracy: true });
-    // return () => navigator.geolocation.clearWatch(watcher);
-
-    // no cleanup needed for getCurrentPosition
   }, []);
 
   const fetchNotifications = async () => {
@@ -152,8 +150,13 @@ const Dashboard = () => {
   useEffect(() => {
     if (accessToken && user_type === "user") {
       fetchNotifications();
-      // fetchActivityData();
       fetchWeeklySchedule();
+    }
+  }, [accessToken, user_type]);
+
+  // Fetch nearby centers only when live location is available
+  useEffect(() => {
+    if (accessToken && user_type === "user" && liveLocation) {
       fetchNearbyCenters();
     }
   }, [accessToken, user_type, liveLocation]);
@@ -196,6 +199,13 @@ const Dashboard = () => {
   };
 
   const fetchNearbyCenters = async () => {
+    // Don't fetch if no live location
+    if (!liveLocation || liveLocation.length !== 2) {
+      setNearbyCenters([]);
+      setLoadingCenters(false);
+      return;
+    }
+
     setLoadingCenters(true);
     try {
       const response = await fetchWithAuth(
@@ -210,29 +220,9 @@ const Dashboard = () => {
 
       const dumpings = await response.json();
 
-      // Prefer liveLocation if available, otherwise fallback to profile address
-      let userLat = null;
-      let userLon = null;
-
-      if (liveLocation && liveLocation.length === 2) {
-        userLat = Number(liveLocation[0]);
-        userLon = Number(liveLocation[1]);
-      } else if (userData?.address?.latitude && userData?.address?.longitude) {
-        // normalize comma decimal separators if any
-        userLat = parseFloat(
-          String(userData.address.latitude).replace(",", ".")
-        );
-        userLon = parseFloat(
-          String(userData.address.longitude).replace(",", ".")
-        );
-      } else {
-      }
-
-      if (userLat == null || userLon == null) {
-        setNearbyCenters([]);
-        setLoadingCenters(false);
-        return;
-      }
+      // Use only live location
+      const userLat = Number(liveLocation[0]);
+      const userLon = Number(liveLocation[1]);
 
       const centersWithDistance = dumpings
         .filter(
@@ -250,10 +240,11 @@ const Dashboard = () => {
 
           if (Number.isNaN(dumpingLat) || Number.isNaN(dumpingLon)) {
             console.warn(
-              "[DEBUG] invalid dumping coords for id:",
+              "Invalid dumping coords for id:",
               dumping.dumping_id,
               dumping.address_detail
             );
+            return null;
           }
 
           const distance = calculateDistance(
@@ -276,8 +267,7 @@ const Dashboard = () => {
             longitude: dumpingLon,
           };
         })
-        // enforce 10 km filter:
-        .filter((center) => center.distanceValue <= 10)
+        .filter((center) => center !== null && center.distanceValue <= 10)
         .sort((a, b) => a.distanceValue - b.distanceValue);
 
       setNearbyCenters(centersWithDistance);
@@ -622,7 +612,9 @@ const Dashboard = () => {
         links={links}
         profilePath="/client/profile"
         profileImage={
-          userData.avatar ? `http://localhost:8000${userData.avatar}` : ""
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
         }
       />
 
@@ -632,7 +624,6 @@ const Dashboard = () => {
       />
 
       <div className="dashboard-container">
-        {/* <h2 className="greetings">Welcome Back, {userData.name}!</h2> */}
         <div className="impact-section stats-section">
           <h2>Your Statistics Overview</h2>
           <div className="stats-grid">
@@ -795,32 +786,15 @@ const Dashboard = () => {
         </div>
 
         <div className="secondary-content-grid">
-          {/* Nearby Centers — only show if we have user location */}
-          {(liveLocation && liveLocation.length === 2) ||
-          (userData?.address?.latitude && userData?.address?.longitude) ? (
+          {/* Nearby Centers - only show if live location available */}
+          {liveLocation && liveLocation.length === 2 ? (
             <div className="nearby-centers-section">
               <div className="section-header">
                 <h2>Nearby Centers (Within 10km)</h2>
                 <div className="user-location-info">
-                  <i
-                    className={`fa-solid ${
-                      liveLocation
-                        ? "fa-location-dot"
-                        : "fa-location-crosshairs"
-                    }`}
-                  ></i>
-                  <strong>Your Location:</strong>
-                  {liveLocation
-                    ? `${liveLocation[0].toFixed(5)}, ${liveLocation[1].toFixed(
-                        5
-                      )} (live)`
-                    : userData?.address?.latitude
-                    ? `${parseFloat(userData.address.latitude).toFixed(
-                        5
-                      )}, ${parseFloat(userData.address.longitude).toFixed(
-                        5
-                      )} (profile)`
-                    : "Please add location"}
+                  <i className="fa-solid fa-location-dot"></i>
+                  <strong>Your Live Location:</strong>{" "}
+                  {liveLocation[0].toFixed(5)}, {liveLocation[1].toFixed(5)}
                 </div>
                 <button
                   className="view-map-btn"
@@ -830,25 +804,6 @@ const Dashboard = () => {
                 </button>
               </div>
 
-              {/* Show the client's location */}
-              <div className="user-location-info">
-                <i className="fa-solid fa-location-dot"></i>
-                <strong>Your Location:</strong>{" "}
-                {userData.address.street ||
-                userData.address.city ||
-                userData.address.region
-                  ? [
-                      userData.address.street,
-                      userData.address.city,
-                      userData.address.region,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")
-                  : `${parseFloat(userData.address.latitude).toFixed(
-                      5
-                    )}, ${parseFloat(userData.address.longitude).toFixed(5)}`}
-              </div>
-
               {loadingCenters ? (
                 <div className="centers-loading">
                   <i className="fa-solid fa-spinner fa-spin"></i>
@@ -856,27 +811,15 @@ const Dashboard = () => {
                 </div>
               ) : nearbyCenters.length > 0 ? (
                 <>
-                  {/* Map */}
                   <div className="map-container">
                     <NearbyCentersMap
                       centers={nearbyCenters}
-                      userLocation={
-                        liveLocation && liveLocation.length === 2
-                          ? liveLocation
-                          : userData?.address?.latitude &&
-                            userData?.address?.longitude
-                          ? [
-                              parseFloat(userData.address.latitude),
-                              parseFloat(userData.address.longitude),
-                            ]
-                          : null
-                      }
+                      userLocation={liveLocation}
                       onCenterSelect={handleSelectCenter}
                       selectedCenter={selectedCenter}
                     />
                   </div>
 
-                  {/* Centers List */}
                   <div className="centers-list">
                     {nearbyCenters.map((center) => (
                       <div
@@ -949,15 +892,20 @@ const Dashboard = () => {
               <div className="centers-empty">
                 <i className="fa-solid fa-location-crosshairs"></i>
                 <p>
-                  Please add your location in profile settings to see nearby
-                  centers
+                  {locationLoading
+                    ? "Getting your location..."
+                    : locationPermissionDenied
+                    ? "Location permission denied. Please enable location access in your browser settings to see nearby centers."
+                    : "Please allow location access to see nearby waste centers"}
                 </p>
-                <button
-                  className="view-all-centers-btn"
-                  onClick={() => navigate("/client/profile")}
-                >
-                  Update Location
-                </button>
+                {!locationLoading && (
+                  <button
+                    className="view-all-centers-btn"
+                    onClick={() => navigate("/client/map")}
+                  >
+                    View All Centers on Map
+                  </button>
+                )}
               </div>
             </div>
           )}
