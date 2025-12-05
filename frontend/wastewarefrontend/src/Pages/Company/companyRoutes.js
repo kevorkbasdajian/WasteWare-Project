@@ -132,13 +132,11 @@ const TruckRoutes = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     console.log("should redirect to ...");
-  //     navigate(-1);
-  //   }
-  //   console.log("user type is", user_type);
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
   useEffect(() => {
     const fetchRoutes = async () => {
       setLoadingRoutes(true);
@@ -586,6 +584,22 @@ const TruckRoutes = () => {
     setviewallmodal(value);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/auth/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (err) {
+      console.error("Logout request failed", err);
+    } finally {
+      clearAuth();
+      navigate("/Login");
+    }
+  };
+
   return (
     <div
       style={{
@@ -593,7 +607,12 @@ const TruckRoutes = () => {
         padding: "2rem",
       }}
     >
-      <Navbar links={links} />
+      <Navbar
+        o
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
       <div style={{ marginTop: 80 }}>
         <HeaderBox
           text="Truck Routes"

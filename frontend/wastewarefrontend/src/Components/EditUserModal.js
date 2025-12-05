@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
+import "../Styles/Page/Admin/addUserModal.css";
 import "../Styles/Page/Admin/UserModal.css";
+import { useFetchWithAuth } from "./fetchWithAuth";
 
 const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
+  const fetchWithAuth = useFetchWithAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
     phoneNumber: "",
-    role: "user",
-    accountStatus: "Active",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,10 +20,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
       setFormData({
         firstName: nameParts[0] || "",
         lastName: nameParts.slice(1).join(" ") || "",
-        email: user.email,
         phoneNumber: user.phone_number || "",
-        role: user.role,
-        accountStatus: user.account_status,
       });
     }
   }, [user]);
@@ -41,67 +38,36 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
     setLoading(true);
     setError("");
 
-    // ============ MOCK UPDATE USER (CURRENTLY ACTIVE) ============
-    console.log("Mock: Updating user", user.user_id, formData);
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:8000/api/auth/admin/users/${user.user_id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            phone_number: formData.phoneNumber,
+          }),
+        }
+      );
 
-    // Create updated user object
-    const updatedUser = {
-      ...user,
-      full_name: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      phone_number: formData.phoneNumber,
-      role: formData.role,
-      account_status: formData.accountStatus,
-    };
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      const data = await response.json();
+      onUserUpdated(data.user); // Update user in list
 
-    // Call parent function to update user in list
-    onUserUpdated(updatedUser);
-
-    setLoading(false);
-    onClose();
-    alert("User updated successfully!");
-    // =============================================================
-
-    // ============ REAL API UPDATE (COMMENTED OUT - USE LATER) ============
-    // try {
-    //   const token = localStorage.getItem('access_token');
-    //
-    //   const response = await fetch(`http://localhost:8000/api/auth/admin/users/${user.user_id}/`, {
-    //     method: 'PUT',
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       first_name: formData.firstName,
-    //       last_name: formData.lastName,
-    //       email: formData.email,
-    //       phone_number: formData.phoneNumber,
-    //       role_name: formData.role,
-    //       account_status: formData.accountStatus
-    //     })
-    //   });
-    //
-    //   if (!response.ok) {
-    //     throw new Error('Failed to update user');
-    //   }
-    //
-    //   const data = await response.json();
-    //   onUserUpdated(data); // Update user in list
-    //
-    //   setLoading(false);
-    //   onClose();
-    //   alert('User updated successfully!');
-    //
-    // } catch (err) {
-    //   console.error('Error updating user:', err);
-    //   setError('Failed to update user. Please try again.');
-    //   setLoading(false);
-    // }
-    // ======================================================================
+      setLoading(false);
+      onClose();
+    } catch (err) {
+      console.error("Error updating user:", err);
+      setError("Failed to update user. Please try again.");
+      setLoading(false);
+    }
   };
 
   if (!isOpen || !user) return null;
@@ -144,19 +110,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Email *</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Enter email address"
-            />
-          </div>
-
-          <div className="form-group">
+          <div className="form-groupw">
             <label>Phone Number</label>
             <input
               type="tel"
@@ -167,34 +121,15 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Role *</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Account Status *</label>
-            <select
-              name="accountStatus"
-              value={formData.accountStatus}
-              onChange={handleChange}
-              required
-            >
-              <option value="Active">Active</option>
-              <option value="Suspended">Suspended</option>
-              <option value="Banned">Banned</option>
-            </select>
-          </div>
-
-          <div className="modal-actions">
+          <div
+            className="modal-actions"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
             <button type="submit" className="btn-submit" disabled={loading}>
               {loading ? "Updating..." : "Update User"}
             </button>

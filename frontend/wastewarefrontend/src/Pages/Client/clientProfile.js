@@ -50,10 +50,10 @@ const ProfilePage = () => {
     navigate("/client/edit-profile");
   };
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
-  }, [navigate]);
+  }, [user_type, navigate]);
   // Loading state
   if (isLoadingUser) {
     return (

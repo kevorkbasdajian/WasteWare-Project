@@ -86,8 +86,6 @@ class Companies(models.Model):
     password_hash = models.TextField()
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
-    license_number = models.CharField(max_length=50, null=True, blank=True)
-    verification_status = models.CharField(max_length=20, default='pending')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 

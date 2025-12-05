@@ -20,7 +20,7 @@ const CompanyDashboard = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (user_type && user_type !== "company") {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
       navigate(-1);
     }
   }, [navigate]);
@@ -87,7 +87,11 @@ const CompanyDashboard = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
       <HeaderBox
         text="Company Dashboard"
         gradientColors={["#F97316 30%", "#EF4444 100%"]}

@@ -53,7 +53,7 @@ const ClientMap = () => {
   }, [accessToken, navigate]);
 
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
   }, [user_type, navigate]);

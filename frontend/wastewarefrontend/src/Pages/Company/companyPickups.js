@@ -137,11 +137,11 @@ const CompanyPickups = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     navigate(-1);
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -463,7 +463,11 @@ const CompanyPickups = () => {
   };
   return (
     <div className="skeleton">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
       <HeaderBox
         text="Create Pickup & Track"
         gradientColors={["#F97316 30%", "#F59E0B 100%"]}

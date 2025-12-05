@@ -88,11 +88,11 @@ const CompanySchedule = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     navigate(-1);
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   const fetchSchedules = async () => {
     try {
@@ -229,6 +229,22 @@ const CompanySchedule = () => {
     setsnackbar(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/api/auth/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (err) {
+      console.error("Logout request failed", err);
+    } finally {
+      clearAuth();
+      navigate("/Login");
+    }
+  };
+
   return (
     <div
       style={{
@@ -237,7 +253,11 @@ const CompanySchedule = () => {
         padding: "2rem",
       }}
     >
-      <Navbar links={links} />
+      <Navbar
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
       <div className="headerr">
         <HeaderBox
           text="Company Schedule"

@@ -88,6 +88,12 @@ const CompanyNotifications = () => {
   }, [navigate, accessToken]);
 
   useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     if (accessToken) {
       fetchRecentNotifications();
     }
@@ -297,7 +303,11 @@ const CompanyNotifications = () => {
 
   return (
     <div className="skeleton">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
       <HeaderBox
         text="Notifications"
         gradientColors={["#0288D1 30%", "#26C6DA 100%"]}

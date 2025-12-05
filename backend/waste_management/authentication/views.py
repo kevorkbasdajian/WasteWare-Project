@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,viewsets
-from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer,ProfileSerializer, UserManagementSerializer, UserUpdateSerializer,NotificationSerializer, CreateNotificationSerializer,UserBasicSerializer
+from .serializers import UserSignupSerializer, CompanySignupSerializer, LoginSerializer, AdminSignupSerializer,AddressSerializer,ProfileSerializer, UserManagementSerializer, UserUpdateSerializer,NotificationSerializer, CreateNotificationSerializer,UserBasicSerializer,CompanyManagementSerializer,CompanyCreateSerializer, CompanyUpdateSerializer,CompanyProfileSerializer,CompanyProfileUpdateSerializer
 from .models import Users, Companies, Roles,Addresses,Notifications
 from .utils import verify_password
 from django.contrib.auth import authenticate
@@ -10,6 +10,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .jwt_auth import CustomJWTAuthentication
 from rest_framework.decorators import action
 from django.db.models import Q
+from .utils import hash_password
+
+
 
 
 
@@ -286,192 +289,10 @@ class UpdateProfileView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# --------------------------
-# User Management List View (GET all users)
-# --------------------------
-class UserManagementListView(APIView):
-    """
-    GET: Return list of all users for admin management table
-    Admin only endpoint
-    """
-    permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
-    
-    def get(self, request):
-        # ============ MOCK DATA (CURRENTLY ACTIVE) ============
-        # Mock user list matching the screenshot
-        # mock_users = [
-        #     {
-        #         'user_id': 1,
-        #         'full_name': 'Rafik Mikkawi',
-        #         'email': 'rafik@gmail.com',
-        #         'phone_number': '70082111',
-        #         'role': 'admin',
-        #         'account_status': 'Active',
-        #         'created_at': '2024-01-15T10:30:00Z',
-        #         'points_balance': 2500
-        #     },
-        #     {
-        #         'user_id': 2,
-        #         'full_name': 'Kevork Basdajian',
-        #         'email': 'Kevork@gmail.com',
-        #         'phone_number': '76627028',
-        #         'role': 'user',
-        #         'account_status': 'Active',
-        #         'created_at': '2024-02-20T14:22:00Z',
-        #         'points_balance': 1247
-        #     },
-        #     {
-        #         'user_id': 3,
-        #         'full_name': 'Christian Alam',
-        #         'email': 'Chris@gmail.com',
-        #         'phone_number': '71191268',
-        #         'role': 'user',
-        #         'account_status': 'Active',
-        #         'created_at': '2024-03-10T09:15:00Z',
-        #         'points_balance': 890
-        #     },
-        #     {
-        #         'user_id': 4,
-        #         'full_name': 'Sarah Johnson',
-        #         'email': 'sarah.j@gmail.com',
-        #         'phone_number': '70123456',
-        #         'role': 'user',
-        #         'account_status': 'Suspended',
-        #         'created_at': '2024-01-05T11:00:00Z',
-        #         'points_balance': 450
-        #     },
-        #     {
-        #         'user_id': 5,
-        #         'full_name': 'Mike Anderson',
-        #         'email': 'mike.a@gmail.com',
-        #         'phone_number': '76789012',
-        #         'role': 'user',
-        #         'account_status': 'Active',
-        #         'created_at': '2024-04-01T16:45:00Z',
-        #         'points_balance': 1580
-        #     }
-        # ]
-        
-        # return Response(mock_users, status=status.HTTP_200_OK)
-        # ======================================================
-        
-        # ============ REAL API (COMMENTED OUT - USE LATER) ============
-        # Uncomment when ready to use real database
-        # 
-        try:
-            # Fetch all users from database
-            users = Users.objects.all().order_by('-created_at')
-            
-            # Serialize the data
-            serializer = UserManagementSerializer(users, many=True)
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response(
-                {'error': 'Failed to fetch users', 'detail': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        # ==============================================================
 
 
 # Replace the existing UserUpdateView in your views.py with this:
 
-# --------------------------
-# User Update View (PUT - update user info)
-# --------------------------
-class UserUpdateView(APIView):
-    """
-    PUT: Update user information including name, email, phone, role, and status
-    Admin only endpoint
-    """
-    permission_classes = [IsAuthenticated]
-    
-    def put(self, request, user_id):
-        try:
-            # Get user from database
-            user = Users.objects.get(user_id=user_id)
-            
-            # Update using serializer
-            serializer = UserUpdateSerializer(user, data=request.data, partial=True)
-            
-            if serializer.is_valid():
-                updated_user = serializer.save()
-                
-                # Return updated user data in the format expected by frontend
-                response_data = UserManagementSerializer(updated_user).data
-                
-                return Response(
-                    {
-                        'message': 'User updated successfully',
-                        'user': response_data
-                    },
-                    status=status.HTTP_200_OK
-                )
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        except Users.DoesNotExist:
-            return Response(
-                {'error': 'User not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            return Response(
-                {'error': 'Failed to update user', 'detail': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-# --------------------------
-# User Delete View (DELETE)
-# --------------------------
-class UserDeleteView(APIView):
-    """
-    DELETE: Delete a user from the system
-    Admin only endpoint
-    """
-    permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
-    
-    def delete(self, request, user_id):
-    #     # ============ MOCK RESPONSE (CURRENTLY ACTIVE) ============
-    #     # Mock successful deletion
-    #     print(f"Mock: Deleting user {user_id}")
-        
-    #     return Response(
-    #         {
-    #             'message': 'User deleted successfully',
-    #             'user_id': user_id
-    #         },
-    #         status=status.HTTP_200_OK
-    #     )
-        # ==========================================================
-        
-        # ============ REAL API (COMMENTED OUT - USE LATER) ============
-        # Uncomment when ready to use real database
-        # 
-        try:
-            # Get user from database
-            user = Users.objects.get(user_id=user_id)
-            
-            # Delete user
-            user.delete()
-            
-            return Response(
-                {'message': 'User deleted successfully'},
-                status=status.HTTP_200_OK
-            )
-            
-        except Users.DoesNotExist:
-            return Response(
-                {'error': 'User not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            return Response(
-                {'error': 'Failed to delete user', 'detail': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        # ==============================================================
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -666,5 +487,405 @@ class UserListViewSet(viewsets.ReadOnlyModelViewSet):
             )
         
         return queryset.select_related('address')
+
+
+        # try:
+        #     # Get user from database
+        #     user = Users.objects.get(user_id=user_id)
+        #     
+        #     # Delete user
+        #     user.delete()
+        #     
+        #     return Response(
+        #         {'message': 'User deleted successfully'},
+        #         status=status.HTTP_200_OK
+        #     )
+        #     
+        # except Users.DoesNotExist:
+        #     return Response(
+        #         {'error': 'User not found'},
+        #         status=status.HTTP_404_NOT_FOUND
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {'error': 'Failed to delete user', 'detail': str(e)},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
+        # ==============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------------------
+# Company Profile View (GET and PUT)
+# --------------------------
+class CompanyProfileView(APIView):
+    """
+    GET: Return company profile data
+    PUT: Update company profile data
+    Company only endpoint
+    """
+    permission_classes = [IsAuthenticated]  
+    
+    def get(self, request):        
+        try:
+            # Get authenticated company user
+            print("Rafik farik",request.user)
+            user = request.user
+            
+            # Serialize the data
+            serializer = CompanyProfileSerializer(user)
+            
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to fetch profile', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request):
+        
+        try:
+            # Get authenticated company user
+            user = request.user
+            
+            # Update using serializer
+            serializer = CompanyProfileUpdateSerializer(user, data=request.data, partial=True)
+            
+            if serializer.is_valid():
+                serializer.save()
+                
+                # Return updated profile
+                profile_serializer = CompanyProfileSerializer(user)
+                return Response(
+                    {
+                        'message': 'Profile updated successfully',
+                        'profile': profile_serializer.data
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to update profile', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+
+#For Admin 
+class CompanyCreateView(APIView):
+    """
+    POST: Create a new company
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            # Use serializer for validation and creation
+            serializer = CompanyCreateSerializer(data=request.data)
+            
+            if not serializer.is_valid():
+                return Response(
+                    {'error': serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create company
+            company = serializer.save()
+            
+            # Return created company data
+            response_serializer = CompanyManagementSerializer(company)
+            
+            return Response(
+                {
+                    'message': 'Company created successfully',
+                    'company': response_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to create company', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# --------------------------
+# Company Update View
+# --------------------------
+class CompanyUpdateView(APIView):
+    """
+    PUT: Update company information
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request, company_id):
+        try:
+            # Get company from Companies table
+            company = Companies.objects.get(company_id=company_id)
+            
+            # Update using serializer
+            serializer = CompanyUpdateSerializer(company, data=request.data, partial=True)
+            
+            if not serializer.is_valid():
+                return Response(
+                    {'error': serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Save updates
+            updated_company = serializer.save()
+            
+            # Return updated company data
+            response_serializer = CompanyManagementSerializer(updated_company)
+            
+            return Response(
+                {
+                    'message': 'Company updated successfully',
+                    'company': response_serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except Companies.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to update company', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# --------------------------
+# Company Delete View
+# --------------------------
+class CompanyDeleteView(APIView):
+    """
+    DELETE: Delete a company from the system
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request, company_id):
+        try:
+            # Get company from Companies table
+            company = Companies.objects.get(company_id=company_id)
+            
+            # Delete company
+            company.delete()
+            
+            return Response(
+                {'message': 'Company deleted successfully'},
+                status=status.HTTP_200_OK
+            )
+            
+        except Companies.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to delete company', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# --------------------------
+# Company List View
+# --------------------------
+class CompanyManagementListView(APIView):
+    """
+    GET: Return list of all companies for admin management table
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            # Fetch all companies from Companies table
+            companies = Companies.objects.all().order_by('-created_at')
+            
+            # Serialize the data
+            serializer = CompanyManagementSerializer(companies, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to fetch companies', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# --------------------------
+# User Management List View (GET all users)
+# --------------------------
+class UserManagementListView(APIView):
+    """
+    GET: Return list of all users for admin management table
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
+    
+    def get(self, request):
+       
+        
+
+        try:
+            # Fetch all users from database
+            users = Users.objects.all().order_by('-created_at')
+            
+            # Serialize the data
+            serializer = UserManagementSerializer(users, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to fetch users', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        # ==============================================================
+
+
+# --------------------------
+# User Update View (PUT - update user info)
+# --------------------------
+class UserUpdateView(APIView):
+    """
+    PUT: Update user information including name, email, phone, role, and status
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request, user_id):
+        try:
+            # Get user from database
+            user = Users.objects.get(user_id=user_id)
+            
+            # Update using serializer
+            serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+            
+            if serializer.is_valid():
+                updated_user = serializer.save()
+                
+                # Return updated user data in the format expected by frontend
+                response_data = UserManagementSerializer(updated_user).data
+                
+                return Response(
+                    {
+                        'message': 'User updated successfully',
+                        'user': response_data
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Users.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to update user', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+# --------------------------
+# User Delete View (DELETE)
+# --------------------------
+class UserDeleteView(APIView):
+    """
+    DELETE: Delete a user from the system
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
+    
+    def delete(self, request, user_id):
+    #     # ============ MOCK RESPONSE (CURRENTLY ACTIVE) ============
+    #     # Mock successful deletion
+    #     print(f"Mock: Deleting user {user_id}")
+        
+    #     return Response(
+    #         {
+    #             'message': 'User deleted successfully',
+    #             'user_id': user_id
+    #         },
+    #         status=status.HTTP_200_OK
+    #     )
+        # ==========================================================
+        
+        # ============ REAL API (COMMENTED OUT - USE LATER) ============
+        # Uncomment when ready to use real database
+        # 
+        try:
+            # Get user from database
+            user = Users.objects.get(user_id=user_id)
+            
+            # Delete user
+            user.delete()
+            
+            return Response(
+                {'message': 'User deleted successfully'},
+                status=status.HTTP_200_OK
+            )
+            
+        except Users.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to delete user', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        # ==============================================================
+
+class AdminCreateUserView(APIView):
+    permission_classes = [IsAuthenticated]  
+
+    def post(self, request):
+        serializer = UserSignupSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            user = serializer.save()
+            response_serializer = UserManagementSerializer(user)
+            return Response(
+                {
+                    'message': 'user created successfully',
+                    'user': response_serializer.data
+
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 

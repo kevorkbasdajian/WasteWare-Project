@@ -191,73 +191,7 @@ class UserManagementSerializer(serializers.ModelSerializer):
         return "user"
 
 
-# --------------------------
-# User Update Serializer (for Admin) - UPDATED
-# --------------------------
-class UserUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for updating user information.
-    Admin can change: first_name, last_name, email, phone_number, role, account_status
-    """
-    role_name = serializers.CharField(write_only=True, required=False)
-    first_name = serializers.CharField(required=False)
-    last_name = serializers.CharField(required=False)
-    email = serializers.EmailField(required=False)
-    phone_number = serializers.CharField(required=False, allow_blank=True)
-    account_status = serializers.CharField(required=False)
-    
-    class Meta:
-        model = Users
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'account_status', 'role_name']
-    
-    def validate_email(self, value):
-        """Check if email is already taken by another user"""
-        user_id = self.instance.user_id if self.instance else None
-        if Users.objects.filter(email=value).exclude(user_id=user_id).exists():
-            raise serializers.ValidationError("This email is already in use by another user.")
-        return value
-    
-    def validate_account_status(self, value):
-        """Validate and normalize account status"""
-        # Accept both capitalized and lowercase
-        valid_statuses = ['active', 'suspended', 'inactive', 'banned']
-        normalized = value.lower()
-        
-        if normalized not in valid_statuses:
-            raise serializers.ValidationError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
-        
-        return normalized  # Store as lowercase in database
-    
-    def update(self, instance, validated_data):
-        # Update basic fields
-        if 'first_name' in validated_data:
-            instance.first_name = validated_data['first_name']
-        
-        if 'last_name' in validated_data:
-            instance.last_name = validated_data['last_name']
-        
-        if 'email' in validated_data:
-            instance.email = validated_data['email']
-        
-        if 'phone_number' in validated_data:
-            instance.phone_number = validated_data['phone_number']
-        
-        # Update account status
-        if 'account_status' in validated_data:
-            instance.account_status = validated_data['account_status']
-        
-        # Update role
-        if 'role_name' in validated_data:
-            role_name = validated_data.pop('role_name')
-            try:
-                # Handle both "Client" and "Admin" from frontend
-                role = Roles.objects.get(role_name=role_name)
-                instance.role = role
-            except Roles.DoesNotExist:
-                raise serializers.ValidationError(f"Role '{role_name}' does not exist")
-        
-        instance.save()
-        return instance
+
     
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -374,3 +308,230 @@ class UserBasicSerializer(serializers.ModelSerializer):
     
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
+
+
+
+
+
+# --------------------------
+# User Update Serializer (for Admin) - UPDATED
+# --------------------------
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user information.
+    Admin can change: first_name, last_name, email, phone_number, role, account_status
+    """
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    
+    class Meta:
+        model = Users
+        fields = ['first_name', 'last_name', 'phone_number',]
+    
+    def validate_email(self, value):
+        """Check if email is already taken by another user"""
+        user_id = self.instance.user_id if self.instance else None
+        if Users.objects.filter(email=value).exclude(user_id=user_id).exists():
+            raise serializers.ValidationError("This email is already in use by another user.")
+        return value
+    
+    def validate_account_status(self, value):
+        """Validate and normalize account status"""
+        # Accept both capitalized and lowercase
+        valid_statuses = ['active', 'suspended', 'inactive', 'banned']
+        normalized = value.lower()
+        
+        if normalized not in valid_statuses:
+            raise serializers.ValidationError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+        
+        return normalized  # Store as lowercase in database
+    
+    def update(self, instance, validated_data):
+        # Update basic fields
+        if 'first_name' in validated_data:
+            instance.first_name = validated_data['first_name']
+        
+        if 'last_name' in validated_data:
+            instance.last_name = validated_data['last_name']
+        
+        
+        
+        if 'phone_number' in validated_data:
+            instance.phone_number = validated_data['phone_number']
+        
+        # Update account status
+        if 'account_status' in validated_data:
+            instance.account_status = validated_data['account_status']
+        
+        instance.save()
+        return instance
+
+
+
+class CompanyManagementSerializer(serializers.ModelSerializer):
+    """
+    Serializer for admin company management.
+    Returns all company data needed for the admin table.
+    """
+    
+    # role = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Companies  # ← CHANGED from Users to Companies
+        fields = [
+            'company_id',      # ← CHANGED from user_id
+            'company_name',
+            'email',
+            'phone_number',
+            'created_at',
+        ]
+    
+    def get_role(self, obj):
+        """Return a default role for companies"""
+        return "waste manager"
+
+
+# --------------------------
+# Company Create Serializer (for Admin)
+# --------------------------
+class CompanyCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating a new company
+    """
+    password = serializers.CharField(write_only=True, required=True, min_length=6)
+    
+    class Meta:
+        model = Companies
+        fields = ['company_name', 'email', 'phone_number', 'password']
+    
+    def validate_email(self, value):
+        """Check if email already exists"""
+        if Companies.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered.")
+        return value
+    
+    def create(self, validated_data):
+        """Create company with hashed password"""
+        from .utils import hash_password
+        
+        password = validated_data.pop('password')
+        validated_data['password_hash'] = hash_password(password)
+        
+        return Companies.objects.create(**validated_data)
+
+
+# --------------------------
+# Company Update Serializer (for Admin)
+# --------------------------
+class CompanyUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating company info.
+    Admin can change: company name, email, phone, status
+    """
+    
+    class Meta:
+        model = Companies
+        fields = ['company_name',  'phone_number']
+    
+    # def validate_email(self, value):
+    #     """Check if email is taken by another company"""
+    #     company_id = self.instance.company_id if self.instance else None
+    #     if Companies.objects.filter(email=value).exclude(company_id=company_id).exists():
+    #         raise serializers.ValidationError("This email is already in use by another company.")
+    #     return value
+    
+    # def validate_account_status(self, value):
+    #     """Validate and normalize account status"""
+    #     valid_statuses = ['active', 'suspended', 'inactive', 'banned']
+    #     normalized = value.lower()
+        
+    #     if normalized not in valid_statuses:
+    #         raise serializers.ValidationError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+        
+    #     return normalized
+    
+    def update(self, instance, validated_data):
+        """Update company fields"""
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        
+        instance.save()
+        return instance
+
+
+
+
+
+
+
+
+# --------------------------
+# Company Profile Serializer
+# --------------------------
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for company profile page.
+    Returns company profile data and contact person information.
+    """
+    
+    company_name = serializers.SerializerMethodField()
+    address = AddressSerializer(read_only=True) 
+
+    
+    class Meta:
+        model = Companies
+        fields = [
+            'company_id',
+            'company_name',
+            'email',
+            'phone_number',
+            'address',
+            'created_at',
+        ]
+    
+    def get_company_name(self, obj):
+        """Return company name (stored in first_name for companies)"""
+        return obj.company_name
+
+    
+    # def get_avatar(self, obj):
+    #     """Return avatar URL or default"""
+    #     if obj.profile_image:
+    #         return obj.profile_image.url
+    #     return None
+
+
+# --------------------------
+# Company Profile Update Serializer
+# --------------------------
+class CompanyProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating company profile information.
+    """
+    company_name = serializers.CharField(write_only=True, required=False)
+    
+    class Meta:
+        model = Companies
+        fields = [
+            'company_name',
+            'email',
+            'phone_number',
+            'address',
+        ]
+    
+    def update(self, instance, validated_data):
+        # Update company name
+        if 'company_name' in validated_data:
+            instance.first_name = validated_data.pop('company_name')
+        
+         # Update contact person name
+        # if 'contact_person_name' in validated_data:
+        #     instance.last_name = validated_data.pop('contact_person_name')
+        
+        # Update other fields
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        
+        instance.save()
+        return instance

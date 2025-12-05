@@ -76,11 +76,11 @@ const CompanyReports = () => {
     }
   }, [navigate, accessToken]);
 
-  // useEffect(() => {
-  //   if (user_type && user_type !== "company") {
-  //     navigate(-1);
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (user_type && user_type !== "company" && user_type !== "admin") {
+      navigate(-1);
+    }
+  }, [navigate]);
 
   // Fetch reports when authenticated
   useEffect(() => {
@@ -209,7 +209,11 @@ const CompanyReports = () => {
 
   return (
     <div className="page">
-      <Navbar links={links} onLogout={handleLogout} />
+      <Navbar
+        links={links}
+        onLogout={handleLogout}
+        profilePath="/company/profile"
+      />
 
       <HeaderBox text="Report Dashboard" gradientColors={"--gradient-purple"} />
 

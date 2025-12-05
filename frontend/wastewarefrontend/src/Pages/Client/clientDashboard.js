@@ -111,7 +111,6 @@ const Dashboard = () => {
     },
   ];
 
-  // ALL HOOKS MUST COME BEFORE ANY CONDITIONAL RETURNS
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
@@ -119,7 +118,7 @@ const Dashboard = () => {
   }, [accessToken, navigate]);
 
   useEffect(() => {
-    if (user_type && user_type !== "user") {
+    if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
   }, [user_type, navigate]);
