@@ -32,4 +32,5 @@ urlpatterns = [
     path('admin/companies/<int:company_id>/delete/', CompanyDeleteView.as_view(), name='admin-company-delete'),
 
     path('company/profile/', CompanyProfileView.as_view(), name='company-profile'),
+    
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
