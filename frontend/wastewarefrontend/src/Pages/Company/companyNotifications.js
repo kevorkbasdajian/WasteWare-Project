@@ -315,7 +315,7 @@ const CompanyNotifications = () => {
       />
       <HeaderBox
         text="Notifications"
-        gradientColors={["#0288D1 30%", "#26C6DA 100%"]}
+        gradientColors={"--gradient-green-blue"}
       />
 
       <div className="notifications-page-container">

@@ -1,11 +1,14 @@
 @import "../Base/fonts.css";
 @import "../Base/colors.css";
-/* @import "../Base/glass.css"; */
 
-/* Main Container - Dark Mode */
+/* ===== LIGHT MODE STYLES ===== */
+
+/* Main Container */
 .schedule-container {
   min-height: 100vh;
   padding: 2rem;
+  background: #f8fafc;
+  color: #1e293b;
 }
 
 /* Header */
@@ -27,22 +30,22 @@
   align-items: flex-start;
 }
 
-/* Form Card - Dark Mode */
+/* Form Card */
 .schedule-form-card {
   flex: 1;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.5);
   transition: all 0.3s ease;
 }
 
 .schedule-form-card:hover {
-  box-shadow: 0 15px 40px rgba(2, 136, 209, 0.3);
+  box-shadow: 0 15px 40px rgba(2, 136, 209, 0.15);
   transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.4);
+  border-color: rgba(56, 189, 248, 0.3);
 }
 
 .form-card-header {
@@ -51,23 +54,24 @@
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+  border-bottom: 2px solid rgba(226, 232, 240, 0.8);
 }
 
 .form-card-header i {
-  font-size: 1.5rem;
-  color: #38bdf8;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  font-size: 1.75rem;
+  color: #0284c7;
+  filter: drop-shadow(0 0 8px rgba(2, 132, 199, 0.3));
+  transition: all 0.3s ease;
 }
 
 .form-card-header h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e0f2fe;
+  color: #0f172a;
   margin: 0;
 }
 
-/* Form Styling - Dark Mode */
+/* Form Styling */
 .schedule-form {
   display: flex;
   flex-direction: column;
@@ -95,35 +99,38 @@
 .form-label {
   display: flex;
   align-items: center;
-  gap: 1rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #475569;
   font-size: 0.95rem;
 }
 
 .form-label i {
-  color: #38bdf8;
+  color: var(--clean-blue);
   font-size: 0.9rem;
+}
+
+.form-label i:before {
+  padding: 5px;
 }
 
 .form-input,
 .form-textarea {
   padding: 0.875rem 1.25rem;
   border-radius: 12px;
-  border: 2px solid rgba(71, 85, 105, 0.5);
+  border: 2px solid #e2e8f0;
   outline: none;
   font-size: 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
+  background: #f1f5f9;
+  color: #1e293b;
   transition: all 0.3s ease;
   font-family: inherit;
 }
 
 .form-input:focus,
 .form-textarea:focus {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-  background: rgba(15, 23, 42, 0.8);
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.1);
+  background: #ffffff;
 }
 
 .form-input:hover,
@@ -133,11 +140,11 @@
 
 .form-input.error {
   border-color: #ef4444;
-  background: rgba(127, 29, 29, 0.3);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 .form-input.error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .form-textarea {
@@ -146,7 +153,7 @@
 }
 
 .error-text {
-  color: #fca5a5;
+  color: #dc2626;
   font-size: 0.85rem;
   font-weight: 500;
   display: flex;
@@ -158,9 +165,10 @@
 /* Form Actions */
 .form-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1rem;
   margin-top: 1rem;
+  width: 100%;
 }
 
 .btn-primary,
@@ -168,6 +176,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   gap: 0.75rem;
   padding: 1rem 2rem;
   border-radius: 12px;
@@ -211,16 +221,16 @@
   transform: translateY(0);
 }
 
-/* Schedule View Card - Dark Mode */
+/* Schedule View Card */
 .schedule-view-card {
   flex: 0.9;
-  background: rgba(2, 136, 209, 0.15);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  color: #1e293b;
 }
 
 .daily-schedule-header {
@@ -236,35 +246,34 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  color: #e0f2fe;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  color: #0f172a;
 }
 
 .daily-schedule-header i {
   font-size: 1.5rem;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  color: #0284c7;
 }
 
-/* Date Navigation - Dark Mode */
+/* Date Navigation */
 .date-navigation {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(241, 245, 249, 0.8);
   backdrop-filter: blur(10px);
   padding: 1rem 1.5rem;
   border-radius: 15px;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .date-nav-btn {
-  background: rgba(56, 189, 248, 0.2);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(2, 132, 199, 0.1);
+  border: 1px solid rgba(2, 132, 199, 0.2);
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  color: #e0f2fe;
+  color: #0284c7;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -274,10 +283,10 @@
 }
 
 .date-nav-btn:hover {
-  background: rgba(56, 189, 248, 0.4);
-  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(2, 132, 199, 0.2);
+  border-color: rgba(2, 132, 199, 0.4);
   transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 20px rgba(2, 132, 199, 0.2);
 }
 
 .date-nav-btn:active {
@@ -290,25 +299,25 @@
   gap: 0.75rem;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #e0f2fe;
+  color: #0f172a;
 }
 
 .current-date i {
   font-size: 1.1rem;
-  color: #38bdf8;
+  color: #0284c7;
 }
 
-/* Status Legend - Dark Mode */
+/* Status Legend */
 .status-legend {
   display: flex;
   justify-content: center;
   gap: 2rem;
   margin-bottom: 2rem;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(241, 245, 249, 0.8);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .legend-item {
@@ -317,7 +326,7 @@
   gap: 0.5rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #cbd5e1;
+  color: #475569;
 }
 
 .legend-dot {
@@ -339,7 +348,7 @@
   background: #10b981;
 }
 
-/* Time Display - Dark Mode */
+/* Time Display */
 .time-display {
   display: flex;
   justify-content: center;
@@ -349,11 +358,11 @@
 .time-circle {
   background: linear-gradient(
     135deg,
-    rgba(15, 23, 42, 0.8),
-    rgba(30, 41, 59, 0.8)
+    rgba(241, 245, 249, 0.9),
+    rgba(255, 255, 255, 0.9)
   );
   backdrop-filter: blur(10px);
-  color: #e0f2fe;
+  color: #0284c7;
   border-radius: 50%;
   width: 180px;
   height: 180px;
@@ -361,10 +370,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
-  border: 2px solid rgba(56, 189, 248, 0.3);
+  border: 2px solid rgba(2, 132, 199, 0.2);
 }
 
 .time-circle::before {
@@ -374,7 +383,7 @@
   background: var(--gradient-clean-blue);
   border-radius: 50%;
   z-index: -1;
-  opacity: 0.5;
+  opacity: 0.3;
   filter: blur(10px);
 }
 
@@ -382,24 +391,23 @@
   font-size: 2rem;
   margin-bottom: 0.5rem;
   opacity: 0.5;
-  color: #38bdf8;
+  color: #0284c7;
 }
 
 .current-time {
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1;
-  color: #e0f2fe;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+  color: #0284c7;
 }
 
 .greeting {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #64748b;
   margin-top: 0.5rem;
 }
 
-/* Schedule List - Dark Mode */
+/* Schedule List */
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -410,20 +418,21 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(15, 23, 42, 0.6);
+  background: #f8fafc;
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 0.5rem;
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid rgba(71, 85, 105, 0.3);
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
 }
 
 .schedule-item:hover {
-  background: rgba(15, 23, 42, 0.9);
+  background: #f1f5f9;
   transform: translateX(5px);
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
-  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 20px rgba(2, 136, 209, 0.1);
+  border-color: rgba(2, 132, 199, 0.3);
 }
 
 .schedule-time-badge {
@@ -449,13 +458,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  color: #e2e8f0;
 }
 
 .schedule-title {
   font-weight: 600;
   font-size: 1.05rem;
-  color: #f1f5f9;
+  color: #0f172a;
 }
 
 .schedule-duration {
@@ -463,7 +471,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .schedule-duration i {
@@ -494,40 +502,36 @@
   }
 }
 
-/* No Schedules State - Dark Mode */
+/* No Schedules State */
 .no-schedules {
   text-align: center;
   padding: 3rem 2rem;
-  color: rgba(226, 232, 240, 0.9);
+  color: #475569;
 }
 
 .no-schedules i {
   font-size: 4rem;
   margin-bottom: 1rem;
   opacity: 0.3;
-  color: #38bdf8;
+  color: #0284c7;
 }
 
 .no-schedules p {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #cbd5e1;
+  color: #334155;
 }
 
 .no-schedules span {
   font-size: 0.95rem;
   opacity: 0.7;
-  color: #94a3b8;
+  color: #64748b;
 }
 
-/* Modal Styles - Dark Mode */
+/* Modal Styles */
 .modal-content {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.95),
-    rgba(30, 41, 59, 0.95)
-  );
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 2.5rem;
@@ -536,16 +540,17 @@
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  color: #1e293b;
 }
 
 .modal-close-btn {
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
-  background: rgba(71, 85, 105, 0.5);
-  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(203, 213, 225, 0.5);
   border-radius: 50%;
   width: 45px;
   height: 45px;
@@ -554,7 +559,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #cbd5e1;
+  color: #475569;
 }
 
 .modal-close-btn:hover {
@@ -571,14 +576,14 @@
   gap: 1rem;
   font-size: 2rem;
   font-weight: 700;
-  color: #e0f2fe;
+  color: #0f172a;
   margin-bottom: 2rem;
 }
 
 .modal-title i {
   font-size: 1.75rem;
-  color: #38bdf8;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  color: #0284c7;
+  filter: drop-shadow(0 0 8px rgba(2, 132, 199, 0.3));
 }
 
 .modal-body {
@@ -591,280 +596,42 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .loading-state i {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #38bdf8;
-  filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.5));
+  color: #0284c7;
+  filter: drop-shadow(0 0 15px rgba(2, 132, 199, 0.3));
 }
 
 .loading-state p {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #cbd5e1;
+  color: #475569;
 }
 
-/* Custom Scrollbar for Dark Mode */
+/* Custom Scrollbar */
 .modal-content::-webkit-scrollbar {
   width: 10px;
 }
 
 .modal-content::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(241, 245, 249, 0.5);
   border-radius: 10px;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.3);
+  background: rgba(2, 132, 199, 0.3);
   border-radius: 10px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.5);
+  background: rgba(2, 132, 199, 0.5);
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .schedule-content {
-    flex-direction: column;
-  }
-
-  .schedule-form-card,
-  .schedule-view-card {
-    flex: 1;
-    width: 100%;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .schedule-container {
-    padding: 1rem;
-  }
-
-  .form-card-header h3 {
-    font-size: 1.25rem;
-  }
-
-  .daily-schedule-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .status-legend {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .time-circle {
-    width: 150px;
-    height: 150px;
-  }
-
-  .current-time {
-    font-size: 2rem;
-  }
-
-  .schedule-time-badge {
-    min-width: 90px;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-  }
-
-  .modal-content {
-    padding: 1.5rem;
-  }
-
-  .modal-title {
-    font-size: 1.5rem;
-  }
-}
-
-/* ===== DARK MODE STYLES ===== */
-body.dark-mode .schedule-container {
-  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
-  color: #e2e8f0;
-}
-
-body.dark-mode .schedule-form-card {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #e2e8f0;
-}
-
-body.dark-mode .schedule-form-card:hover {
-  box-shadow: 0 15px 40px rgba(2, 136, 209, 0.3);
-  border-color: rgba(56, 189, 248, 0.4);
-}
-
-body.dark-mode .form-label {
-  color: #cbd5e1;
-}
-
-body.dark-mode .form-input,
-body.dark-mode .form-textarea {
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
-  border-color: rgba(71, 85, 105, 0.5);
-}
-
-body.dark-mode .form-input:focus,
-body.dark-mode .form-textarea:focus {
-  border-color: #38bdf8;
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-}
-
-body.dark-mode .schedule-view-card {
-  background: rgba(2, 136, 209, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #e2e8f0;
-}
-
-body.dark-mode .schedule-item {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(71, 85, 105, 0.3);
-  color: #e2e8f0;
-}
-
-body.dark-mode .schedule-item:hover {
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
-}
-
-body.dark-mode .modal-content {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.95),
-    rgba(30, 41, 59, 0.95)
-  );
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #e2e8f0;
-}
-
-body.dark-mode .form-card-header h3 {
-  color: #e0f2fe;
-  text-shadow: 0 2px 8px rgba(56, 189, 248, 0.2);
-}
-
-body:not(.dark-mode) .form-card-header h3 {
-  color: #0f172a;
-  text-shadow: none;
-}
-
-.form-card-header i {
-  font-size: 1.75rem;
-  transition: all 0.3s ease;
-}
-
-body.dark-mode .form-card-header i {
-  color: #38bdf8;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
-}
-
-body:not(.dark-mode) .form-card-header i {
-  color: #0284c7;
-  filter: drop-shadow(0 0 8px rgba(2, 132, 199, 0.3));
-}
-
-/* ===== LIGHT MODE STYLES ===== */
-body:not(.dark-mode) .schedule-container {
-  background: #f8fafc;
-  color: #1e293b;
-}
-
-body:not(.dark-mode) .schedule-form-card {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-}
-
-body:not(.dark-mode) .schedule-form-card:hover {
-  box-shadow: 0 15px 40px rgba(2, 136, 209, 0.15);
-  border-color: rgba(56, 189, 248, 0.3);
-}
-
-body:not(.dark-mode) .form-label {
-  color: #475569;
-  font-weight: 600;
-}
-
-body:not(.dark-mode) .form-input,
-body:not(.dark-mode) .form-textarea {
-  background: #f1f5f9;
-  color: #1e293b;
-  border-color: #e2e8f0;
-}
-
-body:not(.dark-mode) .form-input:focus,
-body:not(.dark-mode) .form-textarea:focus {
-  background: #ffffff;
-  border-color: #0284c7;
-  box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.1);
-}
-
-body:not(.dark-mode) .form-input.error,
-body:not(.dark-mode) .form-textarea.error {
-  background: rgba(239, 68, 68, 0.05);
-  border-color: #ef4444;
-}
-
-body:not(.dark-mode) .schedule-view-card {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  color: #1e293b;
-}
-
-body:not(.dark-mode) .schedule-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #1e293b;
-}
-
-body:not(.dark-mode) .schedule-item:hover {
-  background: #f1f5f9;
-  box-shadow: 0 4px 20px rgba(2, 136, 209, 0.1);
-}
-
-body:not(.dark-mode) .modal-content {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  color: #1e293b;
-}
-
-body:not(.dark-mode) .schedule-title {
-  color: #0f172a;
-}
-
-body:not(.dark-mode) .current-time {
-  color: #0284c7;
-  text-shadow: none;
-}
-
-body:not(.dark-mode) .schedule-duration {
-  color: #64748b;
-}
-
-body:not(.dark-mode) .legend-item {
-  color: #475569;
-}
-
-body:not(.dark-mode) .no-schedules p {
-  color: #334155;
-}
-
-body:not(.dark-mode) .error-text {
-  color: #dc2626;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1200px) {
   .schedule-content {
     flex-direction: column;
