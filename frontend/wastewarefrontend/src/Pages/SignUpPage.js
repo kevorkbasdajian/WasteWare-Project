@@ -75,7 +75,8 @@ export const SignUpPage = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const { password2, terms, ...payload } = values;
     set_is_loading(true);
-    let url = "http://localhost:8000/api/auth/signup/user/";
+    let url =
+      "wasteware-project-production.up.railway.app/api/auth/signup/user/";
 
     try {
       const response = await fetch(url, {
