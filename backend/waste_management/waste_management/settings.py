@@ -28,7 +28,7 @@ DEBUG = env.bool('DEBUG', default=True)
 
 # Detect if running on Railway
 IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
-CORS_ALLOW_ALL_ORIGINS = False  # Don't allow all origins in production
+CORS_ALLOW_ALL_ORIGINS = True  # Don't allow all origins in production
 
 if IS_RAILWAY:
     CORS_ALLOWED_ORIGINS = [
