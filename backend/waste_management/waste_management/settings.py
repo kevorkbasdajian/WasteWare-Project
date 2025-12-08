@@ -34,13 +34,14 @@ if IS_RAILWAY:
         '.railway.app',
         '.up.railway.app',
     ]
-    # Add your frontend domain here when you deploy it
+
     CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",  # Keep for local testing
-        # Add your frontend URL here, e.g., "https://your-frontend.vercel.app"
+        "http://localhost:3000",  
+        "https://waste-ware-project.vercel.app"
     ]
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
     ]
