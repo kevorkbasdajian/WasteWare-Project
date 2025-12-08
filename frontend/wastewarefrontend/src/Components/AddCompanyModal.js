@@ -31,7 +31,7 @@ const AddCompanyModal = ({ isOpen, onClose, onCompanyAdded }) => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/admin/companies/create/",
+        "https://wasteware-project-production.up.railway.app/api/auth/admin/companies/create/",
         {
           method: "POST",
           headers: {

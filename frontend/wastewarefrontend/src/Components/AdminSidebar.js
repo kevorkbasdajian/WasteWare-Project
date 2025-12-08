@@ -32,12 +32,15 @@ const AdminSidebar = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/logout/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (err) {
       console.error("Logout request failed", err);
     } finally {

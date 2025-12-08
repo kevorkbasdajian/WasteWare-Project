@@ -38,7 +38,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onCompanyUpdated }) => {
 
     try {
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/auth/admin/companies/${company.company_id}/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/admin/companies/${company.company_id}/`,
         {
           method: "PUT",
           headers: {

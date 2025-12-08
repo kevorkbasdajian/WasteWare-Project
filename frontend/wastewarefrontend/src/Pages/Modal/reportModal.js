@@ -241,7 +241,7 @@ const ReportModal = ({
                           src={
                             report.user.profile_image === ""
                               ? "https://ui-avatars.com/api/?name=User&background=random"
-                              : `http://localhost:8000${report.user.profile_image}`
+                              : `https://wasteware-project-production.up.railway.app${report.user.profile_image}`
                           }
                           alt={`${report.user.first_name} ${report.user.last_name}`}
                           className="user-avatar-image"
@@ -321,12 +321,12 @@ const ReportModal = ({
                     /* Handle single image_url - construct full URL */
                     <div className="report-image-wrapper">
                       <img
-                        src={`http://localhost:8000${report.image_url}`}
+                        src={`https://wasteware-project-production.up.railway.app${report.image_url}`}
                         alt="Report attachment"
                         className="report-image"
                         onClick={() =>
                           window.open(
-                            `http://localhost:8000${report.image_url}`,
+                            `https://wasteware-project-production.up.railway.app${report.image_url}`,
                             "_blank"
                           )
                         }

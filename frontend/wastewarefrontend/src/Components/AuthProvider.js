@@ -43,8 +43,8 @@ export function AuthProvider({ children }) {
     try {
       const endpoint =
         user_type === "company"
-          ? "http://localhost:8000/api/auth/company/profile/"
-          : "http://localhost:8000/api/auth/profile/";
+          ? "https://wasteware-project-production.up.railway.app/api/auth/company/profile/"
+          : "https://wasteware-project-production.up.railway.app/api/auth/profile/";
 
       const response = await fetch(endpoint, {
         method: "GET",
@@ -93,8 +93,8 @@ export function AuthProvider({ children }) {
       // Determine endpoint based on user_type
       const endpoint =
         user_type === "company"
-          ? "http://localhost:8000/api/auth/company/profile/"
-          : "http://localhost:8000/api/auth/profile/";
+          ? "https://wasteware-project-production.up.railway.app/api/auth/company/profile/"
+          : "https://wasteware-project-production.up.railway.app/api/auth/profile/";
 
       const response = await fetch(endpoint, {
         method: "GET",

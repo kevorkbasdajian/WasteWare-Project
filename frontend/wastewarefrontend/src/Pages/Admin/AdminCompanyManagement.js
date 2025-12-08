@@ -45,7 +45,7 @@ const AdminCompanyManagement = () => {
   const fetchCompanies = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/admin/companies/",
+        "https://wasteware-project-production.up.railway.app/api/auth/admin/companies/",
         { method: "GET" }
       );
 
@@ -130,7 +130,7 @@ const AdminCompanyManagement = () => {
       const token = localStorage.getItem("access_token");
 
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/auth/admin/companies/${companyId}/delete/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/admin/companies/${companyId}/delete/`,
         { method: "DELETE" }
       );
 

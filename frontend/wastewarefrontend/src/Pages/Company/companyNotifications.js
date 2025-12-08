@@ -102,12 +102,15 @@ const CompanyNotifications = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/logout/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (err) {
       console.error("Logout request failed", err);
     } finally {
@@ -120,7 +123,7 @@ const CompanyNotifications = () => {
     setLoadingNotifications(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/notifications/"
+        "https://wasteware-project-production.up.railway.app/api/auth/notifications/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -137,10 +140,10 @@ const CompanyNotifications = () => {
     setLoadingUsers(true);
     try {
       const url = search
-        ? `http://localhost:8000/api/auth/users/?search=${encodeURIComponent(
+        ? `https://wasteware-project-production.up.railway.app/api/auth/users/?search=${encodeURIComponent(
             search
           )}`
-        : "http://localhost:8000/api/auth/users/";
+        : "https://wasteware-project-production.up.railway.app/api/auth/users/";
 
       const response = await fetchWithAuth(url);
       if (response.ok) {
@@ -212,7 +215,7 @@ const CompanyNotifications = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/notifications/send_notification/",
+        "https://wasteware-project-production.up.railway.app/api/auth/notifications/send_notification/",
         {
           method: "POST",
           headers: {
@@ -308,7 +311,7 @@ const CompanyNotifications = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `hhttps://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"

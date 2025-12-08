@@ -51,7 +51,7 @@ export const DumpingSelector = ({
 
       try {
         const response = await fetchWithAuth(
-          `http://localhost:8000/api/company/dumpings/?waste_type=${wasteTypeId}`
+          `https://wasteware-project-production.up.railway.app/api/company/dumpings/?waste_type=${wasteTypeId}`
         );
 
         if (!response.ok) {
@@ -146,7 +146,7 @@ export const DumpingSelector = ({
       console.log("Creating dumping with payload:", payload);
 
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/dumpings/",
+        "https://wasteware-project-production.up.railway.app/api/company/dumpings/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

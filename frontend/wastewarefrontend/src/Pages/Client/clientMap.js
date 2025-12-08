@@ -83,7 +83,7 @@ const ClientMap = () => {
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/company/pickups/?date=${dateStr}`
+        `https://wasteware-project-production.up.railway.app/api/company/pickups/?date=${dateStr}`
       );
 
       if (response.ok) {
@@ -165,7 +165,7 @@ const ClientMap = () => {
         profilePath="/client/profile"
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=User&background=random"
         }
       />

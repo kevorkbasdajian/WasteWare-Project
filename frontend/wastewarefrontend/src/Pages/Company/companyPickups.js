@@ -146,12 +146,15 @@ const CompanyPickups = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/logout/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (err) {
       console.error("Logout request failed", err);
     } finally {
@@ -206,7 +209,7 @@ const CompanyPickups = () => {
   const fetchRoutes = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/routes/"
+        "https://wasteware-project-production.up.railway.app/api/company/routes/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -221,7 +224,7 @@ const CompanyPickups = () => {
   const fetchSchedules = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/schedules/?future_only=true&available=true&status_param='Available"
+        "https://wasteware-project-production.up.railway.app/api/company/schedules/?future_only=true&available=true&status_param='Available"
       );
 
       if (response.ok) {
@@ -256,7 +259,7 @@ const CompanyPickups = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/pickups/",
+        "https://wasteware-project-production.up.railway.app/api/company/pickups/",
         {
           method: "POST",
           headers: {
@@ -387,7 +390,7 @@ const CompanyPickups = () => {
       };
 
       const addressResponse = await fetchWithAuth(
-        `http://localhost:8000/api/auth/addresses/${editingDumping.address_detail.address_id}/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/addresses/${editingDumping.address_detail.address_id}/`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -468,7 +471,7 @@ const CompanyPickups = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"

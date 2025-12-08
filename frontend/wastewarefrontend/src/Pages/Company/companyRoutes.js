@@ -145,7 +145,7 @@ const TruckRoutes = () => {
 
       try {
         const response = await fetchWithAuth(
-          "http://localhost:8000/api/company/routes/"
+          "https://wasteware-project-production.up.railway.app/api/company/routes/"
         );
 
         if (!response.ok) {
@@ -220,7 +220,7 @@ const TruckRoutes = () => {
       console.log("Payload being sent:", routePayload); // FIXED - was 'payload'
 
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/routes/",
+        "https://wasteware-project-production.up.railway.app/api/company/routes/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -281,7 +281,7 @@ const TruckRoutes = () => {
 
       try {
         const response = await fetchWithAuth(
-          "http://localhost:8000/api/company/drivers/"
+          "https://wasteware-project-production.up.railway.app/api/company/drivers/"
         );
 
         if (!response.ok) {
@@ -326,7 +326,7 @@ const TruckRoutes = () => {
     try {
       // Check if driver already has a truck assigned
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/company/trucks/?driver=${driverId}`
+        `https://wasteware-project-production.up.railway.app/api/company/trucks/?driver=${driverId}`
       );
 
       if (!response.ok) {
@@ -347,7 +347,7 @@ const TruckRoutes = () => {
         console.log("Driver has no truck, loading available trucks...");
 
         const availableResponse = await fetchWithAuth(
-          "http://localhost:8000/api/company/trucks/?available=true"
+          "https://wasteware-project-production.up.railway.app/api/company/trucks/?available=true"
         );
 
         if (!availableResponse.ok) {
@@ -399,7 +399,7 @@ const TruckRoutes = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/drivers/",
+        "https://wasteware-project-production.up.railway.app/api/company/drivers/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -446,7 +446,7 @@ const TruckRoutes = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/trucks/",
+        "https://wasteware-project-production.up.railway.app/api/company/trucks/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -492,7 +492,7 @@ const TruckRoutes = () => {
 
       try {
         const response = await fetchWithAuth(
-          "http://localhost:8000/api/company/waste-types/" // Adjust URL based on your backend
+          "https://wasteware-project-production.up.railway.app/api/company/waste-types/" // Adjust URL based on your backend
         );
 
         if (!response.ok) {
@@ -597,7 +597,7 @@ const TruckRoutes = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"

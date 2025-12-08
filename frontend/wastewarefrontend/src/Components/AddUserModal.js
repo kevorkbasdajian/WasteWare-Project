@@ -29,7 +29,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/admin/users/create/",
+        "https://wasteware-project-production.up.railway.app/api/auth/admin/users/create/",
         {
           method: "POST",
           headers: {

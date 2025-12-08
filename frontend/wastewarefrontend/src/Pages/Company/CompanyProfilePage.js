@@ -29,7 +29,7 @@ const CompanyProfilePage = () => {
   const fetchProfile = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/company/profile/",
+        "https://wasteware-project-production.up.railway.app/api/auth/company/profile/",
         {
           method: "GET",
         }
@@ -191,7 +191,7 @@ const CompanyProfilePage = () => {
         links={links}
         profileImage={
           profileData?.avatar
-            ? `http://localhost:8000${profileData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${profileData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"
@@ -207,7 +207,7 @@ const CompanyProfilePage = () => {
                 <img
                   src={
                     profileData.avatar
-                      ? `http://localhost:8000${profileData.avatar}`
+                      ? `https://wasteware-project-production.up.railway.app${profileData.avatar}`
                       : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
                   }
                   alt="Company Logo"

@@ -41,7 +41,7 @@ const AdminUserManagement = () => {
       setLoading(true);
       try {
         const response = await fetchWithAuth(
-          "http://localhost:8000/api/auth/admin/users/",
+          "https://wasteware-project-production.up.railway.app/api/auth/admin/users/",
           {
             method: "GET",
           }
@@ -120,7 +120,7 @@ const AdminUserManagement = () => {
 
     try {
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/auth/admin/users/${userId}/delete/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/admin/users/${userId}/delete/`,
         {
           method: "DELETE",
         }

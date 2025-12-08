@@ -40,7 +40,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
 
     try {
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/auth/admin/users/${user.user_id}/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/admin/users/${user.user_id}/`,
         {
           method: "PUT",
           headers: {

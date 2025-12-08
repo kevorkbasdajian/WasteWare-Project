@@ -212,7 +212,7 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
       }
 
       const response = await fetch(
-        "http://localhost:8000/api/auth/profile/update/",
+        "https://wasteware-project-production.up.railway.app/api/auth/profile/update/",
         {
           method: "PUT",
           headers: {
@@ -304,7 +304,7 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
                         !fetchImage && !removeImage
                           ? userData.avatar === "" || !userData.avatar
                             ? "https://ui-avatars.com/api/?name=User&background=random"
-                            : `http://localhost:8000${userData.avatar}`
+                            : `https://wasteware-project-production.up.railway.app${userData.avatar}`
                           : avatarPreview
                       }
                       alt="Profile"

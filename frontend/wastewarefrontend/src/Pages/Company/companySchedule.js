@@ -98,7 +98,7 @@ const CompanySchedule = () => {
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/company/schedules/?date=${dateStr}`
+        `https://wasteware-project-production.up.railway.app/api/company/schedules/?date=${dateStr}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -113,7 +113,7 @@ const CompanySchedule = () => {
     setLoadingAllSchedules(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/schedules/"
+        "https://wasteware-project-production.up.railway.app/api/company/schedules/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -151,7 +151,7 @@ const CompanySchedule = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/schedules/",
+        "https://wasteware-project-production.up.railway.app/api/company/schedules/",
         {
           method: "POST",
           headers: {
@@ -252,7 +252,7 @@ const CompanySchedule = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"

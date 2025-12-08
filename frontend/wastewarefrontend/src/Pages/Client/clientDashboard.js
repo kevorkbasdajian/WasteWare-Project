@@ -109,7 +109,7 @@ const Dashboard = () => {
     setLoadingNotifications(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/notifications/"
+        "https://wasteware-project-production.up.railway.app/api/auth/notifications/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -126,7 +126,7 @@ const Dashboard = () => {
     setLoadingActivity(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/reports/"
+        "https://wasteware-project-production.up.railway.app/api/reports/"
       );
 
       if (response.ok) {
@@ -182,7 +182,7 @@ const Dashboard = () => {
     setLoadingSchedule(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/pickups/?active_only=true"
+        "https://wasteware-project-production.up.railway.app/api/company/pickups/?active_only=true"
       );
 
       if (response.ok) {
@@ -209,7 +209,7 @@ const Dashboard = () => {
     setLoadingCenters(true);
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/company/dumpings/"
+        "https://wasteware-project-production.up.railway.app/api/company/dumpings/"
       );
 
       if (!response.ok) {
@@ -546,7 +546,7 @@ const Dashboard = () => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/auth/notifications/${notificationId}/mark_as_read/`,
+        `https://wasteware-project-production.up.railway.app/api/auth/notifications/${notificationId}/mark_as_read/`,
         { method: "PATCH" }
       );
       if (response.ok) {
@@ -613,7 +613,7 @@ const Dashboard = () => {
         profilePath="/client/profile"
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=User&background=random"
         }
       />

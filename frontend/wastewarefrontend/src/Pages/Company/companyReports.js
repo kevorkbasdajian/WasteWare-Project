@@ -90,12 +90,15 @@ const CompanyReports = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/logout/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (err) {
       console.error("Logout request failed", err);
     } finally {
@@ -114,7 +117,7 @@ const CompanyReports = () => {
     try {
       setLoading(true);
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/reports/all/"
+        "https://wasteware-project-production.up.railway.app/api/reports/all/"
       );
 
       if (response.ok) {
@@ -134,7 +137,7 @@ const CompanyReports = () => {
   const updateStatus = async (reportId, newStatus) => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/reports/${reportId}/status/`,
+        `https://wasteware-project-production.up.railway.app/api/reports/${reportId}/status/`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -175,7 +178,7 @@ const CompanyReports = () => {
       setModalError(null);
 
       const response = await fetchWithAuth(
-        `http://localhost:8000/api/reports/${reportId}/`
+        `https://wasteware-project-production.up.railway.app/api/reports/${reportId}/`
       );
 
       if (response.ok) {
@@ -218,7 +221,7 @@ const CompanyReports = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"

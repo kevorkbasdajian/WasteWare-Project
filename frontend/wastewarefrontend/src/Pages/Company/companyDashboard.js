@@ -239,23 +239,38 @@ const CompanyDashboard = () => {
         // Fetch all required data
         const [routes, drivers, trucks, dumpings, pickups, schedules] =
           await Promise.all([
-            fetch("http://localhost:8000/api/company/routes/", {
-              headers,
-            }).then((r) => r.json()),
-            fetch("http://localhost:8000/api/company/drivers/", {
-              headers,
-            }).then((r) => r.json()),
-            fetch("http://localhost:8000/api/company/trucks/", {
-              headers,
-            }).then((r) => r.json()),
-            fetch("http://localhost:8000/api/company/dumpings/", {
-              headers,
-            }).then((r) => r.json()),
-            fetch("http://localhost:8000/api/company/pickups/", {
-              headers,
-            }).then((r) => r.json()),
             fetch(
-              "http://localhost:8000/api/company/schedules/?future_only=true",
+              "https://wasteware-project-production.up.railway.app/api/company/routes/",
+              {
+                headers,
+              }
+            ).then((r) => r.json()),
+            fetch(
+              "https://wasteware-project-production.up.railway.app/api/company/drivers/",
+              {
+                headers,
+              }
+            ).then((r) => r.json()),
+            fetch(
+              "https://wasteware-project-production.up.railway.app/api/company/trucks/",
+              {
+                headers,
+              }
+            ).then((r) => r.json()),
+            fetch(
+              "https://wasteware-project-production.up.railway.app/api/company/dumpings/",
+              {
+                headers,
+              }
+            ).then((r) => r.json()),
+            fetch(
+              "https://wasteware-project-production.up.railway.app/api/company/pickups/",
+              {
+                headers,
+              }
+            ).then((r) => r.json()),
+            fetch(
+              "https://wasteware-project-production.up.railway.app/api/company/schedules/?future_only=true",
               { headers }
             ).then((r) => r.json()),
           ]);
@@ -349,7 +364,7 @@ const CompanyDashboard = () => {
         profilePath="/company/profile"
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
       />

@@ -242,7 +242,7 @@ const Reports = () => {
       }
 
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/reports/create/",
+        "https://wasteware-project-production.up.railway.app/api/reports/create/",
         {
           method: "POST",
           body: formData,
@@ -334,7 +334,7 @@ const Reports = () => {
         profilePath="/client/profile"
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=User&background=random"
         }
       />

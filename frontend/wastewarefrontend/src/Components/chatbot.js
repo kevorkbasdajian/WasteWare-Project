@@ -51,7 +51,7 @@ const Chatbot = () => {
 
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/chatbot/chat/",
+        "https://wasteware-project-production.up.railway.app/api/chatbot/chat/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

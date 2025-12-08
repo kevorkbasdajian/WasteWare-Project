@@ -105,7 +105,7 @@ const ProfilePage = () => {
         links={links}
         profileImage={
           userData?.avatar
-            ? `http://localhost:8000${userData.avatar}`
+            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
             : "https://ui-avatars.com/api/?name=User&background=random"
         }
         profilePath="/client/profile"
@@ -121,7 +121,7 @@ const ProfilePage = () => {
                   src={
                     userData.avatar === ""
                       ? "https://ui-avatars.com/api/?name=User&background=random"
-                      : `http://localhost:8000${userData.avatar}`
+                      : `https://wasteware-project-production.up.railway.app${userData.avatar}`
                   }
                   alt="Profile"
                   className="profile-avatar"

@@ -77,7 +77,7 @@ const EditCompanyProfileModal = ({ isOpen, onClose, onSuccess }) => {
   const fetchProfile = async () => {
     try {
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/company/profile/",
+        "https://wasteware-project-production.up.railway.app/api/auth/company/profile/",
         {
           method: "GET",
         }
@@ -98,7 +98,9 @@ const EditCompanyProfileModal = ({ isOpen, onClose, onSuccess }) => {
 
       // Set avatar preview if exists
       if (data.avatar) {
-        setAvatarPreview(`http://localhost:8000${data.avatar}`);
+        setAvatarPreview(
+          `https://wasteware-project-production.up.railway.app${data.avatar}`
+        );
       } else {
         setAvatarPreview(
           "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
@@ -182,7 +184,7 @@ const EditCompanyProfileModal = ({ isOpen, onClose, onSuccess }) => {
       }
 
       const response = await fetchWithAuth(
-        "http://localhost:8000/api/auth/company/profile/",
+        "https://wasteware-project-production.up.railway.app/api/auth/company/profile/",
         {
           method: "PUT",
           body: formDataToSend,
@@ -268,11 +270,13 @@ const EditCompanyProfileModal = ({ isOpen, onClose, onSuccess }) => {
                     <img
                       src={
                         !fetchImage && !removeImage
-                          ? avatarPreview.includes("http://localhost:8000")
+                          ? avatarPreview.includes(
+                              "https://wasteware-project-production.up.railway.app"
+                            )
                             ? avatarPreview
                             : avatarPreview.includes("ui-avatars.com")
                             ? avatarPreview
-                            : `http://localhost:8000${avatarPreview}`
+                            : `https://wasteware-project-production.up.railway.app${avatarPreview}`
                           : avatarPreview
                       }
                       alt="Company Logo"
