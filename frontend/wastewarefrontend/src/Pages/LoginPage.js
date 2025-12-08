@@ -72,11 +72,14 @@ export const LoginPage = () => {
     set_is_loading(true);
     console.log(JSON.stringify(values));
     try {
-      const response = await fetch("http://localhost:8000/api/auth/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values), // Formik values
-      });
+      const response = await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/login/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values), // Formik values
+        }
+      );
       set_is_loading(false);
       const data = await response.json();
       if (!response.ok) {
