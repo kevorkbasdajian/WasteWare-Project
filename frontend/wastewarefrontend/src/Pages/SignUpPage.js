@@ -76,7 +76,7 @@ export const SignUpPage = () => {
     const { password2, terms, ...payload } = values;
     set_is_loading(true);
     let url =
-      "wasteware-project-production.up.railway.app/api/auth/signup/user/";
+      "https://wasteware-project-production.up.railway.app/api/auth/signup/user/";
 
     try {
       const response = await fetch(url, {

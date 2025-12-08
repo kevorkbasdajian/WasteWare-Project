@@ -73,7 +73,7 @@ export const LoginPage = () => {
     console.log(JSON.stringify(values));
     try {
       const response = await fetch(
-        "wasteware-project-production.up.railway.app/api/auth/login/",
+        "https://wasteware-project-production.up.railway.app/api/auth/login/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
