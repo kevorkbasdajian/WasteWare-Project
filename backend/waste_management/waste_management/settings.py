@@ -193,7 +193,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Security settings for production
-if IS_RAILWAY:
-    SECURE_SSL_REDIRECT = False  # Railway handles SSL
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+# if IS_RAILWAY:
+#     SECURE_SSL_REDIRECT = False  # Railway handles SSL
+#     SESSION_COOKIE_SECURE = True
+#     CSRF_COOKIE_SECURE = True
