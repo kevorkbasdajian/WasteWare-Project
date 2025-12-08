@@ -27,20 +27,23 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-cw#9ejscj#(^oa6*=yhs()py
 DEBUG = env.bool('DEBUG', default=True)
 
 # Detect if running on Railway
-IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+# IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
 CORS_ALLOW_ALL_ORIGINS = True  # Don't allow all origins in production
 
-if IS_RAILWAY:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",  
-        "https://waste-ware-project.vercel.app"
-    ]
-else:
-    # FOR LOCAL DEVELOPMENT
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
-        "http://127.0.0.1:8000",
-    ]
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Local development
+    "http://localhost:3001",
+    "https://your-frontend.vercel.app",  # Replace with your actual frontend URL
+    "https://your-frontend.netlify.app",  # Or wherever your frontend is deployed
+]
+ALLOWED_HOSTS = [
+    'wasteware-project-production.up.railway.app',
+    '.railway.app',
+    'localhost',
+    '127.0.0.1',
+]
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Beirut'
