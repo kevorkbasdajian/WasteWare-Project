@@ -232,10 +232,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div
-              className="setting-card"
-              onClick={() => navigate("/settings/activity")}
-            >
+            <div className="setting-card">
               <i className="fa-solid fa-file-lines setting-icon"></i>
               <div className="setting-content">
                 <h3>Activity Timeline</h3>
