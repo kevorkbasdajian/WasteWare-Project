@@ -208,10 +208,7 @@ const ProfilePage = () => {
 
           {/* Bottom Section: Settings Cards */}
           <div className="settings-grid">
-            <div
-              className="setting-card"
-              onClick={() => navigate("/settings/personal")}
-            >
+            <div className="setting-card">
               <i className="fa-solid fa-user setting-icon"></i>
               <div className="setting-content">
                 <h3>Personal Information</h3>
@@ -219,10 +216,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div
-              className="setting-card"
-              onClick={() => navigate("/settings/notifications")}
-            >
+            <div className="setting-card">
               <i className="fa-solid fa-bell setting-icon"></i>
               <div className="setting-content">
                 <h3>Notification Settings</h3>
@@ -230,10 +224,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div
-              className="setting-card"
-              onClick={() => navigate("/settings/language")}
-            >
+            <div className="setting-card">
               <i className="fa-solid fa-globe setting-icon"></i>
               <div className="setting-content">
                 <h3>Language & Region</h3>
@@ -252,10 +243,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div
-              className="setting-card"
-              onClick={() => navigate("/settings/privacy")}
-            >
+            <div className="setting-card">
               <i className="fa-solid fa-shield-halved setting-icon"></i>
               <div className="setting-content">
                 <h3>Privacy & Security</h3>
@@ -263,7 +251,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="setting-card" onClick={() => navigate("/help")}>
+            <div className="setting-card">
               <i className="fa-solid fa-circle-question setting-icon"></i>
               <div className="setting-content">
                 <h3>Help & Support</h3>
