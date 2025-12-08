@@ -1,10 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useFetchWithAuth } from "./fetchWithAuth";
+import { AuthContext } from "./AuthProvider";
+import { useNavigate } from "react-router-dom";
 import "../Styles/Component/chatbot.css";
 
 const Chatbot = () => {
+  const { userData, accessToken, user_type } = useContext(AuthContext);
+  const navigate = useNavigate();
   const fetchWithAuth = useFetchWithAuth();
   const [isOpen, setIsOpen] = useState(false);
+
   const [messages, setMessages] = useState([
     {
       type: "bot",
@@ -28,6 +33,13 @@ const Chatbot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Don't render chatbot for company users
+  // Assuming userData has a 'user_type' or 'is_company' field
+  // Adjust the condition based on your actual user data structure
+  if (!userData || user_type === "company" || userData.is_company) {
+    return null; // Don't render anything for company users
+  }
 
   const handleSendMessage = async (message = null) => {
     const messageToSend = message ?? inputValue.trim();
@@ -100,7 +112,6 @@ const Chatbot = () => {
             <i className="fa-solid fa-robot" aria-hidden="true"></i>
             <span>WasteWare Assistant</span>
 
-            {/* Close button in header */}
             <button
               className="chatbot-close"
               onClick={() => setIsOpen(false)}

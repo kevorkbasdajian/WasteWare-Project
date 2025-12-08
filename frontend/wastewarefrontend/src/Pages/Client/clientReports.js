@@ -332,12 +332,16 @@ const Reports = () => {
       <Navbar
         links={links}
         profilePath="/client/profile"
-        profileImage={`http://localhost:8000${userData.avatar}`}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
+        }
       />
 
       <HeaderBox
         text="Report Environmental Issue"
-        gradientColors={["#3949AB", "#5C6BC0"]}
+        gradientColors={"--gradient-purple"}
       />
 
       <div className="report-container">

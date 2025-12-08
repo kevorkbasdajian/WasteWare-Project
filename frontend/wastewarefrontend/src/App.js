@@ -1,5 +1,6 @@
 // import './App.css';
 import React from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Pages/Client/clientDashboard";
 import LoginPage from "./Pages/LoginPage";
@@ -14,7 +15,6 @@ import ClientMap from "./Pages/Client/clientMap";
 import ClientProfile from "./Pages/Client/clientProfile";
 import CompanyPickups from "./Pages/Company/companyPickups";
 import Chatbot from "./Components/chatbot";
-import EditProfilePage from "./Pages/Profile/EditProfilePage";
 import AdminUserManagement from "./Pages/Admin/AdminUserManagement";
 import CompanyNotifications from "./Pages/Company/companyNotifications";
 import AdminCompanyManagement from "./Pages/Admin/AdminCompanyManagement";
@@ -34,7 +34,6 @@ function App() {
           <Route path="/client/map" element={<ClientMap />} />
           <Route path="/client/reports" element={<Reports />} />
           <Route path="/client/profile" element={<ClientProfile />} />
-          <Route path="/client/edit-profile" element={<EditProfilePage />} />
 
           {/* admin */}
           <Route path="/admin/users" element={<AdminUserManagement />} />

@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import UserSignupView, CompanySignupView, LoginView, AdminSignupView, LogoutView, ProfileView, UpdateProfileView, UserManagementListView, UserUpdateView, UserDeleteView,AddressViewSet,NotificationViewSet,UserListViewSet,CompanyManagementListView, CompanyUpdateView,CompanyDeleteView,CompanyProfileView,CompanyCreateView,AdminCreateUserView
+from .views import UserSignupView, CompanySignupView, LoginView, AdminSignupView, LogoutView, ProfileView, UpdateProfileView, UserManagementListView, UserUpdateView, UserDeleteView,AddressViewSet,NotificationViewSet,UserListViewSet,CompanyManagementListView, CompanyUpdateView,CompanyDeleteView,CompanyProfileView,CompanyCreateView,AdminCreateUserView, CompanyDebugView
 
 
 router = DefaultRouter()
@@ -33,4 +33,5 @@ urlpatterns = [
 
     path('company/profile/', CompanyProfileView.as_view(), name='company-profile'),
     
+    path('company/debug/', CompanyDebugView.as_view(), name='company-debug'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

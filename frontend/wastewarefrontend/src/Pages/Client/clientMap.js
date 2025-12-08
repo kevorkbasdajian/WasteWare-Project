@@ -113,11 +113,6 @@ const ClientMap = () => {
     }
   };
 
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/login");
-  };
-
   const changeDate = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + days);
@@ -168,13 +163,16 @@ const ClientMap = () => {
       <Navbar
         links={links}
         profilePath="/client/profile"
-        profileImage={`http://localhost:8000${userData.avatar}`}
-        onLogout={handleLogout}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
+        }
       />
 
       <HeaderBox
         text="Live Pickup Tracking"
-        gradientColors={["#0288D1", "#26C6DA"]}
+        gradientColors={"--gradient-clean-blue"}
       />
 
       <div className="client-map-container">
@@ -259,13 +257,13 @@ const ClientMap = () => {
               </h3>
               <div className="details-grid">
                 <div className="detail-item">
-                  <span className="detail-label">Route:</span>
+                  <span className="detail-label">Route</span>
                   <span className="detail-value">
                     #{selectedPickup.route.route_id}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Waste Type:</span>
+                  <span className="detail-label">Waste Type</span>
                   <span
                     className="detail-value"
                     style={{ color: getWasteTypeColor() }}
@@ -274,27 +272,27 @@ const ClientMap = () => {
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Driver:</span>
+                  <span className="detail-label">Driver</span>
                   <span className="detail-value">
                     {selectedPickup.route.driver?.first_name}{" "}
                     {selectedPickup.route.driver?.last_name}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Truck:</span>
+                  <span className="detail-label">Truck</span>
                   <span className="detail-value">
                     #{selectedPickup.route.truck?.truck_id || "N/A"}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Schedule:</span>
+                  <span className="detail-label">Schedule</span>
                   <span className="detail-value">
                     {selectedPickup.schedule.start_time} -{" "}
                     {selectedPickup.schedule.end_time}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Status:</span>
+                  <span className="detail-label">Status</span>
                   <span
                     className="status-badge-inline"
                     style={{
@@ -310,13 +308,13 @@ const ClientMap = () => {
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Weight Collected:</span>
+                  <span className="detail-label">Weight Collected</span>
                   <span className="detail-value">
                     {selectedPickup.weight_collected || 0} kg
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Progress:</span>
+                  <span className="detail-label">Progress</span>
                   <span className="detail-value">
                     {selectedPickup.progress_percentage?.toFixed(1) || 0}%
                   </span>

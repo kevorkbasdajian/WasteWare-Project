@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies, Roles,Addresses,Notifications
+from .models import Users, Companies, Roles, Addresses, Notifications
 from clientReports.models import Reports
 from .utils import hash_password, verify_password
 from django.utils import timezone
@@ -60,22 +60,27 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
-
+# --------------------------
+# Address Serializer
+# --------------------------
 class AddressSerializer(serializers.ModelSerializer):
+    """Serializer for Address model"""
     class Meta:
         model = Addresses
-        fields = ['address_id', 'street', 'city', 'region', 'latitude', 'longitude', 'postal_code']
-        read_only_fields = ['address_id']
-
+        fields = ['address_id', 'street', 'city', 'region', 'postal_code', 'latitude', 'longitude']
 # --------------------------
-# Profile Serializer
+# User Profile Serializer
 # --------------------------
 class ProfileSerializer(serializers.ModelSerializer):
     # Custom fields (not directly from model)
     name = serializers.SerializerMethodField()  # Combines first_name + last_name
     avatar = serializers.SerializerMethodField()  # Returns profile_image URL
     stats = serializers.SerializerMethodField()  # Calculates all stats
-    badge = serializers.CharField()  # Returns user badge text
+    badge = serializers.SerializerMethodField()  # Returns user badge text
+    address = AddressSerializer(read_only=True)
+    
+    # NEW: Add report history for dashboard chart
+    report_history = serializers.SerializerMethodField()
     
     class Meta:
         model = Users
@@ -86,8 +91,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             'avatar',
             'badge',
             'phone_number',
+            'address',
             'account_status',
             'stats',
+            'report_history',  # NEW FIELD
         ]
     
     def get_name(self, obj):
@@ -101,7 +108,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.profile_image.url)
             return obj.profile_image.url
-        return "https://i.pravatar.cc/150?img=12"
+        return ""
     
     def get_badge(self, obj):
         """Return user badge text based on account status or role"""
@@ -121,16 +128,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         co2_reduced = waste_recycled * 0.08  # Example: 0.08 tons CO2 per kg waste
         trees_saved = int(co2_reduced * 3.77)  # Example: 1 ton CO2 = ~3.77 trees
         
-        # ============ FOR FUTURE: Real waste calculation ============
-        # Uncomment this when Reports model has 'waste_amount' field
-        # waste_data = Reports.objects.filter(user=obj).aggregate(
-        #     total_waste=Sum('waste_amount')
-        # )
-        # waste_recycled = waste_data['total_waste'] or 0
-        # co2_reduced = round(waste_recycled * 0.08, 1)
-        # trees_saved = int(co2_reduced * 3.77)
-        # ================================================================
-        
         return {
             "co2_reduced": round(co2_reduced, 1),
             "trees_saved": trees_saved,
@@ -139,8 +136,99 @@ class ProfileSerializer(serializers.ModelSerializer):
             "eco_points": eco_points,
             "days_active": days_active
         }
+    
+    def get_report_history(self, obj):
+        """
+        Get report counts grouped by date for dashboard charts.
+        Returns reports from the last 6 months with daily counts.
+        """
+        from datetime import timedelta
+        from django.db.models import Count
+        from django.db.models.functions import TruncDate
+        
+        # Get reports from last 6 months
+        six_months_ago = timezone.now() - timedelta(days=180)
+        
+        reports = Reports.objects.filter(
+            user=obj,
+            created_at__gte=six_months_ago
+        ).annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(
+            count=Count('report_id')
+        ).order_by('date')
+        
+        # Convert to list of {date, count} objects
+        return [
+            {
+                'date': report['date'].isoformat(),
+                'count': report['count']
+            }
+            for report in reports
+        ]
+    
+    
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    # Address input fields
+    street = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    region = serializers.CharField(required=False, allow_blank=True)
+    postal_code = serializers.CharField(required=False, allow_blank=True)
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
 
+    class Meta:
+        model = Users
+        fields = [
+            "first_name",
+            "last_name",
+            "phone_number",
+            "profile_image",
 
+            # Address fields:
+            "street",
+            "city",
+            "region",
+            "postal_code",
+            "latitude",
+            "longitude",
+        ]
+
+    def update(self, instance, validated_data):
+        # -------------------------------
+        # Update basic user fields
+        # -------------------------------
+        for field in ["first_name", "last_name", "phone_number", "profile_image"]:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
+
+        instance.save()
+
+        # -------------------------------
+        # Address handling logic
+        # -------------------------------
+        addr_fields = ["street", "city", "region", "postal_code", "latitude", "longitude"]
+        addr_data = {f: validated_data.get(f, None) for f in addr_fields}
+
+        # Check if frontend sent ANY address field
+        if any(v not in [None, ""] for v in addr_data.values()):
+            # If user already has an address → update it
+            if instance.address:
+                address = instance.address
+                for key, value in addr_data.items():
+                    if value not in [None, ""]:
+                        setattr(address, key, value)
+                address.save()
+            else:
+                # Create a new address
+                address = Addresses.objects.create(
+                    user=instance,
+                    **{k: v for k, v in addr_data.items() if v not in [None, ""]}
+                )
+                instance.address = address
+                instance.save()
+
+        return instance
 
 # =============================================================
 # USER MANAGEMENT SERIALIZER FOR ADMIN
@@ -466,6 +554,9 @@ class CompanyUpdateSerializer(serializers.ModelSerializer):
 
 
 
+
+
+
 # --------------------------
 # Company Profile Serializer
 # --------------------------
@@ -474,10 +565,8 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
     Serializer for company profile page.
     Returns company profile data and contact person information.
     """
-    
-    company_name = serializers.SerializerMethodField()
-    address = AddressSerializer(read_only=True) 
-
+    address = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
     
     class Meta:
         model = Companies
@@ -487,51 +576,121 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
             'email',
             'phone_number',
             'address',
+            'avatar',
+            'license_number',
             'created_at',
         ]
     
-    def get_company_name(self, obj):
-        """Return company name (stored in first_name for companies)"""
-        return obj.company_name
-
+    def get_address(self, obj):
+        """Return address data or None"""
+        if obj.address:
+            return {
+                'address_id': obj.address.address_id,
+                'street': obj.address.street or '',
+                'city': obj.address.city or '',
+                'region': obj.address.region or '',
+                'postal_code': obj.address.postal_code or '',
+                'latitude': str(obj.address.latitude) if obj.address.latitude else None,
+                'longitude': str(obj.address.longitude) if obj.address.longitude else None,
+            }
+        return {
+            'street': '',
+            'city': '',
+            'region': '',
+            'postal_code': '',
+            'latitude': None,
+            'longitude': None,
+        }
     
-    # def get_avatar(self, obj):
-    #     """Return avatar URL or default"""
-    #     if obj.profile_image:
-    #         return obj.profile_image.url
-    #     return None
+    def get_avatar(self, obj):
+        """Return company image URL or empty string"""
+        if obj.company_image:
+            try:
+                return obj.company_image.url
+            except:
+                return ""
+        return ""
 
 
 # --------------------------
 # Company Profile Update Serializer
 # --------------------------
-class CompanyProfileUpdateSerializer(serializers.ModelSerializer):
+class CompanyProfileUpdateSerializer(serializers.Serializer):
     """
     Serializer for updating company profile information.
+    Using Serializer instead of ModelSerializer for more control.
     """
-    company_name = serializers.CharField(write_only=True, required=False)
+    company_name = serializers.CharField(required=False, allow_blank=False)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    profile_image = serializers.ImageField(write_only=True, required=False)
+    remove_avatar = serializers.CharField(write_only=True, required=False, allow_blank=True)
     
-    class Meta:
-        model = Companies
-        fields = [
-            'company_name',
-            'email',
-            'phone_number',
-            'address',
-        ]
+    # Address fields
+    street = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    region = serializers.CharField(required=False, allow_blank=True)
+    postal_code = serializers.CharField(required=False, allow_blank=True)
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
     
     def update(self, instance, validated_data):
-        # Update company name
+        """Update company instance with validated data"""
+        
+        # Extract and remove special fields
+        remove_avatar = validated_data.pop('remove_avatar', None)
+        profile_image = validated_data.pop('profile_image', None)
+        
+        # Extract address fields
+        addr_fields = ['street', 'city', 'region', 'postal_code', 'latitude', 'longitude']
+        addr_data = {}
+        for field in addr_fields:
+            if field in validated_data:
+                addr_data[field] = validated_data.pop(field)
+        
+        # Handle image removal
+        if remove_avatar == 'true':
+            if instance.company_image:
+                try:
+                    instance.company_image.delete(save=False)
+                except:
+                    pass
+            instance.company_image = None
+        
+        # Handle new image upload
+        elif profile_image:
+            # Delete old image if exists
+            if instance.company_image:
+                try:
+                    instance.company_image.delete(save=False)
+                except:
+                    pass
+            instance.company_image = profile_image
+        
+        # Update basic company fields
         if 'company_name' in validated_data:
-            instance.first_name = validated_data.pop('company_name')
+            instance.company_name = validated_data['company_name']
         
-         # Update contact person name
-        # if 'contact_person_name' in validated_data:
-        #     instance.last_name = validated_data.pop('contact_person_name')
+        if 'phone_number' in validated_data:
+            instance.phone_number = validated_data['phone_number']
         
-        # Update other fields
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
-        
+        # Save company instance
         instance.save()
+        
+        # Handle address update/creation
+        if addr_data and any(v not in [None, ''] for v in addr_data.values()):
+            if instance.address:
+                # Update existing address
+                address = instance.address
+                for key, value in addr_data.items():
+                    if value not in [None, '']:
+                        setattr(address, key, value)
+                address.save()
+            else:
+                # Create new address (filter out empty values)
+                filtered_addr_data = {k: v for k, v in addr_data.items() if v not in [None, '']}
+                if filtered_addr_data:
+                    address = Addresses.objects.create(**filtered_addr_data)
+                    instance.address = address
+                    instance.save()
+        
         return instance

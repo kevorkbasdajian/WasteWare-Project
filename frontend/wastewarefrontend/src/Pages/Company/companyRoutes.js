@@ -69,7 +69,7 @@ const TruckRoutes = () => {
   const [routes, setRoutes] = useState([]);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routesError, setRoutesError] = useState(null);
-  const { accessToken, user_type } = useContext(AuthContext);
+  const { accessToken, user_type, userData } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     truckId: "",
     wasteCategory: "",
@@ -80,6 +80,7 @@ const TruckRoutes = () => {
   const COLORS = ["#ff9800", "#4caf50", "#2196f3", "#f44336"];
   // Colors for bars
   const BAR_COLORS = ["#4caf50", "#3b82f6", "#f44336", "#ff9800"];
+
   const links = [
     {
       name: "Home",
@@ -91,23 +92,23 @@ const TruckRoutes = () => {
     {
       name: "Routes",
       path: "/company/routes",
-      color: "var(--gradient-clean-blue)",
-      glowColor: "#3B82F6",
+      color: "var(--gradient-light-green)",
+      glowColor: "var(--light-green)",
       icon: "fa-solid fa-map-location-dot fa-lg",
     },
     {
       name: "Schedule",
       path: "/company/schedule",
-      color: "var(--gradient-purple)",
-      glowColor: "#A855F7",
-      icon: "fa-solid fa-calendar fa-lg",
+      color: "var(--gradient-clean-blue)",
+      glowColor: "#3B82F6",
+      icon: "fa-solid fa-calendar-days fa-lg",
     },
     {
       name: "Pickups",
       path: "/company/pickups",
       color: "var(--gradient-orange)",
       glowColor: "#F97316",
-      icon: "fa-solid fa-gift fa-lg",
+      icon: "fa-solid fa-truck-pickup fa-lg",
     },
     {
       name: "Reports",
@@ -584,22 +585,6 @@ const TruckRoutes = () => {
     setviewallmodal(value);
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:8000/api/auth/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (err) {
-      console.error("Logout request failed", err);
-    } finally {
-      clearAuth();
-      navigate("/Login");
-    }
-  };
-
   return (
     <div
       style={{
@@ -610,13 +595,17 @@ const TruckRoutes = () => {
       <Navbar
         o
         links={links}
-        onLogout={handleLogout}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+        }
         profilePath="/company/profile"
       />
       <div style={{ marginTop: 80 }}>
         <HeaderBox
           text="Truck Routes"
-          gradientColors={["#7df083ff", "#43a047"]}
+          gradientColors={"--gradient-light-green"}
         />
       </div>
 

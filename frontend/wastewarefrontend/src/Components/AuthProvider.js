@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+
   const [user_type, set_user_type] = useState(() => {
     try {
       return sessionStorage.getItem("user_type") || "";
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
       return "";
     }
   });
+
   const saveusertype = (type) => {
     set_user_type(type);
     try {
@@ -39,7 +41,12 @@ export function AuthProvider({ children }) {
     setUserError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/profile/", {
+      const endpoint =
+        user_type === "company"
+          ? "http://localhost:8000/api/auth/company/profile/"
+          : "http://localhost:8000/api/auth/profile/";
+
+      const response = await fetch(endpoint, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -59,10 +66,16 @@ export function AuthProvider({ children }) {
 
       const result = await response.json();
 
-      if (result.success && result.data) {
+      // For company endpoint, data is returned directly
+      // For user endpoint, data might be nested in result.data
+      if (user_type === "company") {
+        setUserData(result);
+      } else if (result.success && result.data) {
+        setUserData(result.data);
+      } else if (result.data) {
         setUserData(result.data);
       } else {
-        throw new Error("Invalid response format");
+        setUserData(result);
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
@@ -71,7 +84,44 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoadingUser(false);
     }
-  }, [accessToken]);
+  }, [accessToken, user_type]);
+
+  const refreshUserData = async () => {
+    if (!accessToken) return;
+
+    try {
+      // Determine endpoint based on user_type
+      const endpoint =
+        user_type === "company"
+          ? "http://localhost:8000/api/auth/company/profile/"
+          : "http://localhost:8000/api/auth/profile/";
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        // Handle different response formats
+        if (user_type === "company") {
+          setUserData(result);
+        } else if (result.success && result.data) {
+          setUserData(result.data);
+        } else if (result.data) {
+          setUserData(result.data);
+        } else {
+          setUserData(result);
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  };
 
   // Fetch user data when token changes
   useEffect(() => {
@@ -94,8 +144,10 @@ export function AuthProvider({ children }) {
     setAccessToken(null);
     setUserData(null);
     setUserError(null);
+    set_user_type("");
     try {
       sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("user_type");
     } catch (e) {}
   };
 
@@ -108,7 +160,7 @@ export function AuthProvider({ children }) {
     userData,
     isLoadingUser,
     userError,
-    refetchUserData: fetchUserData, // Allow manual refresh
+    refreshUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -44,14 +44,7 @@
   font-size: 1.4rem; /* Reduced from 1.75rem (~20% smaller) */
   font-weight: 700;
   position: relative;
-  background: linear-gradient(
-    120deg,
-    #1b5e20 0%,
-    #2e7d32 25%,
-    #388e3c 50%,
-    #4caf50 75%,
-    #66bb6a 100%
-  );
+  background: var(--navbar-title-gradient);
   background-size: 200% 100%;
   background-position: 100% 0;
   -webkit-background-clip: text;
@@ -70,7 +63,7 @@
 }
 
 /* Subtle shimmer effect on hover */
-@keyframes shimmer {
+@keyframes textShimmer {
   0% {
     background-position: 200% 0;
   }
@@ -80,8 +73,8 @@
 }
 
 .navbar-logo:hover .navbar-title {
-  animation: shimmer 2s ease-in-out infinite;
-  background-size: 300% 100%;
+  animation: textShimmer 2s ease-in-out infinite;
+  background-size: 200% 100%;
 }
 
 /* Underline glow effect */
@@ -170,14 +163,7 @@
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Red gradient text */
-  background: linear-gradient(
-    120deg,
-    #7f1d1d 0%,
-    #991b1b 25%,
-    #dc2626 50%,
-    #ef4444 75%,
-    #f87171 100%
-  );
+  background: var(--logout-gradient);
   background-size: 200% 100%;
   background-position: 100% 0;
   -webkit-background-clip: text;
@@ -192,7 +178,7 @@
     drop-shadow(0 0 15px rgba(239, 68, 68, 0.3));
   letter-spacing: 1px;
   transform: scale(1.1) translateY(-4px);
-  animation: shimmer 2s ease-in-out infinite;
+  animation: textShimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
 }
 
@@ -290,7 +276,7 @@
   background-position: 0% 0;
   filter: drop-shadow(0 0 8px var(--moon-color))
     drop-shadow(0 0 15px rgba(74, 92, 122, 0.4)); /* matches moon color */
-  animation: shimmer 2s ease-in-out infinite;
+  animation: textShimmer 2s ease-in-out infinite;
   background-size: 300% 100%;
 }
 

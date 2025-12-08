@@ -246,27 +246,37 @@ class UpdateProfileView(APIView):
                 user.profile_image = request.FILES['profile_image']
 
             # -----------------------
-            # ADDRESS (form-data format)
+            # ADDRESS (correct field names)
             # -----------------------
-            street = data.get("address.street")
-            city = data.get("address.city")
-            region = data.get("address.region")
+            street = data.get("street")
+            city = data.get("city")
+            region = data.get("region")
+            postal_code = data.get("postal_code")
+            latitude = data.get("latitude")
+            longitude = data.get("longitude")
 
-            if street or city or region:
+            if street or city or region or postal_code or latitude or longitude:
                 if user.address:
                     # Update existing address
                     if street: user.address.street = street
                     if city: user.address.city = city
                     if region: user.address.region = region
+                    if postal_code: user.address.postal_code = postal_code
+                    if latitude: user.address.latitude = latitude
+                    if longitude: user.address.longitude = longitude
                     user.address.save()
                 else:
                     # Create new address
                     new_address = Addresses.objects.create(
                         street=street or "",
                         city=city or "",
-                        region=region or ""
+                        region=region or "",
+                        postal_code=postal_code or "",
+                        latitude=latitude or None,
+                        longitude=longitude or None
                     )
                     user.address = new_address
+
 
             # -----------------------
             # SAVE USER
@@ -289,9 +299,35 @@ class UpdateProfileView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# --------------------------
+# User Management List View (GET all users)
+# --------------------------
+class UserManagementListView(APIView):
+    """
+    GET: Return list of all users for admin management table
+    Admin only endpoint
+    """
+    permission_classes = [IsAuthenticated]  # Uncomment when auth is ready
+    
+    def get(self, request):
+        try:
+            # Fetch all users from database
+            users = Users.objects.all().order_by('-created_at')
+            
+            # Serialize the data
+            serializer = UserManagementSerializer(users, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to fetch users', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        # ==============================================================
 
 
-# Replace the existing UserUpdateView in your views.py with this:
+
 
 
 
@@ -541,51 +577,109 @@ class CompanyProfileView(APIView):
     def get(self, request):        
         try:
             # Get authenticated company user
-            print("Rafik farik",request.user)
             user = request.user
             
-            # Serialize the data
-            serializer = CompanyProfileSerializer(user)
+            print(f"Fetching profile for user: {user}")
+            print(f"User type: {type(user)}")
+            print(f"Has company_image: {hasattr(user, 'company_image')}")
             
+            # Check if user is actually a company
+            if not isinstance(user, Companies):
+                return Response(
+                    {'error': 'User is not a company'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Serialize the data
+            serializer = CompanyProfileSerializer(user, context={'request': request})
+            
+            print(f"Serialized data: {serializer.data}")
             
             return Response(serializer.data, status=status.HTTP_200_OK)
             
         except Exception as e:
+            import traceback
+            print(f"Error in GET: {str(e)}")
+            print(traceback.format_exc())
             return Response(
                 {'error': 'Failed to fetch profile', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
     def put(self, request):
-        
         try:
             # Get authenticated company user
             user = request.user
             
+            print(f"Updating profile for user: {user}")
+            print(f"Request data: {request.data}")
+            
+            # Check if user is actually a company
+            if not isinstance(user, Companies):
+                return Response(
+                    {'error': 'User is not a company'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             # Update using serializer
-            serializer = CompanyProfileUpdateSerializer(user, data=request.data, partial=True)
+            serializer = CompanyProfileUpdateSerializer(
+                user, 
+                data=request.data, 
+                partial=True,
+                context={'request': request}
+            )
             
             if serializer.is_valid():
                 serializer.save()
                 
-                # Return updated profile
-                profile_serializer = CompanyProfileSerializer(user)
+                # Return updated profile with success flag
+                profile_serializer = CompanyProfileSerializer(user, context={'request': request})
                 return Response(
                     {
+                        'success': True,
                         'message': 'Profile updated successfully',
                         'profile': profile_serializer.data
                     },
                     status=status.HTTP_200_OK
                 )
             
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Validation errors: {serializer.errors}")
+            return Response(
+                {
+                    'success': False,
+                    'errors': serializer.errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
             
         except Exception as e:
+            import traceback
+            print(f"Error in PUT: {str(e)}")
+            print(traceback.format_exc())
             return Response(
-                {'error': 'Failed to update profile', 'detail': str(e)},
+                {
+                    'success': False,
+                    'error': 'Failed to update profile', 
+                    'detail': str(e)
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class CompanyDebugView(APIView):
+    """Debug endpoint to check company data"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        return Response({
+            'user_type': type(user).__name__,
+            'user_id': getattr(user, 'company_id', None) or getattr(user, 'user_id', None),
+            'is_company': isinstance(user, Companies),
+            'has_company_image': hasattr(user, 'company_image'),
+            'company_image_value': str(getattr(user, 'company_image', None)),
+            'has_address': hasattr(user, 'address'),
+            'address_value': str(getattr(user, 'address', None)),
+        })
 
 
 #For Admin 

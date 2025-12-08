@@ -1,8 +1,9 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../Styles/Page/clientProfile.css";
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider.js";
+import EditProfileModal from "../Profile/EditProfileModal.js";
 
 const ProfilePage = () => {
   const {
@@ -12,8 +13,12 @@ const ProfilePage = () => {
     isLoadingUser,
     userError,
     user_type,
+    refreshUserData,
   } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const links = [
     {
@@ -47,7 +52,16 @@ const ProfilePage = () => {
   }, [accessToken, navigate]);
 
   const handleEditProfile = () => {
-    navigate("/client/edit-profile");
+    setIsEditModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleModalSuccess = () => {
+    // Optional: Show success message or toast notification
+    console.log("Profile updated successfully!");
   };
   useEffect(() => {
     if (user_type && user_type !== "user" && user_type !== "admin") {
@@ -89,7 +103,12 @@ const ProfilePage = () => {
     <>
       <Navbar
         links={links}
-        profileImage={`http://localhost:8000${userData.avatar}`}
+        profileImage={
+          userData?.avatar
+            ? `http://localhost:8000${userData.avatar}`
+            : "https://ui-avatars.com/api/?name=User&background=random"
+        }
+        profilePath="/client/profile"
       />
       <div className="profile-page" style={{ marginTop: "80px" }}>
         <div className="profile-container">
@@ -99,7 +118,11 @@ const ProfilePage = () => {
             <div className="profile-card">
               <div className="profile-avatar-wrapper">
                 <img
-                  src={`http://localhost:8000${userData.avatar}`}
+                  src={
+                    userData.avatar === ""
+                      ? "https://ui-avatars.com/api/?name=User&background=random"
+                      : `http://localhost:8000${userData.avatar}`
+                  }
                   alt="Profile"
                   className="profile-avatar"
                 />
@@ -250,6 +273,13 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+      />
     </>
   );
 };

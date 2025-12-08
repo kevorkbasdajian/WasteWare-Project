@@ -17,7 +17,7 @@
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px #10b981;
 }
 
 .form-title {
@@ -256,7 +256,7 @@
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px #10b981;
   max-height: calc(100vh - 250px);
   display: flex;
   flex-direction: column;
