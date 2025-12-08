@@ -60,15 +60,44 @@ class UserSignupView(APIView):
     permission_classes = [AllowAny]  
 
     def post(self, request):
-        serializer = UserSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token = get_tokens_for_user(user)
-            access = token['access']
-            response = Response({'user_id': user.user_id, 'access': access},status = status.HTTP_201_CREATED)
-
-            return response
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = UserSignupSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                try:
+                    user = serializer.save()
+                    token = get_tokens_for_user(user)
+                    access = token['access']
+                    response = Response(
+                        {'user_id': user.user_id, 'access': access},
+                        status=status.HTTP_201_CREATED
+                    )
+                    return response
+                    
+                except Exception as e:
+                    # Log the error for debugging
+                    print(f"Error creating user: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                    
+                    # Return user-friendly error
+                    return Response(
+                        {'error': 'Failed to create account. Please try again.', 'detail': str(e)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            # Catch any unexpected errors
+            print(f"Unexpected error in signup: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
+            return Response(
+                {'error': 'Server error. Please try again later.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # --------------------------

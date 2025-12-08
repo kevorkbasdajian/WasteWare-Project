@@ -75,6 +75,8 @@ export const SignUpPage = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const { password2, terms, ...payload } = values;
     set_is_loading(true);
+    console.log("PAYLOAD:", payload);
+
     let url =
       "https://wasteware-project-production.up.railway.app/api/auth/signup/user/";
 
@@ -85,11 +87,41 @@ export const SignUpPage = () => {
         body: JSON.stringify(payload),
       });
 
+      // Check content type before parsing
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        // Server returned HTML or other non-JSON content (usually error page)
+        const text = await response.text();
+        console.error(
+          "Server returned non-JSON response:",
+          text.substring(0, 200)
+        );
+
+        set_is_loading(false);
+        setBackendError(
+          "Server error. Please try again later or contact support."
+        );
+        return;
+      }
+
       const data = await response.json();
       set_is_loading(false);
 
       if (!response.ok) {
-        setBackendError(data.email?.[0] || data.detail || "Signup failed.");
+        // LOG THE FULL ERROR FOR DEBUGGING
+        console.log("❌ Backend Error Response:", data);
+
+        // Handle various error formats
+        const errorMessage =
+          data.email?.[0] ||
+          data.error ||
+          data.detail ||
+          data.message ||
+          JSON.stringify(data) || // Show full error if nothing else
+          "Signup failed. Please check your information.";
+
+        setBackendError(errorMessage);
       } else {
         setsnackbar(true);
 
@@ -102,11 +134,22 @@ export const SignUpPage = () => {
         }
       }
     } catch (error) {
+      set_is_loading(false);
       console.log("❌ Request failed:", error);
-      alert("Request failed: " + error.message);
+
+      // Better error message for users
+      if (error.name === "SyntaxError") {
+        setBackendError("Server error. Please try again later.");
+      } else if (
+        error.message.includes("NetworkError") ||
+        error.message.includes("Failed to fetch")
+      ) {
+        setBackendError("Network error. Please check your connection.");
+      } else {
+        setBackendError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setSubmitting(false);
-      resetForm();
     }
   };
   const closesnackbar = () => {

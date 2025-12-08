@@ -28,22 +28,18 @@ DEBUG = env.bool('DEBUG', default=True)
 
 # Detect if running on Railway
 IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+CORS_ALLOW_ALL_ORIGINS = False  # Don't allow all origins in production
 
 if IS_RAILWAY:
-    ALLOWED_HOSTS = [
-        '.railway.app',
-        '.up.railway.app',
-    ]
-
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",  
         "https://waste-ware-project.vercel.app"
     ]
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
+    # FOR LOCAL DEVELOPMENT
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
+        "http://127.0.0.1:8000",
     ]
 
 USE_TZ = True
@@ -77,6 +73,15 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
