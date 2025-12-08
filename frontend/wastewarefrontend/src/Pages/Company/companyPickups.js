@@ -475,6 +475,7 @@ const CompanyPickups = () => {
             : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"
+        homepath="/company"
       />
       <HeaderBox
         text="Create Pickup & Track"

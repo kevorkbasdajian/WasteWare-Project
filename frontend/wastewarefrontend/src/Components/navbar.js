@@ -28,6 +28,7 @@ const Navbar = ({
   links = [],
   profileImage,
   profilePath,
+  homepath = "/",
 }) => {
   const [darkMode, setDarkMode] = useState(false);
   const location = useLocation(); // Get current route
@@ -83,7 +84,7 @@ const Navbar = ({
     <nav className="navbar glass">
       <div className="navbar-container">
         {/* Logo */}
-        <Link to="/" className="navbar-logo">
+        <Link to={homepath} className="navbar-logo">
           <i
             className="fa-solid fa-recycle fa-2x navbar-logo-img"
             style={{ color: "#2e7d32" }}
