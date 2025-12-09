@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(_file_).resolve().parent.parent
 
 # Load environment variables
 load_dotenv()
@@ -197,10 +197,42 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 #     SESSION_COOKIE_SECURE = True
 #     CSRF_COOKIE_SECURE = True
 
-SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://rjcsykwglyrdqrpbzkbz.supabase.co')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqY3N5a3dnbHlyZHFycGJ6a2J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjU2NTMsImV4cCI6MjA4MDg0MTY1M30.eZTIDAimCRBcWiYb0cQbtvnIzT5DOGEw0eWQEkm37S8')
-SUPABASE_BUCKET = os.environ.get('SUPABASE_BUCKET', 'wasteware-media')
+# In your settings.py - UPDATE THIS SECTION
 
-DEFAULT_FILE_STORAGE = 'authentication.storage_backend.SupabaseStorage'
+import os
+from supabase import create_client, Client
 
-MEDIA_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/'
+
+SUPABASE_URL = "https://rjcsykwglyrdqrpbzkbz.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqY3N5a3dnbHlyZHFycGJ6a2J6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTI2NTY1MywiZXhwIjoyMDgwODQxNjUzfQ.oRh0GdZQo62pj6qbkD1WhVzLTuB8adSqc4N-aHCIs9Y"
+
+SUPABASE: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Media settings
+DEFAULT_FILE_STORAGE = "authentication.storage_backend.SupabaseMediaStorage"
+MEDIA_URL = "/media/"
+
+# BASE_DIR = Path(_file_).resolve().parent.parent
+
+# # Supabase Configuration
+# SUPABASE_URL = os.environ.get(
+#     "SUPABASE_URL", 
+#     "https://rjcsykwglyrdqrpbzkbz.supabase.co"
+# )
+
+# # Anon key - for frontend/public access
+# SUPABASE_KEY = os.environ.get(
+#     "SUPABASE_KEY",
+#     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqY3N5a3dnbHlyZHFycGJ6a2J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjU2NTMsImV4cCI6MjA4MDg0MTY1M30.eZTIDAimCRBcWiYb0cQbtvnIzT5DOGEw0eWQEkm37S8"
+# )
+
+# # Service role key - for backend uploads (bypasses RLS)
+# SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqY3N5a3dnbHlyZHFycGJ6a2J6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTI2NTY1MywiZXhwIjoyMDgwODQxNjUzfQ.oRh0GdZQo62pj6qbkD1WhVzLTuB8adSqc4N-aHCIs9Y')
+
+# SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "wasteware-media")
+
+# # Use Supabase for file storage
+# DEFAULT_FILE_STORAGE = "authentication.storage_backend.SupabaseStorage"
+
+# # Media URL
+# MEDIA_URL = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/"

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from .storage_backend import SupabaseMediaStorage
 
 # ===============================
 # 1. Core Entities
@@ -14,7 +15,7 @@ class Roles(models.Model):
     class Meta:
         db_table = 'Roles'
     
-    def __str__(self):
+    def _str_(self):
         return self.role_name
 
 
@@ -31,7 +32,7 @@ class Addresses(models.Model):
     class Meta:
         db_table = "Addresses"
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.street}, {self.city}"
 
 
@@ -45,7 +46,7 @@ class Users(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     badge = models.CharField(max_length=100, null=True, blank=True)
-    profile_image = models.ImageField(upload_to="profile_images/",null=True, blank=True)
+    profile_image = models.ImageField(upload_to="profile_images/",null=True, blank=True, storage=SupabaseMediaStorage())
     points_balance = models.IntegerField(default=0)
     account_status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(default=timezone.now)
@@ -64,7 +65,7 @@ class Users(models.Model):
     class Meta:
         db_table = 'Users'
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.first_name} {self.last_name}"
 
     # Add these properties for Django REST Framework compatibility
@@ -88,14 +89,14 @@ class Companies(models.Model):
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     license_number = models.CharField(max_length=50, null=True, blank=True)
     verification_status = models.CharField(max_length=20, default='pending')
-    company_image = models.ImageField(upload_to="company_images/",null=True, blank=True)
+    company_image = models.ImageField(upload_to="company_images/",null=True, blank=True, storage=SupabaseMediaStorage())
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = 'Companies'
 
-    def __str__(self):
+    def _str_(self):
         return self.company_name
 
     # Add these properties for Django REST Framework compatibility
@@ -142,7 +143,7 @@ class Notifications(models.Model):
         db_table = 'Notifications'
         ordering = ['-created_at']
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.title} - {self.created_at}"
 
 class Permissions(models.Model):
@@ -156,5 +157,5 @@ class Permissions(models.Model):
     class Meta:
         db_table = 'Permissions'
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.role.role_name} - {self.module_name}"
