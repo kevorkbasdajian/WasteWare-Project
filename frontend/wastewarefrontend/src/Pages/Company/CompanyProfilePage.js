@@ -8,7 +8,7 @@ import HeaderBox from "../../Components/HeaderBox.js";
 import EditCompanyProfileModal from "./EditCompanyProfile.js";
 
 const CompanyProfilePage = () => {
-  const { clearAuth, accessToken, user_type, refreshUserData } =
+  const { clearAuth, accessToken, user_type, refreshUserData, userData } =
     useContext(AuthContext);
   const fetchWithAuth = useFetchWithAuth();
 
@@ -270,9 +270,8 @@ const CompanyProfilePage = () => {
       <Navbar
         links={links}
         profileImage={
-          profileData?.avatar
-            ? `https://wasteware-project-production.up.railway.app${profileData.avatar}`
-            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+          userData?.avatar ||
+          "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"
         homepath="/company"
@@ -287,9 +286,8 @@ const CompanyProfilePage = () => {
               <div className="profile-avatar-wrapper">
                 <img
                   src={
-                    profileData.avatar
-                      ? `https://wasteware-project-production.up.railway.app${profileData.avatar}`
-                      : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+                    profileData?.avatar ||
+                    "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
                   }
                   alt="Company Logo"
                   className="profile-avatar"

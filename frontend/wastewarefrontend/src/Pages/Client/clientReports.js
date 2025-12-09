@@ -333,9 +333,8 @@ const Reports = () => {
         links={links}
         profilePath="/client/profile"
         profileImage={
-          userData?.avatar
-            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
-            : "https://ui-avatars.com/api/?name=User&background=random"
+          userData?.avatar ||
+          "https://ui-avatars.com/api/?name=User&background=random"
         }
       />
 

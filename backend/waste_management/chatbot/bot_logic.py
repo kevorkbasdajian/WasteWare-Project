@@ -31,7 +31,7 @@ class WasteWareChatbot:
                 print(f"🔑 API Key (first 10 chars): {settings.GEMINI_API_KEY[:10]}")
                 
                 # Try to initialize the model
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
+                self.model = genai.GenerativeModel('gemini-pro')
                 print("✅ Gemini 1.5 Flash initialized successfully!")
             
         except Exception as e:

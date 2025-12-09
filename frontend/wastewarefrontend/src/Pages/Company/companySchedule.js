@@ -251,9 +251,8 @@ const CompanySchedule = () => {
       <Navbar
         links={links}
         profileImage={
-          userData?.avatar
-            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
-            : "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
+          userData?.avatar ||
+          "https://ui-avatars.com/api/?name=Company&background=10B981&color=fff&size=150"
         }
         profilePath="/company/profile"
         homepath="/company"
