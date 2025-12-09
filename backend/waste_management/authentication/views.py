@@ -232,7 +232,6 @@ class ProfileView(APIView):
 # --------------------------
 
 
-
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -272,7 +271,18 @@ class UpdateProfileView(APIView):
             # PROFILE IMAGE
             # -----------------------
             if 'profile_image' in request.FILES:
-                user.profile_image = request.FILES['profile_image']
+                profile_image = request.FILES['profile_image']
+                
+                # Delete old image from Supabase if exists
+                if user.profile_image:
+                    try:
+                        user.profile_image.delete(save=False)
+                    except Exception as e:
+                        print(f"Error deleting old image: {e}")
+                
+                # Save new image (will use Supabase storage if configured)
+                user.profile_image = profile_image
+                print(f"Profile image path after assignment: {user.profile_image}")
 
             # -----------------------
             # ADDRESS (correct field names)
@@ -312,8 +322,14 @@ class UpdateProfileView(APIView):
             # -----------------------
             user.save()
 
+            
+            # Verify storage was used
+            if user.profile_image:
+                print(f"Final image URL: {user.profile_image.url}")
+            
             # Return updated profile
-            serializer = ProfileSerializer(user)
+            serializer = ProfileSerializer(user, context={'request': request})
+
 
             return Response({
                 'success': True,
@@ -322,6 +338,7 @@ class UpdateProfileView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            print(f"Error updating profile: {e}")
             return Response({
                 'success': False,
                 'error': str(e)
@@ -371,7 +388,29 @@ class NotificationViewSet(viewsets.ModelViewSet):
         try:
             company = Companies.objects.get(email=user.email) if hasattr(user, 'email') else None
             if company:
-                return Notifications.objects.filter(company=company).select_related('user', 'company')
+                # Get unique notifications by grouping broadcast messages
+                from django.db.models import Min
+                
+                # Get one representative notification for each broadcast
+                broadcast_ids = Notifications.objects.filter(
+                    company=company,
+                    target_audience='all_users'
+                ).values(
+                    'title', 'message', 'type', 'priority', 'created_at__date'
+                ).annotate(
+                    min_id=Min('notification_id')
+                ).values_list('min_id', flat=True)
+                
+                # Get all custom (non-broadcast) notifications
+                custom_notifications = Notifications.objects.filter(
+                    company=company,
+                    target_audience='custom'
+                )
+                
+                # Combine them
+                return Notifications.objects.filter(
+                    Q(notification_id__in=broadcast_ids) | Q(pk__in=custom_notifications)
+                ).select_related('user', 'company').distinct()
         except Companies.DoesNotExist:
             pass
         
@@ -384,6 +423,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             pass
         
         return Notifications.objects.none()
+    
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

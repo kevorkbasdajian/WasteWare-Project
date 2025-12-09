@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import "../../Styles/Page/CompanyDashboard.css";
+import "../../Styles/Page/companyDashboard.css";
 import Navbar from "../../Components/navbar.js";
 import { AuthContext } from "../../Components/AuthProvider";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ const CompanyDashboard = () => {
     loading: true,
   });
   const [selectedPeriod, setSelectedPeriod] = useState("week");
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
 
   // chart data will be computed from API pickups
   const [chartData, setChartData] = useState({
@@ -85,6 +86,7 @@ const CompanyDashboard = () => {
       icon: "fa-solid fa-bell fa-lg",
     },
   ];
+
   useEffect(() => {
     if (!accessToken) {
       navigate("/login", { replace: true });
@@ -226,6 +228,65 @@ const CompanyDashboard = () => {
   };
   // ---------- End helpers ----------
 
+  // Fetch company notifications
+  const fetchNotifications = async () => {
+    if (!accessToken) {
+      console.log("No access token available");
+      return;
+    }
+
+    setLoadingNotifications(true);
+    try {
+      console.log("Fetching notifications...");
+      // Try the direct endpoint first
+      const response = await fetch(
+        "https://wasteware-project-production.up.railway.app/api/auth/notifications/",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Notifications received:", data);
+        console.log("Number of notifications:", data?.length || 0);
+
+        // The API returns an array directly
+        const notificationsArray = Array.isArray(data) ? data : [];
+
+        // Get only the 3 most recent
+        setDashboardData((prev) => ({
+          ...prev,
+          notifications: notificationsArray.slice(0, 3),
+        }));
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch notifications:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+        setDashboardData((prev) => ({
+          ...prev,
+          notifications: [],
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      setDashboardData((prev) => ({
+        ...prev,
+        notifications: [],
+      }));
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!accessToken) return;
@@ -304,36 +365,12 @@ const CompanyDashboard = () => {
           recentPickups: (pickups || []).slice(0, 5),
           upcomingSchedules: (schedules || []).slice(0, 5),
           activeRoutes: activeRoutes.slice(0, 5),
-          notifications: [
-            {
-              id: 1,
-              type: "success",
-              title: "Route Completed",
-              message: `Route #${
-                routes?.[0]?.route_id || "001"
-              } completed successfully`,
-              time: "1 hour ago",
-              icon: "fa-check-circle",
-            },
-            {
-              id: 2,
-              type: "info",
-              title: "New Schedule",
-              message: "5 new pickups scheduled for tomorrow",
-              time: "3 hours ago",
-              icon: "fa-calendar",
-            },
-            {
-              id: 3,
-              type: "warning",
-              title: "Truck Maintenance",
-              message: "Truck #3 requires maintenance check",
-              time: "5 hours ago",
-              icon: "fa-wrench",
-            },
-          ],
+          notifications: [], // Will be filled by fetchNotifications
           loading: false,
         });
+
+        // Fetch notifications separately
+        fetchNotifications();
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setDashboardData((prev) => ({ ...prev, loading: false }));
@@ -343,6 +380,68 @@ const CompanyDashboard = () => {
     fetchDashboardData();
   }, [accessToken]);
 
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type?.toLowerCase()) {
+      case "alert":
+        return "fa-exclamation-triangle";
+      case "reward":
+        return "fa-gift";
+      case "report":
+        return "fa-file-alt";
+      case "system":
+        return "fa-cog";
+      default:
+        return "fa-bell";
+    }
+  };
+
+  const getNotificationType = (type) => {
+    switch (type?.toLowerCase()) {
+      case "alert":
+        return "warning";
+      case "reward":
+        return "success";
+      case "report":
+        return "info";
+      case "system":
+        return "info";
+      default:
+        return "info";
+    }
+  };
+
+  const getPriorityClass = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case "high":
+        return "priority-high";
+      case "normal":
+        return "priority-normal";
+      case "low":
+        return "priority-low";
+      default:
+        return "priority-normal";
+    }
+  };
   if (isLoadingUser || dashboardData.loading) {
     return (
       <div className="loading">
@@ -607,7 +706,7 @@ const CompanyDashboard = () => {
           {/* Notifications */}
           <div className="company-notifications-section">
             <div className="section-header">
-              <h2>Notifications</h2>
+              <h2>Sent Notifications</h2>
               <button
                 className="view-all-btn"
                 onClick={() => navigate("/company/notifications")}
@@ -616,23 +715,78 @@ const CompanyDashboard = () => {
               </button>
             </div>
             <div className="notifications-list">
-              {dashboardData.notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${notification.type}`}
-                >
-                  <div className="notification-icon">
-                    <i className={`fa-solid ${notification.icon}`}></i>
-                  </div>
-                  <div className="notification-content">
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    <span className="notification-time">
-                      {notification.time}
-                    </span>
-                  </div>
+              {loadingNotifications ? (
+                <div className="notification-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading notifications...</p>
                 </div>
-              ))}
+              ) : dashboardData.notifications.length > 0 ? (
+                dashboardData.notifications.map((notification) => (
+                  <div
+                    key={notification.notification_id}
+                    className={`notification-item ${getNotificationType(
+                      notification.type
+                    )} ${getPriorityClass(notification.priority)}`}
+                  >
+                    <div className="notification-icon">
+                      <i
+                        className={`fa-solid ${getNotificationIcon(
+                          notification.type
+                        )}`}
+                      ></i>
+                    </div>
+                    <div className="notification-content">
+                      <div className="notification-header">
+                        <h4>{notification.title}</h4>
+                        {notification.priority === "high" && (
+                          <span className="priority-badge high">
+                            High Priority
+                          </span>
+                        )}
+                      </div>
+                      <p>{notification.message || "No message"}</p>
+                      <div className="notification-meta">
+                        <span className="notification-time">
+                          {formatNotificationTime(notification.created_at)}
+                        </span>
+                        {notification.user_name &&
+                          !notification.is_broadcast && (
+                            <span className="notification-recipient">
+                              → {notification.user_name}
+                            </span>
+                          )}
+                        {notification.target_audience === "all_users" && (
+                          <span className="notification-audience">
+                            <i className="fa-solid fa-users"></i>
+                            {notification.recipient_count
+                              ? `Sent to ${notification.recipient_count} users`
+                              : "All Users"}
+                          </span>
+                        )}
+                        {notification.target_audience === "custom" &&
+                          notification.recipient_count && (
+                            <span className="notification-audience">
+                              <i className="fa-solid fa-user-group"></i>
+                              {notification.recipient_count} recipient
+                              {notification.recipient_count > 1 ? "s" : ""}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                    {!notification.is_read && (
+                      <div className="unread-indicator" title="Unread"></div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="notification-empty">
+                  <i className="fa-solid fa-paper-plane"></i>
+                  <p>No notifications sent yet</p>
+                  <small>
+                    Send notifications to your users from the Notifications page
+                  </small>
+                </div>
+              )}
             </div>
           </div>
         </div>
