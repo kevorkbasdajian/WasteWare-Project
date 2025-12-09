@@ -14,18 +14,10 @@ class WasteWareChatbot:
     def _init_(self):
         self.model = None
         try:
-            print(f"🔧 Attempting to initialize Gemini model...")
-            print(f"🔑 API Key configured: {bool(settings.GEMINI_API_KEY)}")
-            print(f"🔑 API Key (first 10 chars): {settings.GEMINI_API_KEY[:10] if hasattr(settings, 'GEMINI_API_KEY') and settings.GEMINI_API_KEY else 'NOT SET'}")
-            
-            self.model = genai.GenerativeModel('gemini-1.5-flash')  # Changed from gemini-2.5-flash
-            print("✅ Gemini 1.5 Flash initialized successfully!")
-        except AttributeError as e:
-            print(f"❌ GEMINI_API_KEY not found in settings: {e}")
+            self.model = genai.GenerativeModel('models/gemini-2.5-flash')
+            print("✅ Gemini 2.5 Flash initialized successfully!")
         except Exception as e:
             print(f"❌ Could not initialize Gemini model: {e}")
-            import traceback
-            traceback.print_exc()
         
         self.conversation_history = {}
         
@@ -415,7 +407,6 @@ Keep responses:
         """Get AI response for user message"""
         
         if not self.model:
-            print("❌ ERROR: Model is None - Gemini not initialized properly")
             return "Sorry, AI service is temporarily unavailable. Please try again later."
         
         try:
@@ -426,43 +417,29 @@ Keep responses:
                     return location_response
             
             # Otherwise, use Gemini AI
-            print(f"🤖 Calling Gemini AI for message: '{user_message}'")
             return self._get_gemini_response(user_message, user_id)
         except Exception as e:
-            print(f"❌ GEMINI ERROR: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"Gemini error: {e}")
             return "I'm having trouble responding right now. Please try again in a moment."
     
     def _get_gemini_response(self, user_message, user_id):
         """Get response from Gemini AI with conversation context"""
         
-        try:
-            # Get or create conversation for this user
-            if user_id not in self.conversation_history:
-                print(f"🆕 Creating new conversation for user {user_id}")
-                self.conversation_history[user_id] = self.model.start_chat(history=[])
-            
-            chat = self.conversation_history[user_id]
-            
-            # Add system prompt on first message
-            if len(chat.history) == 0:
-                full_message = f"{self.system_prompt}\n\nUser: {user_message}"
-                print(f"📝 First message - including system prompt")
-            else:
-                full_message = user_message
-                print(f"💬 Continuing conversation")
-            
-            # Get AI response
-            print(f"🚀 Sending to Gemini: '{full_message[:100]}...'")
-            response = chat.send_message(full_message)
-            print(f"✅ Gemini responded successfully")
-            return response.text
-        except Exception as e:
-            print(f"❌ ERROR in _get_gemini_response: {e}")
-            import traceback
-            traceback.print_exc()
-            raise  # Re-raise to be caught by get_response
+        # Get or create conversation for this user
+        if user_id not in self.conversation_history:
+            self.conversation_history[user_id] = self.model.start_chat(history=[])
+        
+        chat = self.conversation_history[user_id]
+        
+        # Add system prompt on first message
+        if len(chat.history) == 0:
+            full_message = f"{self.system_prompt}\n\nUser: {user_message}"
+        else:
+            full_message = user_message
+        
+        # Get AI response
+        response = chat.send_message(full_message)
+        return response.text
     
     def clear_history(self, user_id):
         """Clear conversation history for a user"""
