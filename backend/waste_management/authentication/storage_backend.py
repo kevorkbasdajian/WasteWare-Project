@@ -7,6 +7,7 @@ from django.utils.deconstruct import deconstructible
 import uuid
 import os
 
+
 @deconstructible
 class SupabaseMediaStorage(Storage):
     """
@@ -14,7 +15,7 @@ class SupabaseMediaStorage(Storage):
     """
     
     def __init__(self):
-        self.bucket_name = "images"
+        self.bucket_name = "wasteware-media"
     
     def _save(self, name, content):
         """
