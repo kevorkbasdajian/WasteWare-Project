@@ -11,14 +11,14 @@ except Exception as e:
     print(f"Warning: Gemini API key not configured: {e}")
 
 class WasteWareChatbot:
-    def _init_(self):
+    def __init__(self):  # FIXED: Was _init_ (single underscore)
         self.model = None
         try:
             print(f"🔧 Attempting to initialize Gemini model...")
             print(f"🔑 API Key configured: {bool(settings.GEMINI_API_KEY)}")
             print(f"🔑 API Key (first 10 chars): {settings.GEMINI_API_KEY[:10] if hasattr(settings, 'GEMINI_API_KEY') and settings.GEMINI_API_KEY else 'NOT SET'}")
             
-            self.model = genai.GenerativeModel('gemini-1.5-flash')  # Changed from gemini-2.5-flash
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
             print("✅ Gemini 1.5 Flash initialized successfully!")
         except AttributeError as e:
             print(f"❌ GEMINI_API_KEY not found in settings: {e}")
@@ -110,7 +110,7 @@ Keep responses:
                 'route',
                 'route__waste_type',
                 'route__driver'
-            ).order_by('schedule_pickup_date', 'schedule_start_time')
+            ).order_by('schedule__pickup_date', 'schedule__start_time')  # FIXED: Added double underscores
             
             if not not_started_pickups.exists():
                 return f"🗓 No upcoming pickups scheduled yet for {user.address.city}. Check back soon!"
@@ -136,7 +136,7 @@ Keep responses:
                 response += f"   📅 Date: {pickup_date}\n"
                 response += f"   ⏰ Time: {start_time} - {end_time}\n"
                 response += f"   🗑 Type: {waste_type}\n"
-                response += f"   📍 Status: {pickup.status}\n\n"
+                response += f"   📊 Status: {pickup.status}\n\n"
             
             response += "💡 Make sure your waste is ready before the pickup time!"
             return response
@@ -168,10 +168,10 @@ Keep responses:
                 'route__waste_type',
                 'route__driver'
             ).prefetch_related(
-                'route__route_stops',
-                'route_route_stops_dumping',
-                'route_route_stopsdumping_address'
-            ).order_by('schedule_pickup_date', 'schedule_start_time')[:3]  # Limit to first 3 for detailed view
+                'route__route_stops',  # FIXED: Proper field path
+                'route__route_stops__dumping',  # FIXED: Proper field path
+                'route__route_stops__dumping__address'  # FIXED: Proper field path
+            ).order_by('schedule__pickup_date', 'schedule__start_time')[:3]  # FIXED: Added double underscores
             
             if not not_started_pickups.exists():
                 return f"🗓 No upcoming pickups found. Check back soon!"
@@ -213,7 +213,7 @@ Keep responses:
                         dumping_address = f"{dumping.address.street}, {dumping.address.city}" if dumping and dumping.address else "Address not available"
                         
                         response += f"   {idx}. {dumping_name}\n"
-                        response += f"      📮 {dumping_address}\n"
+                        response += f"      📍 {dumping_address}\n"
                     response += "\n"
                 else:
                     response += f"📍 *Route Stops:* No stops defined yet\n\n"
@@ -250,8 +250,8 @@ Keep responses:
             
             # Get all dumping locations with valid coordinates
             all_dumpings = Dumping.objects.select_related('address', 'waste_type').filter(
-                address_latitude_isnull=False,
-                address_longitude_isnull=False
+                address__latitude__isnull=False,  # FIXED: Added double underscores
+                address__longitude__isnull=False  # FIXED: Added double underscores
             )
             
             # Calculate distances and filter within 10km
@@ -278,10 +278,10 @@ Keep responses:
             nearby_centers.sort(key=lambda x: x['distance'])
             
             if not nearby_centers:
-                return f"♻ No recycling centers found within 10km of your location. Try checking the Map page for all locations!"
+                return f"♻️ No recycling centers found within 10km of your location. Try checking the Map page for all locations!"
             
             # Format response (limit to top 5)
-            response = f"♻ *Recycling Centers Near You (Within 10km):*\n\n"
+            response = f"♻️ *Recycling Centers Near You (Within 10km):*\n\n"
             for idx, center_data in enumerate(nearby_centers[:5], 1):
                 center = center_data['dumping']
                 distance = center_data['distance']
@@ -289,7 +289,7 @@ Keep responses:
                 response += f"{idx}. *{center.Title}*\n"
                 response += f"   📏 Distance: {distance:.1f} km\n"
                 response += f"   🗑 Type: {center.waste_type.name if center.waste_type else 'General'}\n"
-                response += f"   📮 Location: {center.address.street}, {center.address.city}\n"
+                response += f"   📍 Location: {center.address.street}, {center.address.city}\n"
                 
                 if center.maximum_capacity:
                     capacity_pct = (center.collected_waste / center.maximum_capacity) * 100
@@ -320,14 +320,14 @@ Keep responses:
             # Find active routes that have stops in user's city
             routes = Route.objects.filter(
                 status='active',
-                route_stops_dumpingaddresscity_iexact=user.address.city
+                route_stops__dumping__address__city__iexact=user.address.city  # FIXED: Added double underscores
             ).select_related(
                 'waste_type', 
                 'driver'
             ).prefetch_related(
                 'route_stops',
                 'route_stops__dumping',
-                'route_stops_dumping_address'
+                'route_stops__dumping__address'  # FIXED: Added double underscores
             ).distinct()[:5]
             
             if not routes.exists():
@@ -390,7 +390,7 @@ Keep responses:
                     print(f"🎯 DEBUG: Calling get_next_pickup()")
                     return self.get_next_pickup(user_id)
         
-        # Recycling center queries (UPDATED: dumpsters, dumping, near me)
+        # Recycling center queries
         center_keywords = ['recycling center', 'nearest', 'close', 'nearby', 'where can i', 'dumping', 'dumpster', 'near me', 'centers near']
         print(f"🔍 DEBUG: Checking center keywords...")
         for keyword in center_keywords:
