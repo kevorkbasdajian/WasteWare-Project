@@ -241,7 +241,7 @@ const ReportModal = ({
                           src={
                             report.user.profile_image === ""
                               ? "https://ui-avatars.com/api/?name=User&background=random"
-                              : `https://wasteware-project-production.up.railway.app${report.user.profile_image}`
+                              : report.user.profile_image
                           }
                           alt={`${report.user.first_name} ${report.user.last_name}`}
                           className="user-avatar-image"
