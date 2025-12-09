@@ -3,15 +3,17 @@ from django.conf import settings
 from supabase import create_client, Client
 import os
 from io import BytesIO
-from urllib.parse import urljoin
 import tempfile
 
 class SupabaseStorage(Storage):
-    def __init__(self):
+    def _init_(self):
         self.supabase_url = settings.SUPABASE_URL
         self.supabase_key = settings.SUPABASE_KEY
         self.bucket_name = settings.SUPABASE_BUCKET
         self.client: Client = create_client(self.supabase_url, self.supabase_key)
+        print(f"✅ SupabaseStorage initialized:")
+        print(f"   URL: {self.supabase_url}")
+        print(f"   Bucket: {self.bucket_name}")
         
     def _normalize_name(self, name):
         """Normalize the file name"""
@@ -19,116 +21,77 @@ class SupabaseStorage(Storage):
     
     def _save(self, name, content):
         """
-        Save file to Supabase Storage.
-        - Prefer passing raw bytes (works with storage3).
-        - If not possible, write a temp file and pass its path string.
-        Returns the storage key (name).
+        Save file to Supabase Storage
         """
         name = self._normalize_name(name)
         content_type = self._get_content_type(name)
+        
+        print(f"\n{'='*60}")
+        print(f"🔵 SAVE OPERATION STARTED")
+        print(f"   File path: {name}")
+        print(f"   Content type: {content_type}")
+        print(f"{'='*60}")
 
-        # Try to get raw bytes first
-        file_bytes = None
-        if hasattr(content, 'read'):
-            try:
-                content.seek(0)
-            except Exception:
-                pass
-            try:
-                file_bytes = content.read()
-                if isinstance(file_bytes, memoryview):
-                    file_bytes = bytes(file_bytes)
-            except Exception:
-                file_bytes = None
-        elif isinstance(content, (bytes, bytearray)):
-            file_bytes = bytes(content)
-
-        def upload_using_bytes(bts):
-            return self.client.storage.from_(self.bucket_name).upload(
-                path=name,
-                file=bts,
-                file_options={"content-type": content_type}
-            )
-
-        def upload_using_path(path_str):
-            return self.client.storage.from_(self.bucket_name).upload(
-                path=name,
-                file=path_str,
-                file_options={"content-type": content_type}
-            )
-
-        # Attempt upload using bytes
+        # Read file content
         try:
-            if file_bytes is not None:
-                result = upload_using_bytes(file_bytes)
-            else:
-                # fallback: write a temp file and pass its path
-                with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                    chunk = content.read() if hasattr(content, 'read') else bytes(content)
-                    tmp.write(chunk)
-                    tmp_path = tmp.name
-                try:
-                    result = upload_using_path(tmp_path)
-                finally:
-                    try:
-                        os.remove(tmp_path)
-                    except Exception:
-                        pass
+            if hasattr(content, 'seek'):
+                content.seek(0)
+            
+            file_bytes = content.read() if hasattr(content, 'read') else bytes(content)
+            
+            if isinstance(file_bytes, memoryview):
+                file_bytes = bytes(file_bytes)
+            
+            print(f"✅ File read successfully: {len(file_bytes)} bytes")
+            
+        except Exception as e:
+            print(f"❌ Error reading file: {e}")
+            raise Exception(f"Failed to read file: {str(e)}")
 
-            if isinstance(result, dict) and result.get('error'):
-                raise Exception(result.get('error'))
+        # Upload to Supabase
+        try:
+            print(f"🔵 Attempting upload to Supabase...")
+            print(f"   Bucket: {self.bucket_name}")
+            print(f"   Path: {name}")
+            
+            response = self.client.storage.from_(self.bucket_name).upload(
+                path=name,
+                file=file_bytes,
+                file_options={
+                    "content-type": content_type,
+                    "upsert": "true"  # Overwrite if exists
+                }
+            )
+            
+            print(f"✅ Upload response: {response}")
+            print(f"{'='*60}\n")
             return name
-
-        except Exception as exc:
-            # Try update
-            try:
-                if file_bytes is not None:
-                    upd = self.client.storage.from_(self.bucket_name).update(
-                        path=name, file=file_bytes, file_options={"content-type": content_type}
-                    )
-                else:
-                    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                        tmp.write(content.read() if hasattr(content, 'read') else bytes(content))
-                        tmp_path = tmp.name
-                    try:
-                        upd = self.client.storage.from_(self.bucket_name).update(
-                            path=name, file=tmp_path, file_options={"content-type": content_type}
-                        )
-                    finally:
-                        try: os.remove(tmp_path)
-                        except Exception: pass
-
-                if isinstance(upd, dict) and upd.get('error'):
-                    raise Exception(upd.get('error'))
-                return name
-
-            except Exception:
-                # Delete+upload fallback
+            
+        except Exception as upload_error:
+            print(f"❌ Upload failed: {upload_error}")
+            print(f"   Error type: {type(upload_error)}")
+            
+            # Try to get more error details
+            error_details = str(upload_error)
+            print(f"   Error details: {error_details}")
+            
+            # Check if it's a duplicate file error - try update instead
+            if "already exists" in error_details.lower() or "duplicate" in error_details.lower():
                 try:
-                    try:
-                        self.client.storage.from_(self.bucket_name).remove([name])
-                    except Exception:
-                        pass
-
-                    if file_bytes is not None:
-                        final = upload_using_bytes(file_bytes)
-                    else:
-                        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                            tmp.write(content.read() if hasattr(content, 'read') else bytes(content))
-                            tmp_path = tmp.name
-                        try:
-                            final = upload_using_path(tmp_path)
-                        finally:
-                            try: os.remove(tmp_path)
-                            except Exception: pass
-
-                    if isinstance(final, dict) and final.get('error'):
-                        raise Exception(final.get('error'))
+                    print(f"🔵 File exists, trying update...")
+                    update_response = self.client.storage.from_(self.bucket_name).update(
+                        path=name,
+                        file=file_bytes,
+                        file_options={"content-type": content_type}
+                    )
+                    print(f"✅ Update successful: {update_response}")
                     return name
-                except Exception:
-                    # if everything failed, re-raise last exception for visibility
-                    raise
-
+                except Exception as update_error:
+                    print(f"❌ Update failed: {update_error}")
+            
+            # If both upload and update fail, raise the error
+            print(f"{'='*60}\n")
+            raise Exception(f"Failed to save file to Supabase: {str(upload_error)}")
 
     def _open(self, name, mode='rb'):
         """Open file from Supabase Storage"""
@@ -143,23 +106,40 @@ class SupabaseStorage(Storage):
         """Delete file from Supabase Storage"""
         name = self._normalize_name(name)
         try:
+            print(f"🗑 Deleting file: {name}")
             self.client.storage.from_(self.bucket_name).remove([name])
+            print(f"✅ File deleted successfully")
         except Exception as e:
-            print(f"Error deleting from Supabase: {str(e)}")
+            print(f"❌ Error deleting file: {str(e)}")
     
     def exists(self, name):
         """Check if file exists in Supabase Storage"""
         name = self._normalize_name(name)
         try:
-            files = self.client.storage.from_(self.bucket_name).list()
-            return any(f['name'] == name for f in files)
+            # Try to list the specific file
+            path_parts = name.rsplit('/', 1)
+            if len(path_parts) == 2:
+                folder, filename = path_parts
+                files = self.client.storage.from_(self.bucket_name).list(folder)
+                return any(f['name'] == filename for f in files)
+            else:
+                files = self.client.storage.from_(self.bucket_name).list()
+                return any(f['name'] == name for f in files)
         except:
             return False
     
     def url(self, name):
-        """Get public URL for file"""
+        """
+        Return the FULL public URL for the file.
+        This is what Django will store in the database.
+        """
+        if not name:
+            return ""
+        
         name = self._normalize_name(name)
-        return f"{self.supabase_url}/storage/v1/object/public/{self.bucket_name}/{name}"
+        url = f"{self.supabase_url}/storage/v1/object/public/{self.bucket_name}/{name}"
+        print(f"📎 Generated URL: {url}")
+        return url
     
     def size(self, name):
         """Get file size"""
