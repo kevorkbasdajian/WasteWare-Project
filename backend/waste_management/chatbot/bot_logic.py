@@ -497,12 +497,23 @@ Keep responses:
         """Get response from Gemini AI with conversation context"""
         
         try:
+            print(f"🔍 DEBUG: Starting _get_gemini_response")
+            print(f"🔍 DEBUG: Model exists: {self.model is not None}")
+            print(f"🔍 DEBUG: User message: '{user_message}'")
+            print(f"🔍 DEBUG: User ID: {user_id}")
+            
             # Get or create conversation for this user
             if user_id not in self.conversation_history:
                 print(f"🆕 Creating new conversation for user {user_id}")
-                self.conversation_history[user_id] = self.model.start_chat(history=[])
+                try:
+                    self.conversation_history[user_id] = self.model.start_chat(history=[])
+                    print(f"✅ Chat created successfully")
+                except Exception as chat_error:
+                    print(f"❌ ERROR creating chat: {chat_error}")
+                    raise
             
             chat = self.conversation_history[user_id]
+            print(f"🔍 DEBUG: Chat history length: {len(chat.history)}")
             
             # Add system prompt on first message
             if len(chat.history) == 0:
@@ -513,15 +524,35 @@ Keep responses:
                 print(f"💬 Continuing conversation")
             
             # Get AI response
-            print(f"🚀 Sending to Gemini: '{full_message[:100]}...'")
-            response = chat.send_message(full_message)
-            print(f"✅ Gemini responded successfully")
-            return response.text
+            print(f"🚀 Sending to Gemini API...")
+            print(f"🚀 Message length: {len(full_message)} characters")
+            
+            try:
+                response = chat.send_message(full_message)
+                print(f"✅ Gemini API call successful")
+                print(f"✅ Response type: {type(response)}")
+                print(f"✅ Response text length: {len(response.text) if hasattr(response, 'text') else 'NO TEXT'}")
+                return response.text
+            except Exception as api_error:
+                print(f"❌ GEMINI API ERROR: {type(api_error).__name__}: {api_error}")
+                raise
             
         except Exception as e:
-            print(f"❌ ERROR in _get_gemini_response: {e}")
+            error_type = type(e).__name__
+            error_msg = str(e)
+            print(f"❌ ERROR in _get_gemini_response")
+            print(f"❌ Error Type: {error_type}")
+            print(f"❌ Error Message: {error_msg}")
             import traceback
             traceback.print_exc()
+            
+            # Check for specific error types
+            if "quota" in error_msg.lower() or "429" in error_msg:
+                print("⚠️ QUOTA/RATE LIMIT ERROR DETECTED")
+            elif "api key" in error_msg.lower() or "401" in error_msg or "403" in error_msg:
+                print("⚠️ API KEY ERROR DETECTED")
+            elif "timeout" in error_msg.lower():
+                print("⚠️ TIMEOUT ERROR DETECTED")
             
             # Try fallback before failing
             fallback = self.get_fallback_response(user_message)
