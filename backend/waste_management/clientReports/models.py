@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from authentication.models import Users, Addresses
+from authentication.storage_backend import SupabaseMediaStorage  # ← ADD THIS
+
 
 class Reports(models.Model):
     TYPE_CHOICES = [
@@ -63,7 +65,15 @@ class Reports(models.Model):
         blank=True
     )
     description = models.TextField(null=True, blank=True)
-    image_url = models.ImageField(upload_to='reports/', null=True, blank=True)
+    
+    # ← CHANGE THIS LINE
+    image_url = models.ImageField(
+        upload_to='reports/', 
+        storage=SupabaseMediaStorage(),  # ← ADD storage parameter
+        null=True, 
+        blank=True
+    )
+    
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

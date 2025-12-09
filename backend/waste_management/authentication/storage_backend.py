@@ -24,7 +24,7 @@ class SupabaseMediaStorage(Storage):
         """
         try:
             # Generate unique filename
-            file_extension = os.path.splitext(name)[1]
+            file_extension = os.path.splitext(name)[1].lower()
             file_name = f"{uuid.uuid4()}{file_extension}"
             
             # Read file content
@@ -33,11 +33,21 @@ class SupabaseMediaStorage(Storage):
             else:
                 file_content = content
             
+            # Determine content type based on extension
+            content_type_map = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+            }
+            content_type = content_type_map.get(file_extension, 'image/jpeg')
+            
             # Upload to Supabase
             settings.SUPABASE.storage.from_(self.bucket_name).upload(
                 file_name, 
                 file_content,
-                file_options={"content-type": "image/jpeg"}  # Adjust based on your needs
+                file_options={"content-type": content_type}
             )
             
             # Return just the filename (not full URL)
