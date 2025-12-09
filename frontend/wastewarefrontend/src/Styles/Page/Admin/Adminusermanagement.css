@@ -11,9 +11,18 @@
 
 .admin-main-content {
   flex: 1;
-  margin-left: 250px;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
+}
+
+/* Dynamic margin based on sidebar state */
+.admin-main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+.admin-main-content.sidebar-expanded {
+  margin-left: 250px;
 }
 
 /* ===== HEADER (Green bar) ===== */
@@ -216,7 +225,11 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .admin-main-content {
+  .admin-main-content.sidebar-collapsed {
+    margin-left: 80px;
+  }
+
+  .admin-main-content.sidebar-expanded {
     margin-left: 80px;
   }
 

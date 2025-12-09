@@ -18,6 +18,16 @@
   z-index: 0;
   flex: 1;
 }
+.schedule-header {
+  margin-top: 80px;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.schedule-header:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
 .b1t1holder {
   margin-right: auto;
   margin-bottom: 20px;
@@ -229,4 +239,14 @@
   font-weight: bold;
   margin-left: 10px;
   margin-top: 19px;
+}
+
+.routecard:hover {
+  box-shadow: 0 15px 40px rgba(2, 136, 209, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+.routecard {
+  flex: 1;
+  transition: all 0.3s ease;
 }

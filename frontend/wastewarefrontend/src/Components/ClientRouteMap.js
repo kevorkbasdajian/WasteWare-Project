@@ -316,31 +316,10 @@ const ClientRouteMap = ({ pickup, wasteTypeColor }) => {
       </MapContainer>
 
       {/* Map Info Panel */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          right: "20px",
-          background: "rgba(255, 255, 255, 0.95)",
-          padding: "15px",
-          borderRadius: "10px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          zIndex: 1000,
-        }}
-      >
-        <div
-          style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px" }}
-        >
-          Pickup Status
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "5px",
-            fontSize: "13px",
-          }}
-        >
+      {/* Map Info Panel */}
+      <div className="map-info-panel">
+        <div className="map-info-title">Pickup Status</div>
+        <div className="map-info-content">
           <div>
             <strong>Status:</strong> {pickup.status}
           </div>
@@ -355,30 +334,18 @@ const ClientRouteMap = ({ pickup, wasteTypeColor }) => {
       </div>
 
       {/* Legend */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          background: "rgba(255, 255, 255, 0.95)",
-          padding: "12px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          zIndex: 1000,
-          fontSize: "12px",
-        }}
-      >
-        <div style={{ fontWeight: "600", marginBottom: "8px" }}>Legend</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div className="map-legend">
+        <div className="map-legend-title">Legend</div>
+        <div className="map-legend-items">
+          <div className="map-legend-item">
             <span style={{ fontSize: "18px" }}>🏢</span>
             <span>Company</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="map-legend-item">
             <span style={{ fontSize: "18px" }}>🚛</span>
             <span>Truck</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="map-legend-item">
             <div
               style={{
                 width: "20px",
@@ -390,7 +357,7 @@ const ClientRouteMap = ({ pickup, wasteTypeColor }) => {
             />
             <span>Pending Stop</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="map-legend-item">
             <div
               style={{
                 width: "20px",

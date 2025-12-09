@@ -287,6 +287,7 @@ const CompanySchedule = () => {
                   name="pickup_date"
                   value={formData.pickup_date}
                   onChange={handleInputChange}
+                  min={new Date().toISOString().split("T")[0]}
                   required
                   className={`form-input ${errors.pickup_date ? "error" : ""}`}
                 />
@@ -354,7 +355,7 @@ const CompanySchedule = () => {
             </div>
 
             {/* Notes */}
-            <div className="form-group-full">
+            <div className="form-group-full" style={{ width: "50%" }}>
               <label className="form-label">
                 <i className="fas fa-note-sticky"></i>
                 Notes

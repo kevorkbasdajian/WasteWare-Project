@@ -70,15 +70,21 @@ const RouteRow = ({ route }) => {
           </button>
         </td>
         <td className="route-id center">#{route.route_id}</td>
-        <td className="center">
+        <td className="center" style={{ color: "black" }}>
           {route.driver
             ? `${route.driver.first_name} ${route.driver.last_name}`
             : "N/A"}
         </td>
-        <td className="center">{route.waste_type?.name || "N/A"}</td>
-        <td className="center">{route.truck?.truck_id || "N/A"}</td>
-        <td className="center">{route.route_stops?.length || 0}</td>
-        <td className="center">
+        <td className="center" style={{ color: "black" }}>
+          {route.waste_type?.name || "N/A"}
+        </td>
+        <td className="center" style={{ color: "black" }}>
+          {route.truck?.truck_id || "N/A"}
+        </td>
+        <td className="center" style={{ color: "black" }}>
+          {route.route_stops?.length || 0}
+        </td>
+        <td className="center" style={{ color: "black" }}>
           <span
             className="status-badge"
             style={{ backgroundColor: getStatusColor(route.status) }}
@@ -201,9 +207,9 @@ const RouteRow = ({ route }) => {
                         <th>Status</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody style={{ textAlign: "center" }}>
                       {route.route_stops.map((stop, index) => (
-                        <tr key={index}>
+                        <tr key={index} style={{ color: "black" }}>
                           <td className="stop-number">{index + 1}</td>
                           <td className="location-name">
                             {stop.dumping?.Title || "N/A"}

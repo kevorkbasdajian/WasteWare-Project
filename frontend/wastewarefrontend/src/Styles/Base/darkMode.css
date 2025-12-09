@@ -675,7 +675,7 @@ body.dark-mode .schedule-item:hover {
 }
 
 body.dark-mode .schedule-title {
-  color: #f1f5f9;
+  color: #000000;
 }
 
 body.dark-mode .schedule-duration {
@@ -757,6 +757,16 @@ body.dark-mode .modal-content::-webkit-scrollbar-thumb {
 
 body.dark-mode .modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.5);
+}
+
+body.dark-mode .form-label i {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .form-input::placeholder,
+body.dark-mode .form-textarea::placeholder {
+  color: #dbdde0 !important;
+  opacity: 1;
 }
 
 /* ================ End of Schedule Dark Mode Styles ================ */

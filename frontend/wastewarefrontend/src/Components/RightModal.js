@@ -80,6 +80,7 @@ export const RightPopupModal = ({ isOpen, onClose, title, children }) => {
               fontSize: "1.25rem",
               fontWeight: "600",
               margin: 0,
+              color: "black",
             }}
           >
             {title}

@@ -517,16 +517,17 @@ const CompanyPickups = () => {
         <div
           className={`leftside ${selectedRoute ? "active" : "inactive"}`}
           style={{
-            // borderWidth: 1,
-            // borderColor: "black",
-            // borderStyle: "solid",
             margin: 10,
           }}
         >
           {/* Route Selection */}
           <div
             className={`routecard ${selectedRoute ? "active" : "inactive"}`}
-            style={{ marginBottom: selectedRoute ? 30 : 20, width: "100%" }}
+            style={{
+              marginBottom: selectedRoute ? 30 : 20,
+              width: "100%",
+              boxShadow: " 0 4px 12px var(--energy-orange)",
+            }}
           >
             <div
               className="titleroute"
@@ -773,7 +774,11 @@ const CompanyPickups = () => {
 
           <div
             className={`routecard ${selectedRoute ? "active" : "inactive"}`}
-            style={{ width: "100%", marginLeft: selectedRoute ? 0 : 60 }}
+            style={{
+              width: "100%",
+              marginLeft: selectedRoute ? 0 : 60,
+              boxShadow: " 0 4px 12px var(--energy-orange)",
+            }}
           >
             <div
               className="titleroute"
@@ -875,7 +880,7 @@ const CompanyPickups = () => {
                       }}
                     >
                       {/* Left colored accent bar */}
-                      <div className="bar" />
+                      {/* <div className="bar" /> */}
 
                       {/* Main content container */}
                       <div
@@ -994,7 +999,10 @@ const CompanyPickups = () => {
         {/* Right Panel - Map & Details */}
         {selectedRoute && selectedRoute.route_stops && (
           <div className="rightside">
-            <div className="dumping-panel">
+            <div
+              className="dumping-panel"
+              style={{ boxShadow: " 0 4px 12px var(--energy-orange)" }}
+            >
               <h3 className="dumping-title">
                 <Package className="icon-blue" />
                 Dumping Locations ({selectedRoute.route_stops.length})

@@ -16,6 +16,8 @@ export const DumpingSelector = ({
   selectedDumpings,
   setSelectedDumpings,
   wasteTypeId,
+  setsnackbar = "false",
+  setmessage = "",
 }) => {
   const fetchWithAuth = useFetchWithAuth();
 
@@ -181,8 +183,8 @@ export const DumpingSelector = ({
 
       // Automatically select the newly created dumping
       addDumping(newItem);
-
-      alert("Dumping created successfully!");
+      setmessage("Dumping created successfully!");
+      setsnackbar(true);
     } catch (err) {
       console.error("Error creating dumping:", err);
       alert(`Failed to create dumping: ${err.message}`);

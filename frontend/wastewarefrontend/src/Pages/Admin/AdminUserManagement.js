@@ -173,8 +173,11 @@ const AdminUserManagement = () => {
           </div>
 
           {/* Users Table */}
-          <div className="users-table-container">
-            <table className="users-table">
+          <div
+            className="users-table-container"
+            style={{ zIndex: 15, marginLeft: 220 }}
+          >
+            <table className="users-table" style={{ left: 1500 }}>
               <thead>
                 <tr>
                   <th className="col-checkbox">

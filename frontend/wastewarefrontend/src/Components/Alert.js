@@ -15,6 +15,7 @@ const AlertSnackbar = ({
       onClose={onClose}
       autoHideDuration={autoHideDuration}
       slots={{ transition: Slide }}
+      style={{ zIndex: 1000000 }}
     >
       <Alert
         onClose={onClose}

@@ -380,6 +380,8 @@ const TruckRoutes = () => {
 
     if (truckId === "ADD_NEW") {
       setIsAddTruckModalOpen(true);
+      // Reset the select value to empty so it can be triggered again
+      setSelectedTruck("");
       return;
     }
 
@@ -603,7 +605,7 @@ const TruckRoutes = () => {
         profilePath="/company/profile"
         homepath="/company"
       />
-      <div style={{ marginTop: 80 }}>
+      <div className="schedule-header" style={{ marginTop: 80 }}>
         <HeaderBox
           text="Truck Routes"
           gradientColors={"--gradient-light-green"}
@@ -620,6 +622,8 @@ const TruckRoutes = () => {
           selectedDumpings={selectedDumpings}
           setSelectedDumpings={setSelectedDumpings}
           wasteTypeId={selectedWasteType} // Pass selected waste type
+          setsnackbar={setsnackbar}
+          setmessage={setmessage}
         />
       </RightPopupModal>
 
@@ -651,6 +655,7 @@ const TruckRoutes = () => {
                 style={{
                   marginBottom: "0.5rem",
                   fontWeight: "bold",
+                  color: "black",
                 }}
               >
                 First Name *
@@ -686,6 +691,7 @@ const TruckRoutes = () => {
                 style={{
                   marginBottom: "0.5rem",
                   fontWeight: "bold",
+                  color: "black",
                 }}
               >
                 Last Name *
@@ -720,6 +726,7 @@ const TruckRoutes = () => {
               <label
                 style={{
                   fontWeight: "bold",
+                  color: "black",
                 }}
               >
                 Phone Number
@@ -897,79 +904,86 @@ const TruckRoutes = () => {
           gap: 20,
         }}
       >
-        <div className="glass2 c">
-          <div className="b1t1holder">
-            <p className="b1t1">Add New Truck Route</p>
-          </div>
+        <div className="routecard">
+          <div
+            className="glass2 c"
+            style={{
+              boxShadow: " 0 4px 12px var(--eco-green)",
+              paddingBlock: 20,
+            }}
+          >
+            <div className="b1t1holder">
+              <p className="b1t1">Add New Truck Route</p>
+            </div>
 
-          <div className="grid">
-            <select
-              name="status"
-              className="status"
-              value={formData.status}
-              onChange={handleInputChange}
-            >
-              <option value="">Status *</option>
-              {/* <option value="scheduled">Scheduled</option> */}
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              {/* <option value="cancelled">Cancelled</option> */}
-            </select>
-            <select
-              name="wasteCategory"
-              className="wasteCategory"
-              value={selectedWasteType}
-              onChange={handleWasteTypeChange}
-              disabled={loadingWasteTypes}
-              style={{
-                cursor: loadingWasteTypes ? "wait" : "pointer",
-                opacity: loadingWasteTypes ? 0.6 : 1,
-              }}
-            >
-              <option value="">
-                {loadingWasteTypes ? "Loading..." : "Waste Type *"}
-              </option>
-              {wasteTypes.map((type) => (
-                <option key={type.waste_type_id} value={type.waste_type_id}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid">
-            <select
-              name="driverName"
-              className="driverName"
-              value={selectedDriver}
-              onChange={handleDriverChange}
-              disabled={loadingDrivers}
-              style={{
-                cursor: loadingDrivers ? "wait" : "pointer",
-                opacity: loadingDrivers ? 0.6 : 1,
-              }}
-            >
-              <option value="">
-                {loadingDrivers
-                  ? "Loading drivers..."
-                  : driversError
-                  ? "Error loading drivers"
-                  : "Select Driver *"}
-              </option>
-              {drivers.map((driver) => (
-                <option key={driver.driver_id} value={driver.driver_id}>
-                  {driver.first_name} {driver.last_name}
-                </option>
-              ))}
-              <option
-                value="ADD_NEW"
-                style={{ fontWeight: "bold", color: "#4caf50" }}
+            <div className="grid">
+              <select
+                name="status"
+                className="status"
+                value={formData.status}
+                onChange={handleInputChange}
               >
-                + Add New Driver
-              </option>
-            </select>
-            <div style={{ marginTop: "0rem" }}>
-              <label
+                <option value="">Status *</option>
+                {/* <option value="scheduled">Scheduled</option> */}
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                {/* <option value="cancelled">Cancelled</option> */}
+              </select>
+              <select
+                name="wasteCategory"
+                className="wasteCategory"
+                value={selectedWasteType}
+                onChange={handleWasteTypeChange}
+                disabled={loadingWasteTypes}
+                style={{
+                  cursor: loadingWasteTypes ? "wait" : "pointer",
+                  opacity: loadingWasteTypes ? 0.6 : 1,
+                }}
+              >
+                <option value="">
+                  {loadingWasteTypes ? "Loading..." : "Waste Type *"}
+                </option>
+                {wasteTypes.map((type) => (
+                  <option key={type.waste_type_id} value={type.waste_type_id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid">
+              <select
+                name="driverName"
+                className="driverName"
+                value={selectedDriver}
+                onChange={handleDriverChange}
+                disabled={loadingDrivers}
+                style={{
+                  cursor: loadingDrivers ? "wait" : "pointer",
+                  opacity: loadingDrivers ? 0.6 : 1,
+                }}
+              >
+                <option value="">
+                  {loadingDrivers
+                    ? "Loading drivers..."
+                    : driversError
+                    ? "Error loading drivers"
+                    : "Select Driver *"}
+                </option>
+                {drivers.map((driver) => (
+                  <option key={driver.driver_id} value={driver.driver_id}>
+                    {driver.first_name} {driver.last_name}
+                  </option>
+                ))}
+                <option
+                  value="ADD_NEW"
+                  style={{ fontWeight: "bold", color: "#4caf50" }}
+                >
+                  + Add New Driver
+                </option>
+              </select>
+              <div style={{ marginTop: "0rem" }}>
+                {/* <label
                 style={{
                   display: "block",
                   marginBottom: "0.5rem",
@@ -977,67 +991,45 @@ const TruckRoutes = () => {
                 }}
               >
                 Truck {driverTruck ? "(Auto-assigned)" : "*"}
-              </label>
+              </label> */}
 
-              {loadingTrucks ? (
-                <div style={{ padding: "0.75rem", color: "#666" }}>
-                  Loading truck info...
-                </div>
-              ) : driverTruck ? (
-                // Driver already has a truck - show it (disabled)
-                <input
-                  type="text"
-                  value={`Truck #${driverTruck.truck_id} (Assigned)`}
-                  disabled
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    backgroundColor: "#f0f0f0",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    cursor: "not-allowed",
-                  }}
-                />
-              ) : selectedDriver && availableTrucks.length > 0 ? (
-                // Driver has no truck - show available trucks
-                <select
-                  name="truckId"
-                  className="truckid"
-                  value={selectedTruck}
-                  onChange={(e) => handleTruckChange(e)}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                  }}
-                >
-                  <option value="">Select Truck *</option>
-                  {availableTrucks.map((truck) => (
-                    <option key={truck.truck_id} value={truck.truck_id}>
-                      Truck #{truck.truck_id}
-                    </option>
-                  ))}
-                  <option
-                    value="ADD_NEW"
-                    style={{ fontWeight: "bold", color: "#4caf50" }}
-                  >
-                    + Add New Truck
-                  </option>
-                </select>
-              ) : selectedDriver ? (
-                <div style={{ padding: "0.75rem", color: "#f44336" }}>
-                  {/* No available trucks. Please add a new truck. */}
+                {loadingTrucks ? (
+                  <div style={{ padding: "0.75rem", color: "#666" }}>
+                    Loading truck info...
+                  </div>
+                ) : driverTruck ? (
+                  // Driver already has a truck - show it (disabled)
+                  <input
+                    type="text"
+                    value={`Truck #${driverTruck.truck_id} (Assigned)`}
+                    disabled
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      backgroundColor: "#f0f0f0",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      cursor: "not-allowed",
+                    }}
+                  />
+                ) : selectedDriver && availableTrucks.length > 0 ? (
+                  // Driver has no truck - show available trucks
                   <select
                     name="truckId"
                     className="truckid"
                     value={selectedTruck}
-                    onChange={(e) => setSelectedTruck(e.target.value)}
+                    onChange={(e) => handleTruckChange(e)}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
                     }}
                   >
                     <option value="">Select Truck *</option>
-
+                    {availableTrucks.map((truck) => (
+                      <option key={truck.truck_id} value={truck.truck_id}>
+                        Truck #{truck.truck_id}
+                      </option>
+                    ))}
                     <option
                       value="ADD_NEW"
                       style={{ fontWeight: "bold", color: "#4caf50" }}
@@ -1045,114 +1037,144 @@ const TruckRoutes = () => {
                       + Add New Truck
                     </option>
                   </select>
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  placeholder="Select a driver first"
-                  disabled
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    backgroundColor: "#f0f0f0",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                  }}
-                />
-              )}
-            </div>
-          </div>
+                ) : selectedDriver ? (
+                  <div style={{ padding: "0.75rem", color: "#f44336" }}>
+                    {/* No available trucks. Please add a new truck. */}
+                    <select
+                      name="truckId"
+                      className="truckid"
+                      value={selectedTruck}
+                      onChange={handleTruckChange}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                      }}
+                    >
+                      <option value="">Select Truck *</option>
 
-          <div className="dumpingdiv">
-            <div
-              onClick={() => setIsModalOpen(true)}
-              className="dumping-card-style"
-            >
-              <i
-                className="fa-solid fa-location-dot "
-                style={{ marginTop: 20 }}
-              ></i>
-              <div className="title">Add Dumping Locations</div>
-              <div className="subtitle">
-                {selectedDumpings.length > 0
-                  ? `${selectedDumpings.length} location${
-                      selectedDumpings.length > 1 ? "s" : ""
-                    } selected`
-                  : "Click to select route stops"}
+                      <option
+                        value="ADD_NEW"
+                        style={{ fontWeight: "bold", color: "#4caf50" }}
+                      >
+                        + Add New Truck
+                      </option>
+                    </select>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Select a driver first"
+                    disabled
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      backgroundColor: "#f0f0f0",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                    }}
+                  />
+                )}
               </div>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                flexWrap: "wrap",
-                marginTop: "1rem",
-                alignItems: "center",
-              }}
-            >
-              {selectedDumpings.map((d) => (
-                <div key={d.dumping_id} className="dumping">
-                  <i
-                    className="fa-solid fa-trash fa-sm"
-                    style={{ color: "#388e3c" }}
-                  ></i>
-                  <span style={{ fontSize: "0.85rem" }}>{d.Title}</span>
-                  <span
-                    onClick={() => removeDumping(d.dumping_id)}
-                    style={{ fontWeight: 700, cursor: "pointer" }}
-                  >
-                    x
-                  </span>
+            <div className="dumpingdiv">
+              <div
+                onClick={() => setIsModalOpen(true)}
+                className="dumping-card-style"
+              >
+                <i
+                  className="fa-solid fa-location-dot "
+                  style={{ marginTop: 20 }}
+                ></i>
+                <div className="title">Add Dumping Locations</div>
+                <div className="subtitle">
+                  {selectedDumpings.length > 0
+                    ? `${selectedDumpings.length} location${
+                        selectedDumpings.length > 1 ? "s" : ""
+                      } selected`
+                    : "Click to select route stops"}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="addRouteButton">
-            <button
-              className="actualButton"
-              onClick={handleAddRoute}
-              style={{
-                backgroundColor: "#4caf50",
-                fontSize: "25px",
-              }}
-              onMouseEnter={(e) =>
-                (e.target.style.transform = "translateY(-2px)")
-              }
-              onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
-            >
-              <i
-                className="fa-solid fa-plus"
-                style={{ marginRight: "0.5rem" }}
-              />{" "}
-              Add Route
-            </button>
-            {errors && (
-              <p style={{ fontSize: 17, color: "red", textAlign: "center" }}>
-                {errors}
-              </p>
-            )}
-            <button
-              className="actualButton"
-              onClick={() => modifyviewallmodal(true)}
-              style={{
-                backgroundColor: "#009688",
-                fontSize: "25px",
-                marginTop: 15,
-              }}
-              onMouseEnter={(e) =>
-                (e.target.style.transform = "translateY(-2px)")
-              }
-              onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
-            >
-              <i className="fa  fa-eye" style={{ marginRight: "0.5rem" }} />
-              View All Routes
-            </button>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  flexWrap: "wrap",
+                  marginTop: "1rem",
+                  alignItems: "center",
+                }}
+              >
+                {selectedDumpings.map((d) => (
+                  <div key={d.dumping_id} className="dumping">
+                    <i
+                      className="fa-solid fa-trash fa-sm"
+                      style={{ color: "#388e3c" }}
+                    ></i>
+                    <span style={{ fontSize: "0.85rem" }}>{d.Title}</span>
+                    <span
+                      onClick={() => removeDumping(d.dumping_id)}
+                      style={{ fontWeight: 700, cursor: "pointer" }}
+                    >
+                      x
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="addRouteButton">
+              <button
+                className="actualButton"
+                onClick={handleAddRoute}
+                style={{
+                  backgroundColor: "#4caf50",
+                  fontSize: "25px",
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
+              >
+                <i
+                  className="fa-solid fa-plus"
+                  style={{ marginRight: "0.5rem" }}
+                />{" "}
+                Add Route
+              </button>
+              {errors && (
+                <p style={{ fontSize: 17, color: "red", textAlign: "center" }}>
+                  {errors}
+                </p>
+              )}
+              <button
+                className="actualButton"
+                onClick={() => modifyviewallmodal(true)}
+                style={{
+                  backgroundColor: "#009688",
+                  fontSize: "25px",
+                  marginTop: 15,
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
+              >
+                <i className="fa  fa-eye" style={{ marginRight: "0.5rem" }} />
+                View All Routes
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="glass2 c">
+        <div
+          className="glass2 c routecard"
+          style={{ boxShadow: " 0 4px 12px var(--eco-green)" }}
+        >
           <div className="b1t1holder">
             <p className="b1t1">Statistics</p>
           </div>
