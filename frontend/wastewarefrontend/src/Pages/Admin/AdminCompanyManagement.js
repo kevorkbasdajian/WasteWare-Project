@@ -183,7 +183,10 @@ const AdminCompanyManagement = () => {
           </div>
 
           {/* Companies Table */}
-          <div className="users-table-container">
+          <div
+            className="users-table-container"
+            style={{ zIndex: 15, marginLeft: 220 }}
+          >
             <table className="users-table">
               <thead>
                 <tr>
