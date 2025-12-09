@@ -181,9 +181,17 @@ const CompanyReports = () => {
         `https://wasteware-project-production.up.railway.app/api/reports/${reportId}/`
       );
 
+      // if (response.ok) {
+      //   const data = await response.json();
+      //   console.log("Report data received:", data);
+      //   console.log("User data:", data.user);
+      //   setSelectedReport(data);
+      //   setIsModalOpen(true);
+      // }
       if (response.ok) {
         const data = await response.json();
         console.log("Report data received:", data);
+        console.log("Image URL from API:", data.image_url); // ← ADD THIS LINE
         console.log("User data:", data.user);
         setSelectedReport(data);
         setIsModalOpen(true);

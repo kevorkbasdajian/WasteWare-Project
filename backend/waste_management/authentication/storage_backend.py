@@ -16,7 +16,6 @@ class SupabaseMediaStorage(Storage):
     
     def __init__(self):
         self.bucket_name = "wasteware-media"
-        self.base_url = f"https://{settings.SUPABASE_PROJECT_ID}.supabase.co/storage/v1"
     
     def _save(self, name, content):
         """
@@ -84,7 +83,6 @@ class SupabaseMediaStorage(Storage):
     def url(self, name):
         """
         Return the full public URL for accessing the file.
-        This returns a complete URL, not a relative path.
         """
         if not name:
             return ''
@@ -99,15 +97,18 @@ class SupabaseMediaStorage(Storage):
             # Get the signed URL from the result
             signed_url = result.get('signedURL') or result.get('signed_url', '')
             
-            # Ensure it's a complete URL
-            if signed_url and not signed_url.startswith('http'):
-                # If somehow it's a relative URL, make it absolute
-                signed_url = f"{self.base_url}/object/sign/{self.bucket_name}/{name}"
+            print(f"🔍 DEBUG - Generated URL for {name}:")
+            print(f"   Raw result: {result}")
+            print(f"   Signed URL: {signed_url}")
             
+            # Ensure it starts with https://
+            if signed_url and not signed_url.startswith('http'):
+                print(f"   ⚠️ WARNING: URL doesn't start with http")
+                
             return signed_url
             
         except Exception as e:
-            print(f"Error generating URL for {name}: {e}")
+            print(f"❌ Error generating URL for {name}: {e}")
             import traceback
             traceback.print_exc()
             return ''

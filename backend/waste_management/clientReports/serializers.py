@@ -132,6 +132,8 @@ class ReportCreateSerializer(serializers.ModelSerializer):
         
         return Reports.objects.create(**validated_data)
 
+# In clientReports/serializers.py
+
 class ReportListSerializer(serializers.ModelSerializer):
     """Serializer for listing reports"""
     address = AddressSerializer(read_only=True)
@@ -140,6 +142,7 @@ class ReportListSerializer(serializers.ModelSerializer):
     severity_display = serializers.CharField(source='get_severity_level_display', read_only=True)
     priority_display = serializers.CharField(source='get_response_priority_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    image_url = serializers.SerializerMethodField()  # ← CHANGE THIS
     
     class Meta:
         model = Reports
@@ -166,23 +169,37 @@ class ReportListSerializer(serializers.ModelSerializer):
         if obj.user:
             return f"{obj.user.first_name} {obj.user.last_name}"
         return None
+    
+    def get_image_url(self, obj):  # ← ADD THIS
+        """Return the full image URL"""
+        try:
+            if obj.image_url:
+                url = obj.image_url.url
+                print(f"📸 Image URL for report {obj.report_id}: {url}")
+                return url
+            return None
+        except Exception as e:
+            print(f"❌ Error getting image URL: {e}")
+            return None
+
 
 class ReportDetailSerializer(serializers.ModelSerializer):
     """Serializer for single report detail with full user data"""
     address = AddressSerializer(read_only=True)
-    user = UserBasicSerializer(read_only=True)  # ✅ Full user object
-    handled_by = UserBasicSerializer(read_only=True)  # ✅ Full handler object
+    user = UserBasicSerializer(read_only=True)
+    handled_by = UserBasicSerializer(read_only=True)
     type_display = serializers.CharField(source='get_type_of_report_display', read_only=True)
     severity_display = serializers.CharField(source='get_severity_level_display', read_only=True)
     priority_display = serializers.CharField(source='get_response_priority_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     location = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()  # ← CHANGE THIS
     
     class Meta:
         model = Reports
         fields = [
             'report_id',
-            'user',  # ✅ Full user object instead of just user_name
+            'user',
             'title',
             'type_of_report',
             'type_display',
@@ -200,6 +217,18 @@ class ReportDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'resolved_at',
         ]
+    
+    def get_image_url(self, obj):  # ← ADD THIS
+        """Return the full image URL"""
+        try:
+            if obj.image_url:
+                url = obj.image_url.url
+                print(f"📸 Image URL for report {obj.report_id}: {url}")
+                return url
+            return None
+        except Exception as e:
+            print(f"❌ Error getting image URL: {e}")
+            return None
     
     def get_location(self, obj):
         """Get formatted location string from address"""
