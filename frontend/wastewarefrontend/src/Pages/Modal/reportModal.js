@@ -321,15 +321,10 @@ const ReportModal = ({
                     /* Handle single image_url - construct full URL */
                     <div className="report-image-wrapper">
                       <img
-                        src={`https://wasteware-project-production.up.railway.app${report.image_url}`}
+                        src={report.image_url}
                         alt="Report attachment"
                         className="report-image"
-                        onClick={() =>
-                          window.open(
-                            `https://wasteware-project-production.up.railway.app${report.image_url}`,
-                            "_blank"
-                          )
-                        }
+                        onClick={() => window.open(report.image_url, "_blank")}
                         onError={(e) => {
                           // Fallback if image fails to load
                           e.target.style.display = "none";
