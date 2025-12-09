@@ -73,13 +73,11 @@ class AddressSerializer(serializers.ModelSerializer):
 # --------------------------
 class ProfileSerializer(serializers.ModelSerializer):
     # Custom fields (not directly from model)
-    name = serializers.SerializerMethodField()  # Combines first_name + last_name
-    avatar = serializers.SerializerMethodField()  # Returns profile_image URL
-    stats = serializers.SerializerMethodField()  # Calculates all stats
-    badge = serializers.SerializerMethodField()  # Returns user badge text
+    name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    stats = serializers.SerializerMethodField()
+    badge = serializers.SerializerMethodField()
     address = AddressSerializer(read_only=True)
-    
-    # NEW: Add report history for dashboard chart
     report_history = serializers.SerializerMethodField()
     
     class Meta:
@@ -94,7 +92,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'address',
             'account_status',
             'stats',
-            'report_history',  # NEW FIELD
+            'report_history',
         ]
     
     def get_name(self, obj):
@@ -103,70 +101,90 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     def get_avatar(self, obj):
         """Return profile image URL or default placeholder"""
-        if obj.profile_image:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.profile_image.url)
-            return obj.profile_image.url
-        return ""
+        try:
+            if obj.profile_image:
+                # Check if it's already a string (Supabase returns string URL)
+                if isinstance(obj.profile_image, str):
+                    return obj.profile_image
+                
+                # Otherwise it's an ImageField object
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(obj.profile_image.url)
+                return obj.profile_image.url
+            return ""
+        except Exception as e:
+            print(f"Error in get_avatar: {e}")
+            return ""
     
     def get_badge(self, obj):
         """Return user badge text based on account status or role"""
         return obj.badge if obj.badge else "Begin Here"
     
     def get_stats(self, obj):
-        # Calculate days active (days since account created)
-        days_active = (timezone.now() - obj.created_at).days
-        eco_points = obj.points_balance  
-        
-        # ============ REAL DATA ============
-        # Count total reports submitted by this user
-        reports_submitted = Reports.objects.filter(user=obj).count()
-        
-        # Calculate derived stats
-        waste_recycled = reports_submitted * 1.75  # Example: avg 1.75kg per report
-        co2_reduced = waste_recycled * 0.08  # Example: 0.08 tons CO2 per kg waste
-        trees_saved = int(co2_reduced * 3.77)  # Example: 1 ton CO2 = ~3.77 trees
-        
-        return {
-            "co2_reduced": round(co2_reduced, 1),
-            "trees_saved": trees_saved,
-            "waste_recycled": int(waste_recycled),
-            "reports_submitted": reports_submitted,
-            "eco_points": eco_points,
-            "days_active": days_active
-        }
+        try:
+            # Calculate days active
+            days_active = (timezone.now() - obj.created_at).days
+            eco_points = obj.points_balance or 0
+            
+            # Count total reports
+            try:
+                reports_submitted = Reports.objects.filter(user=obj).count()
+            except Exception:
+                reports_submitted = 0
+            
+            # Calculate derived stats
+            waste_recycled = reports_submitted * 1.75
+            co2_reduced = waste_recycled * 0.08
+            trees_saved = int(co2_reduced * 3.77)
+            
+            return {
+                "co2_reduced": round(co2_reduced, 1),
+                "trees_saved": trees_saved,
+                "waste_recycled": int(waste_recycled),
+                "reports_submitted": reports_submitted,
+                "eco_points": eco_points,
+                "days_active": days_active
+            }
+        except Exception as e:
+            print(f"Error in get_stats: {e}")
+            return {
+                "co2_reduced": 0,
+                "trees_saved": 0,
+                "waste_recycled": 0,
+                "reports_submitted": 0,
+                "eco_points": 0,
+                "days_active": 0
+            }
     
     def get_report_history(self, obj):
-        """
-        Get report counts grouped by date for dashboard charts.
-        Returns reports from the last 6 months with daily counts.
-        """
-        from datetime import timedelta
-        from django.db.models import Count
-        from django.db.models.functions import TruncDate
-        
-        # Get reports from last 6 months
-        six_months_ago = timezone.now() - timedelta(days=180)
-        
-        reports = Reports.objects.filter(
-            user=obj,
-            created_at__gte=six_months_ago
-        ).annotate(
-            date=TruncDate('created_at')
-        ).values('date').annotate(
-            count=Count('report_id')
-        ).order_by('date')
-        
-        # Convert to list of {date, count} objects
-        return [
-            {
-                'date': report['date'].isoformat(),
-                'count': report['count']
-            }
-            for report in reports
-        ]
-    
+        """Get report counts grouped by date for dashboard charts"""
+        try:
+            from datetime import timedelta
+            from django.db.models import Count
+            from django.db.models.functions import TruncDate
+            
+            six_months_ago = timezone.now() - timedelta(days=180)
+            
+            reports = Reports.objects.filter(
+                user=obj,
+                created_at__gte=six_months_ago
+            ).annotate(
+                date=TruncDate('created_at')
+            ).values('date').annotate(
+                count=Count('report_id')
+            ).order_by('date')
+            
+            return [
+                {
+                    'date': report['date'].isoformat(),
+                    'count': report['count']
+                }
+                for report in reports
+            ]
+        except Exception as e:
+            print(f"Error in get_report_history: {e}")
+            return []
     
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     # Address input fields
@@ -604,13 +622,18 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
     
     def get_avatar(self, obj):
         """Return company image URL or empty string"""
-        if obj.company_image:
-            try:
+        try:
+            if obj.company_image:
+                # Check if it's already a string (Supabase returns string URL)
+                if isinstance(obj.company_image, str):
+                    return obj.company_image
+                
+                # Otherwise it's an ImageField object
                 return obj.company_image.url
-            except:
-                return ""
-        return ""
-
+            return ""
+        except Exception as e:
+            print(f"Error getting company avatar: {e}")
+            return ""
 
 # --------------------------
 # Company Profile Update Serializer
