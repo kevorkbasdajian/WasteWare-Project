@@ -3,6 +3,8 @@ from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from .storage_backend import SupabaseMediaStorage
+supabase_storage = SupabaseMediaStorage()
+
 
 # ===============================
 # 1. Core Entities
@@ -46,7 +48,15 @@ class Users(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     badge = models.CharField(max_length=100, null=True, blank=True)
-    profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True, storage="authentication.storage_backend.SupabaseMediaStorage")
+    
+    # ✅ FIXED: Use storage instance, not string
+    profile_image = models.ImageField(
+        upload_to="profile_images/",
+        null=True, 
+        blank=True, 
+        storage=supabase_storage  # Use instance, not string
+    )
+    
     points_balance = models.IntegerField(default=0)
     account_status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(default=timezone.now)
@@ -55,18 +65,15 @@ class Users(models.Model):
     class Meta:
         db_table = 'Users'
 
-    def __str__(self):  # ✅ Fixed: double underscore
+    def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-    # Django REST Framework compatibility properties
     @property
-    def is_authenticated(self):  # ✅ Fixed: removed duplicate, fixed typo
-        """Always return True for authenticated users"""
+    def is_authenticated(self):
         return True
     
     @property
     def is_anonymous(self):
-        """Always return False for authenticated users"""
         return False
 
 
@@ -79,25 +86,30 @@ class Companies(models.Model):
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     license_number = models.CharField(max_length=50, null=True, blank=True)
     verification_status = models.CharField(max_length=20, default='pending')
-    company_image = models.ImageField(upload_to="company_images/",null=True, blank=True,storage="authentication.storage_backend.SupabaseMediaStorage")
+    
+    # ✅ FIXED: Use storage instance, not string
+    company_image = models.ImageField(
+        upload_to="company_images/",
+        null=True, 
+        blank=True,
+        storage=supabase_storage  # Use instance, not string
+    )
+    
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = 'Companies'
 
-    def _str_(self):
+    def __str__(self):
         return self.company_name
 
-    # Add these properties for Django REST Framework compatibility
     @property
     def is_authenticated(self):
-        """Always return True for authenticated companies"""
         return True
     
     @property
     def is_anonymous(self):
-        """Always return False for authenticated companies"""
         return False
 
 
