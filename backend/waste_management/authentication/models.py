@@ -46,7 +46,7 @@ class Users(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     badge = models.CharField(max_length=100, null=True, blank=True)
-    profile_image = models.ImageField(upload_to="profile_images/",null=True, blank=True, storage=SupabaseMediaStorage())
+    profile_image = models.ImageField(upload_to="profile_images/",null=True, blank=True, storage="authentication.storage_backend.SupabaseMediaStorage")
     points_balance = models.IntegerField(default=0)
     account_status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(default=timezone.now)
@@ -89,7 +89,7 @@ class Companies(models.Model):
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     license_number = models.CharField(max_length=50, null=True, blank=True)
     verification_status = models.CharField(max_length=20, default='pending')
-    company_image = models.ImageField(upload_to="company_images/",null=True, blank=True, storage=SupabaseMediaStorage())
+    company_image = models.ImageField(upload_to="company_images/",null=True, blank=True,storage="authentication.storage_backend.SupabaseMediaStorage")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
