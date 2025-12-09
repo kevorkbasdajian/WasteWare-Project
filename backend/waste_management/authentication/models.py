@@ -46,31 +46,21 @@ class Users(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     address = models.OneToOneField(Addresses, models.DO_NOTHING, db_column='address_id', null=True, blank=True)
     badge = models.CharField(max_length=100, null=True, blank=True)
-    profile_image = models.ImageField(upload_to="profile_images/",null=True, blank=True, storage="authentication.storage_backend.SupabaseMediaStorage")
+    profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True, storage="authentication.storage_backend.SupabaseMediaStorage")
     points_balance = models.IntegerField(default=0)
     account_status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
-
-    # Add these properties for Django ERST Framework compatibility
-    @property
-    def is_authenticated(sefl):
-        return True
-    
-    @property
-    def is_anonymous(self):
-        return False
-    
     class Meta:
         db_table = 'Users'
 
-    def _str_(self):
+    def __str__(self):  # ✅ Fixed: double underscore
         return f"{self.first_name} {self.last_name}"
 
-    # Add these properties for Django REST Framework compatibility
+    # Django REST Framework compatibility properties
     @property
-    def is_authenticated(self):
+    def is_authenticated(self):  # ✅ Fixed: removed duplicate, fixed typo
         """Always return True for authenticated users"""
         return True
     
