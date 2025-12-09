@@ -198,29 +198,100 @@ class AddressViewSet(viewsets.ModelViewSet):
 # --------------------------
 # Profile View
 # --------------------------
-class ProfileView(APIView):
+# class ProfileView(APIView):
    
     
-    # Require authentication (user must be logged in with valid token)
+#     # Require authentication (user must be logged in with valid token)
+#     authentication_classes = [CustomJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+    
+#     def get(self, request):
+        
+        
+#         try:
+#             user = request.user
+#             serializer = ProfileSerializer(user)
+            
+#             return Response({
+#                 'success': True,
+#                 'data': serializer.data
+#             }, status=status.HTTP_200_OK)
+            
+#         except Exception as e:
+#             return Response({
+#                 'success': False,
+#                 'error': str(e)
+#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+class ProfileView(APIView):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        
+        # Debug point 1: Entry
+        print("=" * 80)
+        print("🔍 DEBUG: ProfileView GET called")
+        print("=" * 80)
         
         try:
+            # Debug point 2: Check user
+            print(f"✓ Step 1: Checking request.user")
+            print(f"   - User object: {request.user}")
+            print(f"   - User type: {type(request.user)}")
+            print(f"   - Is authenticated: {request.user.is_authenticated}")
+            
             user = request.user
-            serializer = ProfileSerializer(user)
+            
+            # Debug point 3: Check user attributes
+            print(f"\n✓ Step 2: Checking user attributes")
+            print(f"   - Has user_id: {hasattr(user, 'user_id')}")
+            if hasattr(user, 'user_id'):
+                print(f"   - user_id value: {user.user_id}")
+            print(f"   - Has email: {hasattr(user, 'email')}")
+            if hasattr(user, 'email'):
+                print(f"   - email value: {user.email}")
+            print(f"   - Has first_name: {hasattr(user, 'first_name')}")
+            print(f"   - Has role: {hasattr(user, 'role')}")
+            
+            # Debug point 4: Try serialization
+            print(f"\n✓ Step 3: Starting serialization")
+            serializer = ProfileSerializer(user, context={'request': request})
+            
+            print(f"✓ Step 4: Getting serializer data")
+            data = serializer.data
+            
+            print(f"✓ Step 5: Serialization SUCCESS!")
+            print(f"   - Data keys: {list(data.keys())}")
+            print("=" * 80)
             
             return Response({
                 'success': True,
-                'data': serializer.data
+                'data': data
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            # Debug point 5: Error handling
+            print("\n" + "=" * 80)
+            print("❌ ERROR OCCURRED")
+            print("=" * 80)
+            print(f"Error Type: {type(e).__name__}")
+            print(f"Error Message: {str(e)}")
+            print("\nFull Traceback:")
+            print("-" * 80)
+            
+            import traceback
+            traceback.print_exc()
+            
+            print("=" * 80)
+            
             return Response({
                 'success': False,
-                'error': str(e)
+                'error': str(e),
+                'error_type': type(e).__name__
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
@@ -1048,6 +1119,10 @@ class AdminCreateUserView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
 
 
 
