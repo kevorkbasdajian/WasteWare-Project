@@ -14,6 +14,18 @@ const CompanyProfilePage = () => {
 
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
+  const [stats, setStats] = useState({
+    totalRoutes: 0,
+    activeRoutes: 0,
+    totalDrivers: 0,
+    totalTrucks: 0,
+    availableTrucks: 0,
+    totalDumpings: 0,
+    todayPickups: 0,
+    completedPickups: 0,
+    totalPickups: 0,
+    daysActive: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -25,22 +37,84 @@ const CompanyProfilePage = () => {
     }
   }, [navigate, accessToken]);
 
-  // Fetch profile data
+  // Fetch profile data and stats
   const fetchProfile = async () => {
     try {
-      const response = await fetchWithAuth(
-        "https://wasteware-project-production.up.railway.app/api/auth/company/profile/",
-        {
-          method: "GET",
-        }
-      );
+      setLoading(true);
 
-      if (!response.ok) {
+      const headers = {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      };
+
+      // Fetch profile and all stats data in parallel
+      const [profileResponse, routes, drivers, trucks, dumpings, pickups] =
+        await Promise.all([
+          fetchWithAuth(
+            "https://wasteware-project-production.up.railway.app/api/auth/company/profile/",
+            { method: "GET" }
+          ),
+          fetch(
+            "https://wasteware-project-production.up.railway.app/api/company/routes/",
+            { headers }
+          ).then((r) => r.json()),
+          fetch(
+            "https://wasteware-project-production.up.railway.app/api/company/drivers/",
+            { headers }
+          ).then((r) => r.json()),
+          fetch(
+            "https://wasteware-project-production.up.railway.app/api/company/trucks/",
+            { headers }
+          ).then((r) => r.json()),
+          fetch(
+            "https://wasteware-project-production.up.railway.app/api/company/dumpings/",
+            { headers }
+          ).then((r) => r.json()),
+          fetch(
+            "https://wasteware-project-production.up.railway.app/api/company/pickups/",
+            { headers }
+          ).then((r) => r.json()),
+        ]);
+
+      if (!profileResponse.ok) {
         throw new Error("Failed to fetch profile");
       }
 
-      const data = await response.json();
+      const data = await profileResponse.json();
       console.log("Profile data:", data);
+
+      // Calculate stats
+      const activeRoutes = (routes || []).filter((r) => r.status === "active");
+      const availableTrucks = (trucks || []).filter((t) => t.available);
+      const completedPickups = (pickups || []).filter(
+        (p) => p.status === "completed"
+      );
+      const todayPickups = (pickups || []).filter((p) => {
+        const pickupDate = new Date(p.schedule?.pickup_date || p.pickup_date);
+        const today = new Date();
+        return pickupDate.toDateString() === today.toDateString();
+      });
+
+      // Calculate days active (days since company creation)
+      const createdDate = new Date(data.created_at);
+      const today = new Date();
+      const daysActive = Math.floor(
+        (today - createdDate) / (1000 * 60 * 60 * 24)
+      );
+
+      setStats({
+        totalRoutes: (routes || []).length,
+        activeRoutes: activeRoutes.length,
+        totalDrivers: (drivers || []).length,
+        totalTrucks: (trucks || []).length,
+        availableTrucks: availableTrucks.length,
+        totalDumpings: (dumpings || []).length,
+        todayPickups: todayPickups.length,
+        completedPickups: completedPickups.length,
+        totalPickups: (pickups || []).length,
+        daysActive: daysActive,
+      });
+
       setProfileData(data);
       setLoading(false);
     } catch (err) {
@@ -51,8 +125,10 @@ const CompanyProfilePage = () => {
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (accessToken) {
+      fetchProfile();
+    }
+  }, [accessToken]);
 
   const handleEditProfile = () => {
     setIsEditModalOpen(true);
@@ -66,6 +142,10 @@ const CompanyProfilePage = () => {
 
   const handleModalSuccess = () => {
     console.log("Profile updated successfully!");
+    // Refresh user data in context
+    if (refreshUserData) {
+      refreshUserData();
+    }
   };
 
   const handleSettingClick = (setting) => {
@@ -221,23 +301,19 @@ const CompanyProfilePage = () => {
               {/* Quick Stats in Profile Card */}
               <div className="profile-quick-stats">
                 <div className="quick-stat">
-                  <span className="quick-stat-value">
-                    {profileData.stats?.routesActive || 0}
-                  </span>
+                  <span className="quick-stat-value">{stats.activeRoutes}</span>
                   <span className="quick-stat-label">Routes</span>
                 </div>
                 <div className="quick-stat-divider"></div>
                 <div className="quick-stat">
                   <span className="quick-stat-value">
-                    {profileData.stats?.pickupsCompleted || 0}
+                    {stats.completedPickups}
                   </span>
                   <span className="quick-stat-label">Pickups</span>
                 </div>
                 <div className="quick-stat-divider"></div>
                 <div className="quick-stat">
-                  <span className="quick-stat-value">
-                    {profileData.stats?.daysActive || 0}
-                  </span>
+                  <span className="quick-stat-value">{stats.daysActive}</span>
                   <span className="quick-stat-label">Days</span>
                 </div>
               </div>
@@ -318,17 +394,17 @@ const CompanyProfilePage = () => {
               <div className="small-stats-grid">
                 <div className="small-stat-card">
                   <i className="fa-solid fa-route stat-icon green"></i>
-                  <h3>{profileData.stats?.routesActive || 0}</h3>
+                  <h3>{stats.activeRoutes}</h3>
                   <p>Active Routes</p>
                 </div>
                 <div className="small-stat-card">
                   <i className="fa-solid fa-truck stat-icon orange"></i>
-                  <h3>{profileData.stats?.pickupsCompleted || 0}</h3>
+                  <h3>{stats.completedPickups}</h3>
                   <p>Pickups Done</p>
                 </div>
                 <div className="small-stat-card">
                   <i className="fa-solid fa-calendar-days stat-icon blue"></i>
-                  <h3>{profileData.stats?.daysActive || 0}</h3>
+                  <h3>{stats.daysActive}</h3>
                   <p>Days Active</p>
                 </div>
               </div>

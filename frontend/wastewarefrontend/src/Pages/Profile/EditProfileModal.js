@@ -302,9 +302,8 @@ const EditProfileModal = ({ isOpen, onClose, onSuccess }) => {
                     <img
                       src={
                         !fetchImage && !removeImage
-                          ? userData.avatar === "" || !userData.avatar
-                            ? "https://ui-avatars.com/api/?name=User&background=random"
-                            : `https://wasteware-project-production.up.railway.app${userData.avatar}`
+                          ? userData.avatar ||
+                            "https://ui-avatars.com/api/?name=User&background=random"
                           : avatarPreview
                       }
                       alt="Profile"

@@ -23,6 +23,8 @@ const Chatbot = () => {
     "Find recycling centers",
     "How to earn points?",
     "Recycling tips",
+    "When is my next pickup?",
+    "Routes near me",
   ]);
   const messagesEndRef = useRef(null);
 

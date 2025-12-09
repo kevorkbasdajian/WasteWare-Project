@@ -60,14 +60,19 @@ const ProfilePage = () => {
   };
 
   const handleModalSuccess = () => {
-    // Optional: Show success message or toast notification
+    // Refresh user data after successful update
+    if (refreshUserData) {
+      refreshUserData();
+    }
     console.log("Profile updated successfully!");
   };
+
   useEffect(() => {
     if (user_type && user_type !== "user" && user_type !== "admin") {
       navigate(-1);
     }
   }, [user_type, navigate]);
+
   // Loading state
   if (isLoadingUser) {
     return (
@@ -104,9 +109,8 @@ const ProfilePage = () => {
       <Navbar
         links={links}
         profileImage={
-          userData?.avatar
-            ? `https://wasteware-project-production.up.railway.app${userData.avatar}`
-            : "https://ui-avatars.com/api/?name=User&background=random"
+          userData?.avatar ||
+          "https://ui-avatars.com/api/?name=User&background=random"
         }
         profilePath="/client/profile"
       />
@@ -119,9 +123,8 @@ const ProfilePage = () => {
               <div className="profile-avatar-wrapper">
                 <img
                   src={
-                    userData.avatar === ""
-                      ? "https://ui-avatars.com/api/?name=User&background=random"
-                      : `https://wasteware-project-production.up.railway.app${userData.avatar}`
+                    userData.avatar ||
+                    "https://ui-avatars.com/api/?name=User&background=random"
                   }
                   alt="Profile"
                   className="profile-avatar"
@@ -135,21 +138,21 @@ const ProfilePage = () => {
               <div className="profile-quick-stats">
                 <div className="quick-stat">
                   <span className="quick-stat-value">
-                    {userData.stats?.reportsSubmitted || 0}
+                    {userData.stats?.reports_submitted || 0}
                   </span>
                   <span className="quick-stat-label">Reports</span>
                 </div>
                 <div className="quick-stat-divider"></div>
                 <div className="quick-stat">
                   <span className="quick-stat-value">
-                    {userData.stats?.ecoPoints || 0}
+                    {userData.stats?.eco_points || 0}
                   </span>
                   <span className="quick-stat-label">Points</span>
                 </div>
                 <div className="quick-stat-divider"></div>
                 <div className="quick-stat">
                   <span className="quick-stat-value">
-                    {userData.stats?.daysActive || 0}
+                    {userData.stats?.days_active || 0}
                   </span>
                   <span className="quick-stat-label">Days</span>
                 </div>
@@ -171,15 +174,15 @@ const ProfilePage = () => {
                 </div>
                 <div className="impact-stats">
                   <div className="impact-stat">
-                    <h3>{userData.stats?.co2Reduced || 0}</h3>
+                    <h3>{userData.stats?.co2_reduced || 0}</h3>
                     <p>Tons CO2 Reduced</p>
                   </div>
                   <div className="impact-stat">
-                    <h3>{userData.stats?.treesSaved || 0}</h3>
+                    <h3>{userData.stats?.trees_saved || 0}</h3>
                     <p>Trees Saved</p>
                   </div>
                   <div className="impact-stat">
-                    <h3>{userData.stats?.wasteRecycled || 0}</h3>
+                    <h3>{userData.stats?.waste_recycled || 0}</h3>
                     <p>kg Waste Recycled</p>
                   </div>
                 </div>
@@ -189,17 +192,17 @@ const ProfilePage = () => {
               <div className="small-stats-grid">
                 <div className="small-stat-card">
                   <i className="fa-solid fa-chart-simple stat-icon green"></i>
-                  <h3>{userData.stats?.reportsSubmitted || 0}</h3>
+                  <h3>{userData.stats?.reports_submitted || 0}</h3>
                   <p>Reports Filled</p>
                 </div>
                 <div className="small-stat-card">
                   <i className="fa-solid fa-leaf stat-icon orange"></i>
-                  <h3>{userData.stats?.ecoPoints || 0}</h3>
+                  <h3>{userData.stats?.eco_points || 0}</h3>
                   <p>EcoPoints</p>
                 </div>
                 <div className="small-stat-card">
                   <i className="fa-solid fa-calendar-days stat-icon blue"></i>
-                  <h3>{userData.stats?.daysActive || 0}</h3>
+                  <h3>{userData.stats?.days_active || 0}</h3>
                   <p>Days Active</p>
                 </div>
               </div>

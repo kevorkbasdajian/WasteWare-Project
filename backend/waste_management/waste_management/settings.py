@@ -152,7 +152,7 @@ WSGI_APPLICATION = 'waste_management.wsgi.application'
 DATABASES = {
     'default': env.db(
         'DATABASE_URL',
-        default='postgres://postgres:Kevork55.@localhost:5432/waste_db'
+        default='postgres://postgres:CHRIS2005@localhost:5432/waste_db'
     )
 }
 
@@ -183,7 +183,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
-MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -197,3 +196,11 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 #     SECURE_SSL_REDIRECT = False  # Railway handles SSL
 #     SESSION_COOKIE_SECURE = True
 #     CSRF_COOKIE_SECURE = True
+
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://rjcsykwglyrdqrpbzkbz.supabase.co')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqY3N5a3dnbHlyZHFycGJ6a2J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjU2NTMsImV4cCI6MjA4MDg0MTY1M30.eZTIDAimCRBcWiYb0cQbtvnIzT5DOGEw0eWQEkm37S8')
+SUPABASE_BUCKET = os.environ.get('SUPABASE_BUCKET', 'wasteware-media')
+
+DEFAULT_FILE_STORAGE = 'authentication.storage_backend.SupabaseStorage'
+
+MEDIA_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/'
