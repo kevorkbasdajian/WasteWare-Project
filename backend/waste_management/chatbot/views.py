@@ -36,11 +36,21 @@ class ChatView(APIView):
         
         user_message = serializer.validated_data['message']
         
+        # FIXED: Properly extract user_id
+        user_id = None
+        if user:
+            # Try different ways to get user_id
+            if hasattr(user, 'user_id'):
+                user_id = user.user_id
+            elif hasattr(user, 'id'):
+                user_id = user.id
+            elif hasattr(user, 'pk'):
+                user_id = user.pk
+        
+        print(f"🔑 DEBUG: user_id = {user_id}")  # This will show us the actual user_id
+        
         # Get chatbot response
-        bot_response = chatbot.get_response(
-            user_message, 
-            user.user_id if user else None
-        )
+        bot_response = chatbot.get_response(user_message, user_id)
         
         # Log conversation
         ChatbotLogs.objects.create(
