@@ -41,21 +41,24 @@ class WasteWareChatbot:
         
         self.conversation_history = {}
         
-        # Fallback responses for common questions
-        self.fallback_responses = {
-            'hello': "👋 Hello! I'm the WasteWare assistant. I can help you with:\n• Submitting waste reports\n• Finding recycling centers\n• Checking pickup schedules\n• Learning about our rewards system\n\nWhat would you like to know?",
-            'hi': "👋 Hi there! How can I help you with waste management today?",
-            'help': "🤖 **I can help you with:**\n\n• Submitting waste reports\n• Finding recycling centers nearby\n• Checking pickup schedules\n• Learning recycling tips\n• Understanding the rewards system\n• Navigating the app\n\nWhat would you like to know?",
-        }
-        
         self.system_prompt = """You are WasteWare Assistant, a helpful chatbot for a waste management app in Lebanon.
 
-Your role:
-- Help users navigate the app (Home, Map, Report, Rewards, Profile pages)
-- Answer recycling questions (plastic, paper, glass, metal, e-waste, organic waste, hazardous materials)
-- Guide users on submitting reports (categories, severity levels, priority levels)
-- Explain the rewards system
-- Provide location-based information (pickups, recycling centers, routes)
+You have DIRECT ACCESS to all database information including:
+- All routes (active/inactive with drivers, trucks, waste types, stops)
+- All pickups (scheduled/in progress/completed with dates, times, weights)
+- All dumping locations (with capacities, types, addresses, coordinates)
+- All schedules (pickup dates, times, status)
+- All drivers and trucks
+- User locations and addresses
+
+IMPORTANT RULES:
+1. NEVER say "go to the Map page" or "check the X page" - YOU provide the information directly
+2. When asked about routes, pickups, schedules, or dumpings - give COMPLETE details
+3. Answer ANY question about the data with full information
+4. Be specific with numbers, dates, times, locations, and names
+5. If asked for "all" or "list" - show ALL items, don't limit arbitrarily
+6. Calculate distances when relevant using user's location
+7. Format responses clearly with emojis and structure
 
 Report Categories:
 🗑 Illegal Dumping - Large unauthorized waste dumps
@@ -65,53 +68,7 @@ Report Categories:
 🍃 Organic Waste - Food waste, garden waste
 📱 E-Waste - Electronics, batteries, appliances
 
-Severity Levels: Low, Medium, High, Critical
-Priority Levels: Routine, Moderate, High, Emergency
-
-Keep responses:
-- Short and conversational (3-5 sentences)
-- Focused on waste management topics
-- Helpful and action-oriented
-- Friendly and encouraging"""
-
-    def get_fallback_response(self, message):
-        """Get a fallback response for common questions when AI is unavailable"""
-        message_lower = message.lower().strip()
-        
-        if message_lower in self.fallback_responses:
-            return self.fallback_responses[message_lower]
-        
-        for key, response in self.fallback_responses.items():
-            if key in message_lower:
-                return response
-        
-        greetings = ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening']
-        if any(greeting in message_lower for greeting in greetings):
-            return self.fallback_responses['hello']
-        
-        thanks = ['thank', 'thanks', 'thx', 'appreciate']
-        if any(word in message_lower for word in thanks):
-            return "You're welcome! 😊 Let me know if you need anything else!"
-        
-        return None
-
-    def get_user_context(self, user_id):
-        """Get user's location and personal data for context-aware responses"""
-        try:
-            from authentication.models import Users
-            user = Users.objects.select_related('address').get(user_id=user_id)
-            
-            context = {
-                'has_address': user.address is not None,
-                'city': user.address.city if user.address else None,
-                'region': user.address.region if user.address else None,
-                'latitude': float(user.address.latitude) if user.address and user.address.latitude else None,
-                'longitude': float(user.address.longitude) if user.address and user.address.longitude else None,
-            }
-            return context
-        except Exception as e:
-            print(f"Error getting user context: {e}")
-            return {'has_address': False}
+Keep responses informative and complete - don't redirect users elsewhere!"""
 
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """Calculate distance between two coordinates using Haversine formula (in km)"""
@@ -127,448 +84,343 @@ Keep responses:
         
         return R * c
 
-    def extract_waste_type(self, message):
-        """Extract waste type from message"""
-        message_lower = message.lower()
-        waste_types = {
-            'plastic': ['plastic', 'plastics'],
-            'paper': ['paper', 'cardboard'],
-            'glass': ['glass'],
-            'metal': ['metal', 'aluminum', 'steel', 'can', 'cans'],
-            'organic': ['organic', 'food', 'compost', 'garden'],
-            'chemical': ['chemical', 'hazardous', 'toxic'],
-            'electronic': ['electronic', 'e-waste', 'ewaste', 'electronics', 'battery', 'batteries']
-        }
-        
-        for waste_type, keywords in waste_types.items():
-            if any(keyword in message_lower for keyword in keywords):
-                return waste_type
-        
-        return None
-
-    def get_dumpings_by_type(self, user_id, waste_type=None):
-        """Get dumpings filtered by waste type, sorted by distance"""
+    def get_all_database_context(self, user_id):
+        """Get COMPLETE context from ALL database tables"""
         try:
-            from company.models import Dumping
+            from company.models import Route, Pickup, Dumping, Schedule, Driver, Truck, WasteType, RouteStop
             from authentication.models import Users
             
-            user = Users.objects.select_related('address').get(user_id=user_id)
+            context = {
+                'user_info': {},
+                'routes': [],
+                'pickups': [],
+                'dumpings': [],
+                'schedules': [],
+                'drivers': [],
+                'trucks': [],
+                'waste_types': []
+            }
             
-            if not user.address or not user.address.latitude or not user.address.longitude:
-                return "📍 Please add your address with GPS coordinates in your profile first!"
+            # USER INFORMATION
+            try:
+                user = Users.objects.select_related('address').get(user_id=user_id)
+                context['user_info'] = {
+                    'has_address': user.address is not None,
+                    'city': user.address.city if user.address else None,
+                    'region': user.address.region if user.address else None,
+                    'street': user.address.street if user.address else None,
+                    'latitude': float(user.address.latitude) if user.address and user.address.latitude else None,
+                    'longitude': float(user.address.longitude) if user.address and user.address.longitude else None,
+                }
+            except:
+                pass
             
-            user_lat = float(user.address.latitude)
-            user_lon = float(user.address.longitude)
+            # ALL WASTE TYPES
+            waste_types = WasteType.objects.all()
+            for wt in waste_types:
+                context['waste_types'].append({
+                    'id': wt.waste_type_id,
+                    'name': wt.name,
+                    'description': wt.description
+                })
             
-            # Get dumpings
-            query = Dumping.objects.select_related('address', 'waste_type').filter(
-                address__latitude__isnull=False,
-                address__longitude__isnull=False
-            )
+            # ALL DRIVERS
+            drivers = Driver.objects.all()
+            for driver in drivers:
+                context['drivers'].append({
+                    'id': driver.driver_id,
+                    'name': f"{driver.first_name} {driver.last_name}".strip(),
+                    'phone': driver.phone,
+                    'created_at': driver.created_at.strftime('%Y-%m-%d')
+                })
             
-            # Filter by waste type if specified
-            if waste_type:
-                query = query.filter(waste_type__name__icontains=waste_type)
+            # ALL TRUCKS
+            trucks = Truck.objects.select_related('driver').all()
+            for truck in trucks:
+                context['trucks'].append({
+                    'id': truck.truck_id,
+                    'driver': f"{truck.driver.first_name} {truck.driver.last_name}" if truck.driver else "No driver",
+                    'available': truck.available,
+                    'created_at': truck.created_at.strftime('%Y-%m-%d')
+                })
             
-            all_dumpings = query
+            # ALL DUMPINGS
+            dumpings = Dumping.objects.select_related('waste_type', 'address').all()
+            user_lat = context['user_info'].get('latitude')
+            user_lon = context['user_info'].get('longitude')
             
-            if not all_dumpings.exists():
-                type_msg = f" of type '{waste_type}'" if waste_type else ""
-                return f"🗑 No dumping locations{type_msg} found in the system."
-            
-            # Calculate distances
-            dumpings_with_distance = []
-            for dumping in all_dumpings:
-                try:
-                    dumping_lat = float(str(dumping.address.latitude).replace(',', '.'))
-                    dumping_lon = float(str(dumping.address.longitude).replace(',', '.'))
-                    distance = self.calculate_distance(user_lat, user_lon, dumping_lat, dumping_lon)
-                    
-                    dumpings_with_distance.append({
-                        'dumping': dumping,
-                        'distance': distance
-                    })
-                except (ValueError, TypeError):
-                    continue
-            
-            if not dumpings_with_distance:
-                return "❌ No valid dumping locations found."
-            
-            # Sort by distance
-            dumpings_with_distance.sort(key=lambda x: x['distance'])
-            
-            # Format response
-            type_msg = f" (Type: {waste_type.title()})" if waste_type else ""
-            response = f"🗑 **Dumping Locations{type_msg}:**\n\n"
-            
-            for idx, data in enumerate(dumpings_with_distance, 1):
-                dumping = data['dumping']
-                distance = data['distance']
+            for dumping in dumpings:
+                dumping_data = {
+                    'id': dumping.dumping_id,
+                    'title': dumping.Title,
+                    'waste_type': dumping.waste_type.name if dumping.waste_type else "General",
+                    'max_capacity': dumping.maximum_capacity,
+                    'collected': dumping.collected_waste,
+                    'capacity_percent': round((dumping.collected_waste / dumping.maximum_capacity * 100), 1) if dumping.maximum_capacity else 0,
+                    'address': {
+                        'street': dumping.address.street if dumping.address else "Unknown",
+                        'city': dumping.address.city if dumping.address else "Unknown",
+                        'region': dumping.address.region if dumping.address else "Unknown",
+                        'latitude': float(dumping.address.latitude) if dumping.address and dumping.address.latitude else None,
+                        'longitude': float(dumping.address.longitude) if dumping.address and dumping.address.longitude else None
+                    },
+                    'created_at': dumping.created_at.strftime('%Y-%m-%d')
+                }
                 
-                response += f"{idx}. **{dumping.Title}**\n"
-                response += f"   📍 Distance: {distance:.2f} km\n"
-                response += f"   🗑 Type: {dumping.waste_type.name if dumping.waste_type else 'General'}\n"
-                response += f"   📫 Location: {dumping.address.street}, {dumping.address.city}\n"
+                # Calculate distance if user has location
+                if user_lat and user_lon and dumping_data['address']['latitude'] and dumping_data['address']['longitude']:
+                    try:
+                        distance = self.calculate_distance(
+                            user_lat, user_lon,
+                            dumping_data['address']['latitude'],
+                            dumping_data['address']['longitude']
+                        )
+                        dumping_data['distance_km'] = round(distance, 2)
+                    except:
+                        dumping_data['distance_km'] = None
+                else:
+                    dumping_data['distance_km'] = None
                 
-                if dumping.maximum_capacity:
-                    capacity_pct = (dumping.collected_waste / dumping.maximum_capacity) * 100
-                    response += f"   📊 Capacity: {dumping.collected_waste}/{dumping.maximum_capacity} tons ({capacity_pct:.0f}%)\n"
-                response += "\n"
+                context['dumpings'].append(dumping_data)
             
-            return response
-            
-        except Exception as e:
-            print(f"Error getting dumpings: {e}")
-            import traceback
-            traceback.print_exc()
-            return "Sorry, I couldn't retrieve dumping locations right now."
-
-    def get_closest_dumping(self, user_id, waste_type=None):
-        """Get the closest dumping location"""
-        try:
-            from company.models import Dumping
-            from authentication.models import Users
-            
-            user = Users.objects.select_related('address').get(user_id=user_id)
-            
-            if not user.address or not user.address.latitude or not user.address.longitude:
-                return "📍 Please add your address with GPS coordinates in your profile first!"
-            
-            user_lat = float(user.address.latitude)
-            user_lon = float(user.address.longitude)
-            
-            query = Dumping.objects.select_related('address', 'waste_type').filter(
-                address__latitude__isnull=False,
-                address__longitude__isnull=False
-            )
-            
-            if waste_type:
-                query = query.filter(waste_type__name__icontains=waste_type)
-            
-            all_dumpings = query
-            
-            if not all_dumpings.exists():
-                type_msg = f" for {waste_type}" if waste_type else ""
-                return f"🗑 No dumping locations{type_msg} found."
-            
-            # Find closest
-            closest = None
-            min_distance = float('inf')
-            
-            for dumping in all_dumpings:
-                try:
-                    dumping_lat = float(str(dumping.address.latitude).replace(',', '.'))
-                    dumping_lon = float(str(dumping.address.longitude).replace(',', '.'))
-                    distance = self.calculate_distance(user_lat, user_lon, dumping_lat, dumping_lon)
-                    
-                    if distance < min_distance:
-                        min_distance = distance
-                        closest = dumping
-                except (ValueError, TypeError):
-                    continue
-            
-            if not closest:
-                return "❌ Could not find valid dumping locations."
-            
-            type_msg = f" for {waste_type}" if waste_type else ""
-            response = f"📍 **Closest Dumping Location{type_msg}:**\n\n"
-            response += f"**{closest.Title}**\n"
-            response += f"📍 Distance: {min_distance:.2f} km\n"
-            response += f"🗑 Type: {closest.waste_type.name if closest.waste_type else 'General'}\n"
-            response += f"📫 Location: {closest.address.street}, {closest.address.city}\n"
-            
-            if closest.maximum_capacity:
-                capacity_pct = (closest.collected_waste / closest.maximum_capacity) * 100
-                response += f"📊 Capacity: {closest.collected_waste}/{closest.maximum_capacity} tons ({capacity_pct:.0f}%)\n"
-            
-            return response
-            
-        except Exception as e:
-            print(f"Error getting closest dumping: {e}")
-            return "Sorry, I couldn't find the closest location right now."
-
-    def get_farthest_dumping(self, user_id, waste_type=None):
-        """Get the farthest dumping location"""
-        try:
-            from company.models import Dumping
-            from authentication.models import Users
-            
-            user = Users.objects.select_related('address').get(user_id=user_id)
-            
-            if not user.address or not user.address.latitude or not user.address.longitude:
-                return "📍 Please add your address with GPS coordinates in your profile first!"
-            
-            user_lat = float(user.address.latitude)
-            user_lon = float(user.address.longitude)
-            
-            query = Dumping.objects.select_related('address', 'waste_type').filter(
-                address__latitude__isnull=False,
-                address__longitude__isnull=False
-            )
-            
-            if waste_type:
-                query = query.filter(waste_type__name__icontains=waste_type)
-            
-            all_dumpings = query
-            
-            if not all_dumpings.exists():
-                type_msg = f" for {waste_type}" if waste_type else ""
-                return f"🗑 No dumping locations{type_msg} found."
-            
-            # Find farthest
-            farthest = None
-            max_distance = 0
-            
-            for dumping in all_dumpings:
-                try:
-                    dumping_lat = float(str(dumping.address.latitude).replace(',', '.'))
-                    dumping_lon = float(str(dumping.address.longitude).replace(',', '.'))
-                    distance = self.calculate_distance(user_lat, user_lon, dumping_lat, dumping_lon)
-                    
-                    if distance > max_distance:
-                        max_distance = distance
-                        farthest = dumping
-                except (ValueError, TypeError):
-                    continue
-            
-            if not farthest:
-                return "❌ Could not find valid dumping locations."
-            
-            type_msg = f" for {waste_type}" if waste_type else ""
-            response = f"📍 **Farthest Dumping Location{type_msg}:**\n\n"
-            response += f"**{farthest.Title}**\n"
-            response += f"📍 Distance: {max_distance:.2f} km\n"
-            response += f"🗑 Type: {farthest.waste_type.name if farthest.waste_type else 'General'}\n"
-            response += f"📫 Location: {farthest.address.street}, {farthest.address.city}\n"
-            
-            if farthest.maximum_capacity:
-                capacity_pct = (farthest.collected_waste / farthest.maximum_capacity) * 100
-                response += f"📊 Capacity: {farthest.collected_waste}/{farthest.maximum_capacity} tons ({capacity_pct:.0f}%)\n"
-            
-            return response
-            
-        except Exception as e:
-            print(f"Error getting farthest dumping: {e}")
-            return "Sorry, I couldn't find the farthest location right now."
-
-    def get_all_routes(self, status_filter=None):
-        """Get all routes with optional status filter"""
-        try:
-            from company.models import Route
-            
-            query = Route.objects.select_related('waste_type', 'driver', 'truck').prefetch_related(
+            # ALL ROUTES
+            routes = Route.objects.select_related('waste_type', 'driver', 'truck').prefetch_related(
                 'route_stops',
                 'route_stops__dumping',
                 'route_stops__dumping__address'
-            )
-            
-            if status_filter:
-                query = query.filter(status__iexact=status_filter)
-            
-            routes = query.all()
-            
-            if not routes.exists():
-                status_msg = f" with status '{status_filter}'" if status_filter else ""
-                return f"🚛 No routes{status_msg} found in the system."
-            
-            status_msg = f" (Status: {status_filter.title()})" if status_filter else ""
-            response = f"🚛 **All Routes{status_msg}:**\n\n"
+            ).all()
             
             for route in routes:
-                driver_name = f"{route.driver.first_name} {route.driver.last_name}" if route.driver else "Not assigned"
-                waste_type = route.waste_type.name if route.waste_type else "General Waste"
-                truck_info = f"Truck #{route.truck.truck_id}" if route.truck else "No truck assigned"
+                stops = []
+                for stop in route.route_stops.all():
+                    stops.append({
+                        'dumping_id': stop.dumping.dumping_id if stop.dumping else None,
+                        'dumping_title': stop.dumping.Title if stop.dumping else "Unknown",
+                        'address': f"{stop.dumping.address.street}, {stop.dumping.address.city}" if stop.dumping and stop.dumping.address else "Unknown",
+                        'has_passed': stop.has_passed
+                    })
                 
-                response += f"🛣 **Route #{route.route_id}**\n"
-                response += f"   🗑 Waste Type: {waste_type}\n"
-                response += f"   👤 Driver: {driver_name}\n"
-                response += f"   🚛 Vehicle: {truck_info}\n"
-                response += f"   📊 Status: {route.status}\n"
-                
-                route_stops = route.route_stops.all()
-                if route_stops.exists():
-                    response += f"   📍 Stops: {route_stops.count()} locations\n"
-                    for stop in route_stops[:3]:
-                        if stop.dumping:
-                            response += f"      • {stop.dumping.Title}\n"
-                    if route_stops.count() > 3:
-                        response += f"      • ... and {route_stops.count() - 3} more\n"
-                else:
-                    response += f"   📍 Stops: No stops defined\n"
-                
-                response += "\n"
+                context['routes'].append({
+                    'id': route.route_id,
+                    'waste_type': route.waste_type.name if route.waste_type else "General",
+                    'driver': f"{route.driver.first_name} {route.driver.last_name}" if route.driver else "No driver",
+                    'truck_id': route.truck.truck_id if route.truck else None,
+                    'status': route.status,
+                    'stops_count': len(stops),
+                    'stops': stops,
+                    'created_at': route.created_at.strftime('%Y-%m-%d')
+                })
             
-            return response
+            # ALL SCHEDULES
+            schedules = Schedule.objects.all().order_by('-pickup_date', '-start_time')
+            for schedule in schedules:
+                context['schedules'].append({
+                    'id': schedule.schedule_id,
+                    'date': schedule.pickup_date.strftime('%A, %B %d, %Y'),
+                    'start_time': schedule.start_time.strftime('%I:%M %p'),
+                    'end_time': schedule.end_time.strftime('%I:%M %p') if schedule.end_time else None,
+                    'status': schedule.status,
+                    'notes': schedule.notes,
+                    'created_at': schedule.created_at.strftime('%Y-%m-%d')
+                })
             
-        except Exception as e:
-            print(f"Error getting routes: {e}")
-            import traceback
-            traceback.print_exc()
-            return "Sorry, I couldn't retrieve route information right now."
-
-    def get_all_pickups(self, status_filter=None):
-        """Get all pickups with optional status filter"""
-        try:
-            from company.models import Pickup
-            
-            query = Pickup.objects.select_related(
+            # ALL PICKUPS
+            pickups = Pickup.objects.select_related(
                 'schedule',
                 'route',
                 'route__waste_type',
-                'route__driver'
+                'route__driver',
+                'route__truck'
+            ).prefetch_related(
+                'route__route_stops',
+                'route__route_stops__dumping'
             ).order_by('-schedule__pickup_date', '-schedule__start_time')
-            
-            if status_filter:
-                query = query.filter(status__iexact=status_filter)
-            
-            pickups = query[:20]  # Limit to 20 most recent
-            
-            if not pickups.exists():
-                status_msg = f" with status '{status_filter}'" if status_filter else ""
-                return f"📅 No pickups{status_msg} found in the system."
-            
-            status_msg = f" (Status: {status_filter.title()})" if status_filter else ""
-            response = f"📅 **All Pickups{status_msg} (Latest 20):**\n\n"
             
             for pickup in pickups:
                 schedule = pickup.schedule
                 route = pickup.route
                 
-                pickup_date = schedule.pickup_date.strftime('%A, %B %d, %Y')
-                start_time = schedule.start_time.strftime('%I:%M %p')
-                end_time = schedule.end_time.strftime('%I:%M %p') if schedule.end_time else "Not specified"
-                waste_type = route.waste_type.name if route.waste_type else "General Waste"
-                driver = f"{route.driver.first_name} {route.driver.last_name}" if route.driver else "Not assigned"
-                
-                response += f"🚛 **Pickup #{pickup.pickup_id}**\n"
-                response += f"   📅 Date: {pickup_date}\n"
-                response += f"   ⏰ Time: {start_time} - {end_time}\n"
-                response += f"   🗑 Type: {waste_type}\n"
-                response += f"   👤 Driver: {driver}\n"
-                response += f"   📊 Status: {pickup.status}\n"
-                
-                if pickup.weight_collected:
-                    response += f"   ⚖️ Weight: {pickup.weight_collected} kg\n"
-                
-                response += "\n"
+                context['pickups'].append({
+                    'id': pickup.pickup_id,
+                    'status': pickup.status,
+                    'weight_collected': float(pickup.weight_collected) if pickup.weight_collected else 0,
+                    'live_location': pickup.live_location,
+                    'schedule': {
+                        'id': schedule.schedule_id,
+                        'date': schedule.pickup_date.strftime('%A, %B %d, %Y'),
+                        'start_time': schedule.start_time.strftime('%I:%M %p'),
+                        'end_time': schedule.end_time.strftime('%I:%M %p') if schedule.end_time else None,
+                        'status': schedule.status
+                    },
+                    'route': {
+                        'id': route.route_id,
+                        'waste_type': route.waste_type.name if route.waste_type else "General",
+                        'driver': f"{route.driver.first_name} {route.driver.last_name}" if route.driver else "No driver",
+                        'truck_id': route.truck.truck_id if route.truck else None,
+                        'status': route.status,
+                        'stops_count': route.route_stops.count()
+                    },
+                    'created_at': pickup.created_at.strftime('%Y-%m-%d %I:%M %p'),
+                    'updated_at': pickup.updated_at.strftime('%Y-%m-%d %I:%M %p')
+                })
             
-            return response
+            return context
             
         except Exception as e:
-            print(f"Error getting pickups: {e}")
+            print(f"Error getting database context: {e}")
             import traceback
             traceback.print_exc()
-            return "Sorry, I couldn't retrieve pickup information right now."
+            return None
 
-    def detect_advanced_query(self, message, user_id):
-        """Detect advanced queries about dumpings, routes, and pickups"""
-        message_lower = message.lower()
+    def format_context_for_ai(self, context):
+        """Format the database context into a readable string for the AI"""
+        if not context:
+            return "No database information available."
         
-        # Extract waste type if mentioned
-        waste_type = self.extract_waste_type(message)
+        formatted = "=== COMPLETE DATABASE INFORMATION ===\n\n"
         
-        # CLOSEST DUMPING
-        if any(word in message_lower for word in ['closest', 'nearest', 'close']) and any(word in message_lower for word in ['dumping', 'dumpster', 'location', 'center']):
-            return self.get_closest_dumping(user_id, waste_type)
+        # USER INFO
+        if context['user_info'].get('has_address'):
+            formatted += f"📍 USER LOCATION:\n"
+            formatted += f"   City: {context['user_info']['city']}\n"
+            formatted += f"   Region: {context['user_info']['region']}\n"
+            formatted += f"   Street: {context['user_info']['street']}\n"
+            formatted += f"   Coordinates: ({context['user_info']['latitude']}, {context['user_info']['longitude']})\n\n"
         
-        # FARTHEST DUMPING
-        if any(word in message_lower for word in ['farthest', 'furthest', 'far']) and any(word in message_lower for word in ['dumping', 'dumpster', 'location', 'center']):
-            return self.get_farthest_dumping(user_id, waste_type)
+        # WASTE TYPES
+        if context['waste_types']:
+            formatted += f"🗑 WASTE TYPES ({len(context['waste_types'])}):\n"
+            for wt in context['waste_types']:
+                formatted += f"   • {wt['name']} (ID: {wt['id']}): {wt['description']}\n"
+            formatted += "\n"
         
-        # ALL DUMPINGS (with optional type filter)
-        if ('all' in message_lower or 'list' in message_lower or 'show' in message_lower) and any(word in message_lower for word in ['dumping', 'dumpings', 'dumpster', 'dumpsters', 'location', 'locations', 'center', 'centers']):
-            return self.get_dumpings_by_type(user_id, waste_type)
+        # DRIVERS
+        if context['drivers']:
+            formatted += f"👤 DRIVERS ({len(context['drivers'])}):\n"
+            for driver in context['drivers']:
+                formatted += f"   • Driver #{driver['id']}: {driver['name']} | Phone: {driver['phone']}\n"
+            formatted += "\n"
         
-        # WASTE TYPE SPECIFIC (e.g., "where can I throw plastic")
-        if waste_type and any(word in message_lower for word in ['throw', 'dispose', 'dump', 'recycle']):
-            return self.get_closest_dumping(user_id, waste_type)
+        # TRUCKS
+        if context['trucks']:
+            formatted += f"🚛 TRUCKS ({len(context['trucks'])}):\n"
+            for truck in context['trucks']:
+                status = "Available" if truck['available'] else "Unavailable"
+                formatted += f"   • Truck #{truck['id']}: {status} | Driver: {truck['driver']}\n"
+            formatted += "\n"
         
-        # ALL ROUTES
-        if ('all' in message_lower or 'list' in message_lower or 'show' in message_lower) and 'route' in message_lower:
-            status = None
-            if 'active' in message_lower:
-                status = 'active'
-            elif 'inactive' in message_lower:
-                status = 'inactive'
-            return self.get_all_routes(status)
+        # DUMPINGS
+        if context['dumpings']:
+            formatted += f"🗑 DUMPING LOCATIONS ({len(context['dumpings'])}):\n"
+            for dump in context['dumpings']:
+                dist_str = f" | Distance: {dump['distance_km']} km" if dump['distance_km'] is not None else ""
+                formatted += f"   • #{dump['id']} '{dump['title']}': {dump['waste_type']} | "
+                formatted += f"Capacity: {dump['collected']}/{dump['max_capacity']} tons ({dump['capacity_percent']}%) | "
+                formatted += f"Location: {dump['address']['street']}, {dump['address']['city']}{dist_str}\n"
+            formatted += "\n"
         
-        # AVAILABLE/ACTIVE ROUTES
-        if any(word in message_lower for word in ['available', 'active']) and 'route' in message_lower:
-            return self.get_all_routes('active')
+        # ROUTES
+        if context['routes']:
+            formatted += f"🛣 ROUTES ({len(context['routes'])}):\n"
+            for route in context['routes']:
+                formatted += f"   • Route #{route['id']}: {route['waste_type']} | Status: {route['status']} | "
+                formatted += f"Driver: {route['driver']} | Truck: {route['truck_id']} | Stops: {route['stops_count']}\n"
+                if route['stops']:
+                    for stop in route['stops']:
+                        passed = "✓" if stop['has_passed'] else "○"
+                        formatted += f"      {passed} {stop['dumping_title']} ({stop['address']})\n"
+            formatted += "\n"
         
-        # ALL PICKUPS
-        if ('all' in message_lower or 'list' in message_lower or 'show' in message_lower) and 'pickup' in message_lower:
-            status = None
-            if 'not started' in message_lower:
-                status = 'Not Started'
-            elif 'in progress' in message_lower or 'progress' in message_lower:
-                status = 'In Progress'
-            elif 'completed' in message_lower:
-                status = 'completed'
-            return self.get_all_pickups(status)
+        # SCHEDULES
+        if context['schedules']:
+            formatted += f"📅 SCHEDULES ({len(context['schedules'])}):\n"
+            for sched in context['schedules'][:20]:  # Limit to 20 most recent
+                formatted += f"   • Schedule #{sched['id']}: {sched['date']} | {sched['start_time']}-{sched['end_time']} | "
+                formatted += f"Status: {sched['status']}"
+                if sched['notes']:
+                    formatted += f" | Notes: {sched['notes']}"
+                formatted += "\n"
+            if len(context['schedules']) > 20:
+                formatted += f"   ... and {len(context['schedules']) - 20} more schedules\n"
+            formatted += "\n"
         
-        return None
+        # PICKUPS
+        if context['pickups']:
+            formatted += f"📦 PICKUPS ({len(context['pickups'])}):\n"
+            for pickup in context['pickups'][:20]:  # Limit to 20 most recent
+                formatted += f"   • Pickup #{pickup['id']}: Status: {pickup['status']} | "
+                formatted += f"Date: {pickup['schedule']['date']} | Time: {pickup['schedule']['start_time']}-{pickup['schedule']['end_time']} | "
+                formatted += f"Route #{pickup['route']['id']} ({pickup['route']['waste_type']}) | "
+                formatted += f"Driver: {pickup['route']['driver']} | Weight: {pickup['weight_collected']} kg | "
+                formatted += f"Stops: {pickup['route']['stops_count']}\n"
+            if len(context['pickups']) > 20:
+                formatted += f"   ... and {len(context['pickups']) - 20} more pickups\n"
+            formatted += "\n"
+        
+        formatted += "=== END OF DATABASE INFORMATION ===\n"
+        return formatted
 
     def get_response(self, user_message, user_id=None):
-        """Get AI response for user message with fallback support"""
+        """Get AI response with complete database context"""
         
         try:
-            # Check for advanced queries first
-            if user_id:
-                advanced_response = self.detect_advanced_query(user_message, user_id)
-                if advanced_response:
-                    return advanced_response
-            
-            # Try to get fallback response for common questions
-            fallback = self.get_fallback_response(user_message)
-            
-            # If model is not available, use fallback
+            # If model is not available
             if not self.model:
-                if fallback:
-                    return fallback
-                return "I'm currently in limited mode. I can help with:\n\n• Pickup schedules\n• Finding recycling centers\n• Basic app navigation\n\nPlease try asking about these topics!"
+                return "I'm currently unavailable. Please try again later or contact support."
             
-            # Try to use Gemini AI
-            print(f"🤖 Calling Gemini AI for message: '{user_message}'")
-            return self._get_gemini_response(user_message, user_id)
+            # Get complete database context
+            print(f"📊 Fetching complete database context for user {user_id}...")
+            db_context = self.get_all_database_context(user_id) if user_id else None
+            
+            # Format context for AI
+            context_str = self.format_context_for_ai(db_context) if db_context else "No database information available."
+            
+            print(f"🤖 Calling Gemini AI with full context...")
+            return self._get_gemini_response(user_message, user_id, context_str)
             
         except Exception as e:
             print(f"❌ ERROR in get_response: {e}")
             import traceback
             traceback.print_exc()
-            
-            fallback = self.get_fallback_response(user_message)
-            if fallback:
-                return fallback
-            
-            return "I'm having trouble responding right now. Try asking:\n• 'Show me all dumpings'\n• 'Find closest plastic dumping'\n• 'List all routes'\n• 'Show all pickups'"
+            return "I'm having trouble responding right now. Please try again or contact support."
     
-    def _get_gemini_response(self, user_message, user_id):
-        """Get response from Gemini AI with conversation context"""
+    def _get_gemini_response(self, user_message, user_id, context_str):
+        """Get response from Gemini AI with complete database context"""
         
         try:
+            # Create or get conversation
             if user_id not in self.conversation_history:
                 self.conversation_history[user_id] = self.model.start_chat(history=[])
             
             chat = self.conversation_history[user_id]
             
+            # Build the complete message with context
             if len(chat.history) == 0:
-                full_message = f"{self.system_prompt}\n\nUser: {user_message}"
+                # First message - include system prompt and full context
+                full_message = f"""{self.system_prompt}
+
+{context_str}
+
+User Question: {user_message}
+
+Remember: NEVER redirect to pages. Provide complete information directly from the database context above."""
             else:
-                full_message = user_message
+                # Continue conversation - include fresh context with each message
+                full_message = f"""{context_str}
+
+User Question: {user_message}
+
+Remember: NEVER redirect to pages. Provide complete information directly from the database context above."""
             
+            print(f"📤 Sending message to Gemini (length: {len(full_message)} chars)")
             response = chat.send_message(full_message)
+            print(f"✅ Received response from Gemini")
             return response.text
             
         except Exception as e:
             print(f"❌ ERROR in _get_gemini_response: {e}")
             import traceback
             traceback.print_exc()
-            
-            fallback = self.get_fallback_response(user_message)
-            if fallback:
-                return fallback
-            
             raise
     
     def clear_history(self, user_id):
@@ -578,4 +430,4 @@ Keep responses:
 
 # Singleton instance
 chatbot = WasteWareChatbot()
-print("🔥🔥🔥 ENHANCED BOT_LOGIC.PY LOADED! 🔥🔥🔥")
+print("🔥🔥🔥 COMPLETE DATABASE-AWARE BOT LOADED! 🔥🔥🔥")
