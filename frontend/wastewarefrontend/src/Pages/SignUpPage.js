@@ -21,6 +21,17 @@ export const SignUpPage = () => {
   const [is_loading, set_is_loading] = useState(false);
   const navigate = useNavigate();
   const { user_type, set_user_type, saveusertype } = useContext(AuthContext);
+
+  const [languageIndex, setLanguageIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  const languages = [
+    { title: "Welcome", subtitle: "Recycle today, live tomorrow" },
+    { title: "Bienvenue", subtitle: "Recyclez aujourd'hui, vivez demain" },
+    { title: "أهلاً وسهلاً", subtitle: "أعد التدوير اليوم، عش غداً" },
+    { title: "Բարի գալուստ", subtitle: "Վերամշակեք այսօր, ապրեք վաղը" },
+  ];
+
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -45,6 +56,19 @@ export const SignUpPage = () => {
       navigate("/", { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false); // Start fade out
+
+      setTimeout(() => {
+        setLanguageIndex((prevIndex) => (prevIndex + 1) % languages.length);
+        setFade(true); // Fade back in
+      }, 500); // Wait for fade out to complete
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
@@ -130,7 +154,7 @@ export const SignUpPage = () => {
         if (accessToken) {
           saveAccessToken(accessToken);
         } else {
-          console.log("⚠️ No token in response!");
+          console.log("⚠ No token in response!");
         }
       }
     } catch (error) {
@@ -162,10 +186,30 @@ export const SignUpPage = () => {
     <div className="signup-container">
       {/*Left Side */}
       <div className="left-side">
-        <h1 className="Main Title">Bienvenue</h1>
-        <p style={{ color: "white" }}>Recyclez aujourd'hui, vivez demain</p>
+        <h1
+          className="Main Title"
+          style={{
+            opacity: fade ? 1 : 0,
+            transition: "opacity 0.5s ease-in-out",
+            transform: fade ? "translateY(0)" : "translateY(-10px)",
+            transitionProperty: "opacity, transform",
+          }}
+        >
+          {languages[languageIndex].title}
+        </h1>
+        <p
+          style={{
+            color: "white",
+            opacity: fade ? 1 : 0,
+            transition: "opacity 0.5s ease-in-out",
+            transform: fade ? "translateY(0)" : "translateY(-10px)",
+            transitionProperty: "opacity, transform",
+          }}
+        >
+          {languages[languageIndex].subtitle}
+        </p>
       </div>
-      {/*Right Side*/}
+      {/Right Side/}
       <div className="right-side">
         <div className="glass2 custom">
           <div className="logo">

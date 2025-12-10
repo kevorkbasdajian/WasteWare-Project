@@ -16,12 +16,23 @@ import "@fontsource/montserrat/700.css";
 import AlertSnackbar from "../Components/Alert";
 
 export const LoginPage = () => {
-  // const { accessToken, saveAccessToken, clearAuth } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState("");
   const { saveAccessToken, accessToken, saveusertype, user_type } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const [snackbar, setsnackbar] = useState(false);
+
+  // Language rotation state
+  const [languageIndex, setLanguageIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  const languages = [
+    { title: "Welcome", subtitle: "Recycle today, live tomorrow" },
+    { title: "Bienvenue", subtitle: "Recyclez aujourd'hui, vivez demain" },
+    { title: "أهلاً وسهلاً", subtitle: "أعد التدوير اليوم، عش غداً" },
+    { title: "Բարի գալուստ", subtitle: "Վերամշակեք այսօր, ապրեք վաղը" },
+  ];
+
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -31,6 +42,21 @@ export const LoginPage = () => {
     },
   };
   const [is_loading, set_is_loading] = useState(false);
+
+  // Add this useEffect for smooth language rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false); // Start fade out
+
+      setTimeout(() => {
+        setLanguageIndex((prevIndex) => (prevIndex + 1) % languages.length);
+        setFade(true); // Fade back in
+      }, 500); // Wait for fade out to complete
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // If user is already authenticated, redirect away from login page
   useEffect(() => {
     const token =
@@ -48,7 +74,7 @@ export const LoginPage = () => {
   }, [navigate]);
 
   {
-    /*Validation Using Yup*/
+    /Validation Using Yup/;
   }
   const validationSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Email is required"),
@@ -58,7 +84,7 @@ export const LoginPage = () => {
   });
 
   {
-    /*Initial Values for Formik*/
+    /Initial Values for Formik/;
   }
   const initialValues = {
     email: "",
@@ -66,7 +92,7 @@ export const LoginPage = () => {
   };
 
   {
-    /*When the Sign Up Button is pressed*/
+    /When the Sign Up Button is pressed/;
   }
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     set_is_loading(true);
@@ -88,7 +114,6 @@ export const LoginPage = () => {
         const accessToken = data.access || data.token?.access;
         if (accessToken) saveAccessToken(accessToken);
         setsnackbar(true);
-        // alert(JSON.stringify(data, null, 2));
         console.log(user_type);
         saveusertype(data.user_type);
         setErrorMessage("");
@@ -100,6 +125,7 @@ export const LoginPage = () => {
       setSubmitting(false);
     }
   };
+
   const closesnackbar = () => {
     setsnackbar(false);
     if (user_type === "company") {
@@ -113,10 +139,30 @@ export const LoginPage = () => {
     <div className="signup-container">
       {/*Left Side */}
       <div className="left-side">
-        <h1 className="Main Title">Bienvenue</h1>
-        <p style={{ color: "white" }}>Recyclez aujourd'hui, vivez demain</p>
+        <h1
+          className="Main Title"
+          style={{
+            opacity: fade ? 1 : 0,
+            transition: "opacity 0.5s ease-in-out",
+            transform: fade ? "translateY(0)" : "translateY(-10px)",
+            transitionProperty: "opacity, transform",
+          }}
+        >
+          {languages[languageIndex].title}
+        </h1>
+        <p
+          style={{
+            color: "white",
+            opacity: fade ? 1 : 0,
+            transition: "opacity 0.5s ease-in-out",
+            transform: fade ? "translateY(0)" : "translateY(-10px)",
+            transitionProperty: "opacity, transform",
+          }}
+        >
+          {languages[languageIndex].subtitle}
+        </p>
       </div>
-      {/*Right Side*/}
+      {/Right Side/}
       <div className="right-side">
         <div className="glass2 custom">
           <div className="logo">
