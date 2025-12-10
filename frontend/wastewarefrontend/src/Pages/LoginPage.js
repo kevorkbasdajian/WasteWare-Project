@@ -162,7 +162,6 @@ export const LoginPage = () => {
           {languages[languageIndex].subtitle}
         </p>
       </div>
-      {/Right Side/}
       <div className="right-side">
         <div className="glass2 custom">
           <div className="logo">

@@ -209,7 +209,6 @@ export const SignUpPage = () => {
           {languages[languageIndex].subtitle}
         </p>
       </div>
-      {/Right Side/}
       <div className="right-side">
         <div className="glass2 custom">
           <div className="logo">
